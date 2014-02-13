@@ -1,0 +1,24 @@
+Team 1: Kaitlin Decker, Alonso Salas, Cody Yong
+
+Overall Design: 
+	- Idea/Objective/Scoring: Tron inspired disk throwing game in which the user racks up as many points possible in an alotted time period. The user will catch and throw the disk at targets placed on the walls of a game room, and will be rewarded with points based on how close the disk collides to the center of the target. The game room will be divided in half with one half designated to the user and the other designated to the user's opponent (in this case, the oponnent is simply targets, but in the next version of the game, when multiplayer is added, there will be an oponnent placed here). The user will be able to move around their side of the room in order to position themselves to catch the disk when it returns from their throw. The user will be given 3 lives in this target hitting mode of the game that will decrease to 0 indicating a game over. These lives can be lost by failing to catch the disk when it returns from the users throw or if the user is hit by the disk. 
+	- Sound: Basic sounds of hitting the walls and grunting noises when hit. Ideally, background music as well.
+	- GUI: The user will be able to advance past the primary menu (start menu) by pressing a key. During the main game they will have a score displayed and a timer indicating the remaining time. Move their character and throw/catch the disk. The player will also enter into a "throwing mode" which will adjust the camera to be "over the shoulder" and allow them to aim with the mouse towards the desired direction/location of the throw. They will also be able to pause the game; bringing up a pause menu which they will then be able to toggle sound, unpause the game and/or quit the game. 
+
+Software Architecture:
+	- Classes: 
+		1) Disk - the disk that will be thrown. Collision detection with a bounding box. Will have an associated SceneNode in the Scene and a mass and velocity for physics simulation. Will most likely be inelastic WRT to collisions in order to mimic the fast paced nature of the disk/game in the movie, or at least a coefficient of restitution close to 1.
+		2) Player - SceneNode associated in the scene. A mass and velocity for physics simulation.
+		3) Game Room -  Several plane objects that will enclose the players. 
+		4) (Possibly) Targets - depending on the implementation we may make the targets part of the Game Room class. We will see which method is proven to be simpler during implementation.
+		5) Game - initializes scene with objects pertaining to the several classes above and begins the render loop.
+	- Game Loop: The game loop will be part of the render loop, as will the simulation loop. Game state will be kept track in our main class that holds this render loop and initializes the scene and all the scene objects of the specified classes above. 
+	- Object Structure: The Disk, Player, and Targets will be attached to the Game Room node so that they are oriented WRT to this Room. 
+	- Work Load: As far as initializing the scene and creating each class, we expect 2-5 hours of work. Learning Bullet and integrating it into Ogre will most likely take upward of 4 hours. Overall, the project seems quite manageable as we will not have many collisions to worry about and the disk bouncing off the planes is very much likened to the ball in program 1. If the program does seem to be more intensive than anticipated, parts of the game that can be scaled back are our ambitions of background music, luminosity of characters and disk, and/or controls such as over the shoulder view while the player is throwing.
+
+Division of Labor:
+	- Scene: Alonso
+	- Classes: All
+	- Render Loop: All
+	- Audio: Cody
+	- Art: Kaitlin
