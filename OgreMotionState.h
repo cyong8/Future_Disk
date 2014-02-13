@@ -1,4 +1,7 @@
-class OgreMotionState:public btMotionState
+#ifndef __OgreMotionState_h_
+#define __OgreMotionState_h_
+
+class OgreMotionState : public btMotionState
 {
 protected:
 	Ogre::SceneNode* mVisibelobj;
@@ -37,3 +40,5 @@ public:
 
 	}
 };
+
+#endif // #ifndef __OgreMotionState_h_
