@@ -34,6 +34,8 @@ This source file is part of the
 #include <SdkTrays.h>
 #include <SdkCameraMan.h>
 
+#include "btBulletDynamicsCommon.h"
+
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
 #    define OGRE_IS_IOS 1
 #    include <OISMultiTouch.h>

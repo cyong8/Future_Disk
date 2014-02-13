@@ -1,16 +1,19 @@
 #ifndef __OgreMotionState_h_
 #define __OgreMotionState_h_
 
+#include "BaseApplication.h"
+
 class OgreMotionState : public btMotionState
 {
 protected:
-	Ogre::SceneNode* mVisibelobj;
+	Ogre::SceneNode* mVisibleobj;
 	btTransform mPos1;
+
 public:
 	OgreMotionState(const btTransform& initialpos, Ogre::SceneNode* node)
 	{
 		mVisibleobj = node;
-		mPos1 = initalpos;
+		mPos1 = initialpos;
 	}
 	virtual ~OgreMotionState(){}
 
@@ -34,10 +37,9 @@ public:
 		if(NULL == mVisibleobj)
 			return; // 
 		btQuaternion rot = worldTrans.getRotation();
-		mVisisbleobj->setOrientation(rot.w(), rot.x(), rot.y(), rot.z());
+		mVisibleobj->setOrientation(rot.w(), rot.x(), rot.y(), rot.z());
 		btVector3 pos = worldTrans.getOrigin();
 		mVisibleobj->setPosition(pos.x(), pos.y(), pos.z());
-
 	}
 };
 

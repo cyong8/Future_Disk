@@ -1,0 +1,11 @@
+ACLOCAL_AMFLAGS= -I m4
+noinst_HEADERS = MCP.h Disk.h BaseApplication.h ControlListener.h GameObject.h OgreMotionState.h Overlay.h Player.h PlayerCamera.h PlayingField.h Wall.h
+
+bin_PROGRAMS = TronGame
+TronGame_CPPFLAGS = -I$(top_srcdir)
+TronGame_SOURCES = MCP.cpp Disk.cpp BaseApplication.cpp ControlListener.cpp GameObject.cpp Overlay.cpp Player.cpp PlayerCamera.cpp PlayingField.cpp Simulator.cpp Wall.cpp
+TronGame_CXXFLAGS = $(OGRE_CFLAGS) $(OIS_CFLAGS) $(bullet_CFLAGS)
+TronGame_LDADD = $(OGRE_LIBS) $(OIS_LIBS) $(bullet_LIBS)
+
+EXTRA_DIST = buildit makeit
+AUTOMAKE_OPTIONS = foreign
