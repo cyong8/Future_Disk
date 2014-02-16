@@ -9,10 +9,14 @@ Simulator::Simulator()
 	overlappingPairCache = new btDbvtBroadphase();
 	//the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
 	solver = new btSequentialImpulseConstraintSolver();
+	//assign collision dispatcher to the collision configuration (Cody)
+	dispatcher = new btCollisionDispatcher(collisionConfiguration);
+
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
+	
 	dynamicsWorld->setGravity(btVector3(0,-0.098, 0));
 	//keep track of the shapes, we release memory at exit
-	//make sure to re-use collision shapes among rigit bodies whenever possible!
+	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
 }
 
@@ -31,6 +35,7 @@ void Simulator::addObject (GameObject* o)
 	dynamicsWorld->addRigidBody(o->getBody());
 }
 
+// original stepSimulation is in btDiscreteDynamicsWorld
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
 	//do we need to update positions in simulator for dynamic objects?

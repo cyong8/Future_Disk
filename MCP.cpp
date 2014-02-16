@@ -13,16 +13,33 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    game_simulator = new Simulator();
+
+    /******************** LIGHTS ********************/
 	// initializing light
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(0,0,0));
 	mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 		/* more light sources here */
+    Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
+    pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setPosition(Ogre::Vector3(10, 0, 0));
+    pointLight->setDiffuseColour(Ogre::ColourValue::White);
+    pointLight->setSpecularColour(Ogre::ColourValue::White);
+    pointLight->setVisible(true);
 
-	// setting up the camera
-	mCamera->setPosition(Ogre::Vector3(0.0f, 0.0f, 0.0f));
-    mCamera->lookAt(Ogre::Vector3(0.0f, 0.0f, 0.0f));
+    /******************** CAMERAS ********************/
 
-	// 10 planes for the room
+	// change the initially positioned camera from the BaseApplication (see BaseApplication::createCamera)
+
+    /******************** ENTITIES ********************/
+    /* 
+        18 planes for the room  
+    */  
+        // Couldn't get this ball to show up
+    Ogre::Entity* btBall = mSceneMgr->createEntity("Ball", "sphere.mesh");
+    btBall->setMaterialName("Examples/tdg");
+    GameObject* gamebtBall = new GameObject("bulletBall", mSceneMgr, game_simulator);
+    gamebtBall->setGameObjectEntity(btBall);
 }
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)

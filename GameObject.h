@@ -11,22 +11,33 @@ class GameObject
 protected:
 	Ogre::String name;
 	Ogre::SceneManager* sceneMgr;
-	Simulator *simulator;
 	Ogre::SceneNode *rootNode;
 	Ogre::Entity *geom;
+	OgreMotionState *motionState;
+
+	Simulator *simulator;
 	btCollisionShape *shape;
-	btScalar mass;
-	btRigidBody *body;
 	btTransform tr;
 	btVector3 inertia;
-	OgreMotionState *motionState;
+
+	btScalar mass;
+	btRigidBody *body;
+	bool kinematic;
+	bool needsUpdates;
+
+	/* Use this later when we define the struct that contains 
+       all the collision info for a given GameObject
+       (See Code snippets from 2/13 on class website)
+	*/
+	//CollisionContext* context;
+	
 
 public:
 	btRigidBody* getBody(void);
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void updateTransform();
 	void addToSimulator();	
-
+	void setGameObjectEntity(Ogre::Entity* ent);
 };
 
 #endif // #ifndef __GameObject_h_

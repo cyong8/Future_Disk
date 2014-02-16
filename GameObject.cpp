@@ -11,12 +11,19 @@ GameObject::GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim
 	shape = NULL;
 	tr.setIdentity();
 	mass = 0.0f;
-	inertia.setZero();
+	kinematic = false;
+	needsUpdates = false;
+	inertia.setZero(); // resistence to a change in direction; YEAH, I forgot!
 }
 
 btRigidBody* GameObject::getBody()	
 {
 	return (*this).body;		
+}
+
+void GameObject::setGameObjectEntity(Ogre::Entity* ent)
+{
+	(*this).geom = ent;
 }
 
 void GameObject::updateTransform() 

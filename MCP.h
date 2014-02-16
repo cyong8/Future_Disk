@@ -6,10 +6,13 @@
 #include "Simulator.h"
 #include "GameObject.h"
 #include "OgreMotionState.h"
+class Simulator;
 
 class MCP : public BaseApplication
 {
 public:
+	Simulator* game_simulator;
+
 	MCP(void);
 	virtual ~MCP(void);
 

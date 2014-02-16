@@ -16,12 +16,20 @@ class Simulator
 		btConstraintSolver* mConstraintsolver;
 		//btCollisionWorld* mWorld;
 		Ogre::SceneManager* sceneMgr;
-		std::deque<GameObject*> objList;
+		/* Fussell originally had a objList as a deque,
+		   but I don't know how to work with that so I
+		   changed it to a vector
+		*/
+		//std::deque<GameObject*> objList;  
+		vector<GameObject*> objList;
 
 	public:
 		Simulator();
 		~Simulator();
 		void addObject(GameObject* o);
+
+		// not sure where this removeObject is defined;
+		// will most likely have to change it tho
 		bool removeObject(GameObject* o);
 		void stepSimulation(const Ogre::Real elapsedTime, 	int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 };
