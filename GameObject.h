@@ -37,7 +37,6 @@ public:
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void updateTransform();
 	void addToSimulator();	
-	void setGameObjectEntity(Ogre::Entity* ent);
 };
 
 #endif // #ifndef __GameObject_h_

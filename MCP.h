@@ -6,7 +6,13 @@
 #include "Simulator.h"
 #include "GameObject.h"
 #include "OgreMotionState.h"
-#include "ControlListener.h"
+#include "PlayerCamera.h"
+#include "Wall.h"
+#include "Player.h"
+#include "Room.h"
+#include "Disk.h"
+
+//#include "ControlListener.h"
 class Simulator;
 
 class MCP : public BaseApplication

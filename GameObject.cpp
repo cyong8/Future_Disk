@@ -22,11 +22,6 @@ btRigidBody* GameObject::getBody()
 	return (*this).body;		
 }
 
-void GameObject::setGameObjectEntity(Ogre::Entity* ent)
-{
-	(*this).geom = ent;
-}
-
 void GameObject::updateTransform() 
 {
 	Ogre::Vector3 pos = rootNode->getPosition();
@@ -39,8 +34,10 @@ void GameObject::updateTransform()
 
 void GameObject::addToSimulator()
 {
-	updateTransform();
 	motionState = new OgreMotionState(tr, rootNode);
+	
+	updateTransform();
+	
 	if(mass != 0.0f) shape->calculateLocalInertia(mass, inertia);
 		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, shape, inertia);
 	body = new btRigidBody(rbInfo);

@@ -39,6 +39,7 @@ public:
 		btQuaternion rot = worldTrans.getRotation();
 		mVisibleobj->setOrientation(rot.w(), rot.x(), rot.y(), rot.z());
 		btVector3 pos = worldTrans.getOrigin();
+		// Bullet -> Ogre
 		mVisibleobj->setPosition(pos.x(), pos.y(), pos.z());
 	}
 };
