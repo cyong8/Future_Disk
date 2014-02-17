@@ -2,8 +2,10 @@
 #define __PlayerCamera_h_
 
 #include "BaseApplication.h"
+#include "Player.h"
 
 class Player;
+
 
 class PlayerCamera: public BaseApplication
 {
@@ -17,7 +19,7 @@ public:
 
 	virtual void createCamera(void);
 	void switchToThirdView(void);
-	void switchToThirdView(void);
+	void switchToFirstView(void);
 };
 
 

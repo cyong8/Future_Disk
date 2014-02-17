@@ -2,11 +2,12 @@
 #define __Disk_h_
 
 #include "GameObject.h"
+class GameObject;
 
 class Disk : public GameObject
 {
 public:
-	Disk();
+	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void setPlayer(Player p); //player caught the disk
 
 protected:

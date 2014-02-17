@@ -18,7 +18,6 @@ public:
 	virtual ~MCP(void);
 
 protected:
-	virtual bool keyPressed(const OIS::KeyEvent &arg);
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 };

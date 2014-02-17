@@ -17,7 +17,7 @@ void MCP::createScene(void)
 
     /******************** LIGHTS ********************/
 	// initializing light
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(0,0,0));
+	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
 	mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 		/* more light sources here */
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
@@ -43,10 +43,6 @@ void MCP::createScene(void)
     gamebtBall->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
-bool MCP::keyPressed()
-{
-    
-}
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {

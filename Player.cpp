@@ -16,7 +16,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim)
 	isHolding = false;
 }
 
-Player::setHolding();
+Player::setHolding()
 {
 	(*this).isHolding = !isHolding;
 }

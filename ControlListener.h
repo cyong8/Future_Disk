@@ -10,6 +10,8 @@ class ControlListener : public BaseApplication
 	virtual ~ControlListener(void);
 
     protected:
-	virtual void keyPressed(const OIS::KeyEvent &arg);
-	virtual void keyReleased(const OIS::KeyEvent &arg);
-}
+	virtual bool keyPressed(const OIS::KeyEvent &arg);
+	virtual bool keyReleased(const OIS::KeyEvent &arg);
+};
+
+#endif // #ifndef __ControlListener_h_

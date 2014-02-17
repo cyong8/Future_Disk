@@ -3,11 +3,12 @@
 
 #include "GameObject.h"
 #include "PlayerCamera.h"
+class GameObject;
 
 class Player : public GameObject
 {
 public:
-	Player();
+	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void setHolding();
 
 protected:

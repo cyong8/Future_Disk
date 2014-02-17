@@ -26,12 +26,12 @@ void PlayerCamera::createCamera(void)
     mCameraMan = new OgreBites::SdkCameraMan(mCamera);   // create a default camera controller
 }
 
-void PlayerCamera::switchToFirstView(void)
-{
-	
-}
-
 void PlayerCamera::switchToThirdView(void)
 {
 
+}
+
+void PlayerCamera::switchToFirstView(void)
+{
+    
 }
