@@ -6,6 +6,7 @@
 #include "Simulator.h"
 #include "GameObject.h"
 #include "OgreMotionState.h"
+#include "ControlListener.h"
 class Simulator;
 
 class MCP : public BaseApplication
@@ -17,6 +18,7 @@ public:
 	virtual ~MCP(void);
 
 protected:
+	virtual bool keyPressed(const OIS::KeyEvent &arg);
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 };

@@ -9,6 +9,7 @@ GameObject::GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim
 	simulator = sim;
 	rootNode = sceneMgr->getRootSceneNode()->createChildSceneNode(name);
 	shape = NULL;
+	motionState = NULL;
 	tr.setIdentity();
 	mass = 0.0f;
 	kinematic = false;

@@ -14,7 +14,7 @@ Simulator::Simulator()
 
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	
-	dynamicsWorld->setGravity(btVector3(0,-0.098, 0));
+	dynamicsWorld->setGravity(btVector3(0,-9.8, 0));
 	//keep track of the shapes, we release memory at exit
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
