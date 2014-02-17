@@ -40,12 +40,18 @@ void MCP::createScene(void)
     btBall->setMaterialName("Examples/tdg");
     GameObject* gamebtBall = new GameObject("bulletBall", mSceneMgr, game_simulator);
     gamebtBall->setGameObjectEntity(btBall);
+    gamebtBall->addToSimulator();
+}
+//-------------------------------------------------------------------------------------
+bool MCP::keyPressed()
+{
+    
 }
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
-
+    game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     if (!ret)
         return ret;
 
