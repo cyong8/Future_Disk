@@ -16,6 +16,7 @@ void PlayerCamera::createCamera(void)
     CameraNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("PlayerCamNode");
     CameraNode.attachObject(mCamera);
 
+
     // Position it at 500 in Z direction
     mCamera->setPosition(Ogre::Vector3(0,0,80));
     // Look back along -Z
