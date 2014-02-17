@@ -7,7 +7,12 @@
 *.o
 *.so
 *.status
-*.cfg
+*.h~
+*.m4
+*.guess
+*.in
+*.sub
+*.sh
 
 # Packages #
 ############
@@ -43,3 +48,13 @@ Thumbs.db
 libtool
 TronGame
 Makefile
+.deps/*
+m4/*
+autom4te.cache
+AppDelegate.h
+config.h
+configure
+depcomp
+install-sh
+missing
+stamp-h1
