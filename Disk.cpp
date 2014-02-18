@@ -5,7 +5,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	: GameObject(nym, mgr, sim)
 {
 	heldBy = NULL;
-	//shape = 
+
 }
 
 void Disk::setPlayer(Player* p)

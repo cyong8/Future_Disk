@@ -23,9 +23,9 @@ void Player::setHolding()
 	isHolding = !isHolding;
 }
 
-void Player::update(float elapsedTime)
+//void Player::update(float elapsedTime)
 // {
 // 	while(sim->checkHit()){
 		
 // 	}
-}
+//}

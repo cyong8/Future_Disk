@@ -7,11 +7,12 @@ class Wall;
 class Room
 {
 public:
-	Room();
+	Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator);
 	vector<Wall> wallList;
 
 protected:
-	void addWall(Wall w);
+	void addWall(Wall *w);
+	void addWalls(vector<Wall> wallList, Ogre::SceneManager *mSceneMgr, Simulator *game_simulator);
 };
 
 #endif // #ifndef __Room_h_
