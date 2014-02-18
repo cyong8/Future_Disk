@@ -19,7 +19,7 @@ class MCP : public BaseApplication
 {
 public:
 	Simulator* game_simulator;
-
+	Room *room;
 	MCP(void);
 	virtual ~MCP(void);
 

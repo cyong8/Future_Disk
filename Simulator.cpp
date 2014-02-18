@@ -82,4 +82,3 @@ void Simulator::displayCallBack(void)
 		//contactManifold->clearManifold();	
 	}
 }
-

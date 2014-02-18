@@ -15,6 +15,7 @@ GameObject::GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim
 	kinematic = false;
 	needsUpdates = false;
 	inertia.setZero(); // resistence to a change in direction; YEAH, I forgot!
+	worldScale = 100.0f;
 }
 
 btRigidBody* GameObject::getBody()	
