@@ -17,9 +17,10 @@ void MCP::createScene(void)
 
     /******************** LIGHTS ********************/
 	// initializing light
-	mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
-	mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
-		/* more light sources here */
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
+    mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+
+    		/* more light sources here */
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
     pointLight->setType(Ogre::Light::LT_POINT);
     pointLight->setPosition(Ogre::Vector3(0.1f,0.0f, 0.0f));
@@ -32,11 +33,16 @@ void MCP::createScene(void)
 	// change the initially positioned camera from the BaseApplication (see BaseApplication::createCamera)
 
     /******************** ENTITIES ********************/
-    /* 
-        18 planes for the room  
-    */  
-    room = new Room(mSceneMgr, game_simulator);     
-//(new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
+    Ogre::Vector3 *dimensions = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
+    Ogre::Vector3 *position = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
+    float worldScale = 100.0f;
+
+    // Initialize player1
+    new Player("Player1", mSceneMgr, game_simulator, 0.1, 0.1, *dimensions, *position);
+    // Initialize the room
+    new Room(mSceneMgr, game_simulator);
+    // Initialize the disk
+    new Disk("Disk", mSceneMgr, game_simulator, 0.1, 0.1, Ogre::Vector3(2.0f, 2.0f, 2.0f));
 }
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
