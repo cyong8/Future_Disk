@@ -3,14 +3,19 @@
 
 #include <stdlib.h>
 #include "BaseApplication.h"
+
 #include "Simulator.h"
-#include "GameObject.h"
+
 #include "OgreMotionState.h"
+
 #include "PlayerCamera.h"
-#include "Wall.h"
+#include "ControlListener.h"
+
+#include "GameObject.h"
 #include "Player.h"
-#include "Room.h"
 #include "Disk.h"
+#include "Room.h"
+#include "Wall.h"
 
 //#include "ControlListener.h"
 class Simulator;

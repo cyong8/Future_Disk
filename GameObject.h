@@ -24,7 +24,6 @@ protected:
 	btRigidBody *body;
 	bool kinematic;
 	bool needsUpdates;
-	bool hit;
 
 	/* Use this later when we define the struct that contains 
        all the collision info for a given GameObject
@@ -38,6 +37,7 @@ public:
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void updateTransform();
 	void addToSimulator();	
+	string typeName;
 };
 
 #endif // #ifndef __GameObject_h_

@@ -8,6 +8,7 @@ class OgreMotionState : public btMotionState
 protected:
 	Ogre::SceneNode* mVisibleobj;
 	btTransform mPos1;
+	GameObject* gObj;
 
 public:
 	OgreMotionState(const btTransform& initialpos, Ogre::SceneNode* node)
@@ -25,6 +26,16 @@ public:
 	void updateTransform(btTransform& newpos)
 	{
 		mPos1 = newpos;
+	}
+
+	void setGameObject(GameObject* g)
+	{
+		gObj = g;
+	}
+
+	GameObject* getGameObject()
+	{
+		return gObj;
 	}
 
 	virtual void getWorldTransform(btTransform& worldTrans) const

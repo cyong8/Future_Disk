@@ -3,6 +3,7 @@
 Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position)
 	: GameObject(nym, mgr, sim)
 {
+	typeName = "Wall";
 	// 1x1x1 initially set by Ogre
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh");
 	

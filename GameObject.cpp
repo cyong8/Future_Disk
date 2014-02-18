@@ -35,7 +35,7 @@ void GameObject::updateTransform()
 void GameObject::addToSimulator()
 {
 	motionState = new OgreMotionState(tr, rootNode);
-	
+	motionState->setGameObject(*this);
 	updateTransform();
 	
 	if(mass != 0.0f) shape->calculateLocalInertia(mass, inertia);
