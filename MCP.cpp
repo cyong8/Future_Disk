@@ -41,11 +41,15 @@ void MCP::createScene(void)
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-    game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     bool ret = BaseApplication::frameRenderingQueued(evt);
     
     if (!ret)
         return ret;
+
+    game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+
+    // check collisions
+    // handle collisions
 
     return ret;
 }
