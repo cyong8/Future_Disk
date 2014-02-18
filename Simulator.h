@@ -21,6 +21,7 @@ class Simulator
 		   changed it to a vector
 		*/
 		//std::deque<GameObject*> objList;  
+		int current_object_index; //needs to be setup
 		vector<GameObject*> objList;
 
 
