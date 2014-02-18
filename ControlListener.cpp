@@ -18,6 +18,18 @@ bool ControlListener::keyPressed( const OIS::KeyEvent &arg )
 	case OIS::KC_P:
 	//    pause();
 	    break;
+	case OIS::KC_W:
+		// Move character forward
+		break;
+	case OIS::KC_A:
+		// Move character to the left
+		break;
+	case OIS::KC_S:
+		// Move character backward
+		break;
+	case OIS::KC_D:
+		// Move character to the right
+		break;
 	default:
 	    break;
 	

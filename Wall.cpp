@@ -7,8 +7,11 @@ Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	// 1x1x1 initially set by Ogre
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh");
 	
+	// Attach wall to scenenode
 	rootNode->attachObject(ent);
-	rootNode->scale(dimensions.x/50.0f, dimensions.y/50.0f, dimensions.z/50.0f);
+	// Scale the wall to fit the world
+	rootNode->scale(worldScale, worldScale, worldScale);
+	// Set the position of the wall
 	rootNode->setPosition(position);
 	ent->setMaterialName("Examples/Rockwall");
 

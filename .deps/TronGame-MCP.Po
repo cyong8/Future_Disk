@@ -858,7 +858,8 @@ TronGame-MCP.o: MCP.cpp MCP.h /usr/include/stdlib.h \
  /usr/local/include/bullet/BulletDynamics/Vehicle/btWheelInfo.h \
  /usr/local/include/bullet/BulletDynamics/Dynamics/btActionInterface.h \
  /usr/local/include/bullet/BulletDynamics/Dynamics/btRigidBody.h \
- Simulator.h GameObject.h OgreMotionState.h ControlListener.h
+ Simulator.h GameObject.h OgreMotionState.h PlayerCamera.h Wall.h \
+ Player.h Room.h Disk.h
 
 MCP.h:
 
@@ -2870,4 +2871,12 @@ GameObject.h:
 
 OgreMotionState.h:
 
-ControlListener.h:
+PlayerCamera.h:
+
+Wall.h:
+
+Player.h:
+
+Room.h:
+
+Disk.h:

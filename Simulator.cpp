@@ -67,4 +67,3 @@ void Simulator::setHitFlags(void)
 		//contactManifold->clearManifold();	
 	}
 }
-
