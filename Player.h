@@ -2,8 +2,6 @@
 #define __Player_h_
 
 #include "GameObject.h"
-#include "PlayerCamera.h"
-class GameObject;
 
 class Player : public GameObject
 {

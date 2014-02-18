@@ -23,10 +23,12 @@ class Simulator
 		//std::deque<GameObject*> objList;  
 		vector<GameObject*> objList;
 
+
 	public:
 		Simulator();
 		~Simulator();
 		void addObject(GameObject* o);
+		btCollisionShape *box_shape;
 
 		// not sure where this removeObject is defined;
 		// will most likely have to change it tho

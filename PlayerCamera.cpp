@@ -1,4 +1,5 @@
 #include "PlayerCamera.h"
+#include "Player.h"
 
 PlayerCamera::PlayerCamera(void)
 {

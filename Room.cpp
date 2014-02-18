@@ -2,7 +2,7 @@
 
 Room::Room()
 {
-	wallList = vector<Wall>();
+	wallList = vector<Wall>();  // might be unnecessary
 }
 
 void Room::addWall(Wall w)

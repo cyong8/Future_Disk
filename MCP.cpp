@@ -35,19 +35,15 @@ void MCP::createScene(void)
     /* 
         18 planes for the room  
     */  
-        // Couldn't get this ball to show up
-    Ogre::Entity* btBall = mSceneMgr->createEntity("Ball", "sphere.mesh");
-    btBall->setMaterialName("Examples/tdg");
-    GameObject* gamebtBall = new GameObject("bulletBall", mSceneMgr, game_simulator);
-    gamebtBall->setGameObjectEntity(btBall);
-    gamebtBall->addToSimulator();
+    (new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-    bool ret = BaseApplication::frameRenderingQueued(evt);
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+    bool ret = BaseApplication::frameRenderingQueued(evt);
+    
     if (!ret)
         return ret;
 

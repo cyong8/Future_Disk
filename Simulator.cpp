@@ -18,6 +18,8 @@ Simulator::Simulator()
 	//keep track of the shapes, we release memory at exit
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
+
+	box_shape = 
 }
 
 Simulator::~Simulator()
