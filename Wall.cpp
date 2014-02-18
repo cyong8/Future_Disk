@@ -9,4 +9,6 @@ Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	rootNode->attachObject(ent);
 	rootNode->scale(dimensions.x/100, dimensions.y/100, dimensions.z/100);
 	ent->setMaterialName("Examples/Rockwall");
+
+	shape = 
 }

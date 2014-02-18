@@ -35,7 +35,6 @@ void MCP::createScene(void)
     /* 
         18 planes for the room  
     */  
-    // WOOH! A SINGLE WALL!!!
     (new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
