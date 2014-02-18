@@ -37,6 +37,8 @@ public:
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void updateTransform();
 	void addToSimulator();	
+
+	double worldScale;
 };
 
 #endif // #ifndef __GameObject_h_
