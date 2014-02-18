@@ -22,7 +22,7 @@ void MCP::createScene(void)
 		/* more light sources here */
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
     pointLight->setType(Ogre::Light::LT_POINT);
-    pointLight->setPosition(Ogre::Vector3(10, 0, 0));
+    pointLight->setPosition(Ogre::Vector3(0.1f,0.0f, 0.0f));
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
@@ -35,7 +35,8 @@ void MCP::createScene(void)
     /* 
         18 planes for the room  
     */  
-    (new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
+    room = new Room(mSceneMgr, game_simulator);     
+//(new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

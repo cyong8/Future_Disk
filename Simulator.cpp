@@ -19,7 +19,7 @@ Simulator::Simulator()
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
 
-	box_shape = 
+	//box_shape = 
 }
 
 Simulator::~Simulator()
