@@ -35,10 +35,9 @@ void MCP::createScene(void)
     /******************** ENTITIES ********************/
     Ogre::Vector3 *dimensions = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
     Ogre::Vector3 *position = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
-    float worldScale = 100.0f;
 
     // Initialize player1
-    new Player("Player1", mSceneMgr, game_simulator, 0.1, 0.1, *dimensions, *position);
+    new Player("Player1", mSceneMgr, game_simulator, 1, 1, *dimensions, *position);
     // Initialize the room
     new Room(mSceneMgr, game_simulator);
     // Initialize the disk
@@ -56,6 +55,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
 
     // check collisions
+    game_simulator->setHitFlags();
     // handle collisions
 
     return ret;

@@ -3,20 +3,25 @@
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScalar height, btScalar radius, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
 	: GameObject(nym, mgr, sim)
 {
+	typeName = "Player";
+	isHolding = false;
 	// bool: returns true if player is holding a disk
 	isHolding = false;
-	// double: gives the scale of the player
-	double scale = 0.1; 
 
 	// Need position, to translate.
 	// Dimensions - so you can make the 
 	// Creates a Ogre::Entity for the player using a mesh of our choice
 	Ogre::Entity* ent = mgr->createEntity(nym, "robot.mesh");
 
+	// need another scenenode for holding the ball
+	// need a position of the hand to translate this scenenode to
+
 	// Attach player to a scene node
 	rootNode->attachObject(ent);
 	// Scale the player to fit the world
-	rootNode->scale(dimensions.x/worldScale, dimensions.y/worldScale, dimensions.z/worldScale);
+
+	rootNode->scale(dimensions.x/32.1252, dimensions.y/101.673, dimensions.z/49.0925);
+
 	// Set the position of the player
 	rootNode->setPosition(position);
 	// Translate the player - possibly not necesssary? (Kaitlin)
@@ -27,7 +32,15 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScal
 	// Set collision shape for Bullet
 	shape = new btCapsuleShape(radius, height);
 	// Set mass of player
-	mass = 0.1f;
+	mass = 1.0f;
+}
+
+void Player::setPlayerHit(string typeOfObjectCollided)
+{
+	if (typeOfObjectCollided == "Wall")
+		hit_wall = true;
+	if (typeOfObjectCollided == "Disk")
+		hit_disk = true;
 }
 
 void Player::setHolding()

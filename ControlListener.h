@@ -3,7 +3,7 @@
 
 #include "BaseApplication.h"
 
-class ControlListener : public BaseApplication
+class ControlListener
 {
     public:
 	ControlListener(void);

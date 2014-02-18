@@ -23,7 +23,7 @@ protected:
 	btScalar mass;
 	btRigidBody *body;
 	bool kinematic;
-	bool needsUpdates
+	bool needsUpdates;
 	bool hit;
 
 	/* Use this later when we define the struct that contains 
@@ -39,7 +39,7 @@ public:
 	void updateTransform();
 	void addToSimulator();	
 
-	double worldScale;
+	string typeName;
 };
 
 #endif // #ifndef __GameObject_h_

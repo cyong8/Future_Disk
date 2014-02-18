@@ -15,7 +15,6 @@ GameObject::GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim
 	kinematic = false;
 	needsUpdates = false;
 	inertia.setZero(); // resistence to a change in direction; YEAH, I forgot!
-	worldScale = 100.0f;
 }
 
 btRigidBody* GameObject::getBody()	
@@ -36,7 +35,7 @@ void GameObject::updateTransform()
 void GameObject::addToSimulator()
 {
 	motionState = new OgreMotionState(tr, rootNode);
-	
+	motionState->setGameObject(this);
 	updateTransform();
 	
 	if(mass != 0.0f) shape->calculateLocalInertia(mass, inertia);

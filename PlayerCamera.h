@@ -5,7 +5,7 @@
 
 class Player;
 
-class PlayerCamera: public BaseApplication
+class PlayerCamera
 {
 
 public: 
