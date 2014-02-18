@@ -24,6 +24,7 @@ protected:
 	btRigidBody *body;
 	bool kinematic;
 	bool needsUpdates;
+	bool test;
 
 	/* Use this later when we define the struct that contains 
        all the collision info for a given GameObject
