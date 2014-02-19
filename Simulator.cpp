@@ -17,7 +17,7 @@ Simulator::Simulator()
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	
 	dynamicsWorld->setGravity(btVector3(0,-9.8, 0));
-	//dynamicsWorld->debugDrawWorld();
+	dynamicsWorld->debugDrawWorld();
 	//keep track of the shapes, we release memory at exit
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
@@ -33,6 +33,10 @@ Simulator::~Simulator()
 
 void Simulator::addObject (GameObject* o) 
 {
+	if(o->typeName == "Player")
+	{
+		//o->getBody()->setAngularFactor(btVector3(0,0,0));
+	}
 	objList.push_back(o);
 	//use default collision group/mask values (dynamic/kinematic/static)
 	dynamicsWorld->addRigidBody(o->getBody());
@@ -43,6 +47,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 {
 	//do we need to update positions in simulator for dynamic objects?
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
+
 }
 
 void Simulator::setHitFlags(void)

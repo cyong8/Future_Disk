@@ -15,6 +15,6 @@ Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	rootNode->setPosition(position);
 	ent->setMaterialName("Examples/Rockwall");
 
-	shape = new btBoxShape(btVector3(dimensions.x, dimensions.y, dimensions.z));
+	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
 	mass = 0.0f;
 }

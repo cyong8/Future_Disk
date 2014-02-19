@@ -37,11 +37,11 @@ void MCP::createScene(void)
     Ogre::Vector3 *position = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
 
     // Initialize player1
-    new Player("Player1", mSceneMgr, game_simulator, 1, 1, *dimensions, *position);
+    (new Player("Player1", mSceneMgr, game_simulator, 1, 1, *dimensions, *position))->addToSimulator();
     // Initialize the room
     new Room(mSceneMgr, game_simulator);
     // Initialize the disk
-    new Disk("Disk", mSceneMgr, game_simulator, 0.1, 0.1, Ogre::Vector3(2.0f, 2.0f, 2.0f));
+   // new Disk("Disk", mSceneMgr, game_simulator, 0.1, 0.1, Ogre::Vector3(2.0f, 2.0f, 2.0f));
 }
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

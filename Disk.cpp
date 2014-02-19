@@ -14,7 +14,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	// Attach disk to a scene node
 	rootNode->attachObject(ent);
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
-	// /rootNode->scale(1.0f/worldScale, 1.0f/(worldScale * 10), 1.0f/worldScale);
+	//rootNode->scale(1.0f/worldScale, 1.0f/(worldScale * 10), 1.0f/worldScale);
 	// Set the position of the disk
 	rootNode->setPosition(position);
 	// Translate the disk - possibly not necesssary? (Kaitlin)

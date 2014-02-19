@@ -4,7 +4,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScal
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Player";
-	isHolding = false;
+
 	// bool: returns true if player is holding a disk
 	isHolding = false;
 
@@ -25,14 +25,14 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScal
 	// Set the position of the player
 	rootNode->setPosition(position);
 	// Translate the player - possibly not necesssary? (Kaitlin)
-	rootNode->translate(0,0.1,0);
-
+	//rootNode->translate(0,0.1,0);
 	ent->setMaterialName("Examples/Robot");
 
 	// Set collision shape for Bullet
-	shape = new btCapsuleShape(radius, height);
+	//shape = new btCapsuleShape(dimensions.x/2, dimensions.y/10);
+	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
 	// Set mass of player
-	mass = 1.0f;
+	mass = 0.1f;
 }
 
 void Player::setPlayerHit(string typeOfObjectCollided)
