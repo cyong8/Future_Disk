@@ -8,4 +8,4 @@ public:
 
 protected:
 	bool hit;
-}
+};

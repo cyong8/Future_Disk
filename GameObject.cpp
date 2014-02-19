@@ -32,14 +32,20 @@ void GameObject::updateTransform()
 		motionState->updateTransform(tr);	
 }
 
+Ogre::String GameObject::getGameObjectName()
+{
+	return this->name;
+}
+
 void GameObject::addToSimulator()
 {
 	motionState = new OgreMotionState(tr, rootNode);
 	motionState->setGameObject(this);
 	updateTransform();
 	
-	if(mass != 0.0f) shape->calculateLocalInertia(mass, inertia);
-		btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, shape, inertia);
+	if(mass != 0.0f) 
+		shape->calculateLocalInertia(mass, inertia);
+	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, shape, inertia);
 	body = new btRigidBody(rbInfo);
 	simulator->addObject(this);
 }

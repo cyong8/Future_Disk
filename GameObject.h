@@ -26,19 +26,12 @@ protected:
 	bool needsUpdates;
 	bool hit;
 
-	/* Use this later when we define the struct that contains 
-       all the collision info for a given GameObject
-       (See Code snippets from 2/13 on class website)
-	*/
-	//CollisionContext* context;
-	
-
 public:
 	btRigidBody* getBody(void);
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	void updateTransform();
 	void addToSimulator();	
-
+	Ogre::String getGameObjectName();
 	string typeName;
 };
 

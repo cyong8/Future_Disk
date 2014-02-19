@@ -21,7 +21,6 @@ class Simulator
 		   changed it to a vector
 		*/
 		//std::deque<GameObject*> objList;  
-		int current_object_index; //needs to be setup
 		vector<GameObject*> objList;
 
 
@@ -36,6 +35,7 @@ class Simulator
 		bool removeObject(GameObject* o);
 		void stepSimulation(const Ogre::Real elapsedTime, 	int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 		void setHitFlags(void);
+		GameObject* getGameObject(string name);
 };
 
 #endif // #ifndef __Simulator_h_

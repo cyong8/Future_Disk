@@ -9,13 +9,13 @@ Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScalar heigh
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
 
-	// rootNode->attachObject(ent);
+	rootNode->attachObject(ent);
 
 	// rootNode->scale();
 	// rootNode->setPosition();
 	// rootNode->translate();
 
-	ent->setMaterialName("Examples/Robot");
+	ent->setMaterialName("Examples/Droplet");
 
 //	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
 }

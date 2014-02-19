@@ -31,6 +31,7 @@ public:
 protected:
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 };
 
 #endif // #ifndef __MCP_h_

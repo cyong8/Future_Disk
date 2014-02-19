@@ -33,27 +33,106 @@ void MCP::createScene(void)
 	// change the initially positioned camera from the BaseApplication (see BaseApplication::createCamera)
 
     /******************** ENTITIES ********************/
-    Ogre::Vector3 *dimensions = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
-    Ogre::Vector3 *position = new Ogre::Vector3(1.0f, 1.0f, 1.0f);
+    Ogre::Vector3 dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
+    Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 1.0f);
 
     // Initialize player1
-    (new Player("Player1", mSceneMgr, game_simulator, 1, 1, *dimensions, *position))->addToSimulator();
+    (new Player("Player1", mSceneMgr, game_simulator, 1, 1, dimensions, position))->addToSimulator();
     // Initialize the room
     new Room(mSceneMgr, game_simulator);
     // Initialize the disk
    // new Disk("Disk", mSceneMgr, game_simulator, 0.1, 0.1, Ogre::Vector3(2.0f, 2.0f, 2.0f));
+
 }
 //-------------------------------------------------------------------------------------
+bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
+{
+    static bool mMouseDown = false;     // If a mouse button is depressed
+    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
+    static Ogre::Real mRotate = 0.13;   // The rotate constant
+    static Ogre::Real mMove = 3.0f;      // The movement constant
+    float fx = 0.0f;
+    float fy = 0.0f;
+    float fz = 0.0f;
+    bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
+    bool keyWasPressed = false;
+
+    GameObject* p1 = game_simulator->getGameObject((Ogre::String)"Player1");
+ 
+    // can handle throwing the disk
+/*    if (currMouse && ! mMouseDown)
+    {
+        Ogre::Light* light = mSceneMgr->getLight("pointLight");
+        light->setVisible(! light->isVisible());
+    }
+ */
+    mMouseDown = currMouse;
+ 
+    mToggle -= evt.timeSinceLastFrame;
+ /*
+    if ((mToggle < 0.0f ) && mKeyboard->isKeyDown(OIS::KC_1))
+    {
+        mToggle  = 0.5;
+        Ogre::Light* light = mSceneMgr->getLight("pointLight");
+        light->setVisible(! light->isVisible());
+    }
+ */
+ //   btVector3 oldVelocity = p1->getBody()->getLinearVelocity();
+    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
+ 
+    if (mKeyboard->isKeyDown(OIS::KC_I)) // Forward
+    {
+        fz -= mMove;
+        velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
+        keyWasPressed = true;
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_K)) // Backward
+    {
+        fz += mMove;
+        velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
+        keyWasPressed = true;
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_J)) // Left - yaw or strafe
+    {
+        /*if(mKeyboard->isKeyDown( OIS::KC_LSHIFT ))
+        {
+            // Yaw left
+            mSceneMgr->getSceneNode("Player1")->yaw(Ogre::Degree(mRotate * 5));
+        } 
+        else */
+        fx -= mMove; // Strafe left
+        velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
+        keyWasPressed = true;
+        
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_L)) // Right - yaw or strafe
+    {
+        /*if(mKeyboard->isKeyDown( OIS::KC_LSHIFT ))
+        {
+            // Yaw right
+            mSceneMgr->getSceneNode("Player1")->yaw(Ogre::Degree(-mRotate * 5));
+        } 
+        else*/ 
+        fx += mMove; // Strafe right
+        velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
+        keyWasPressed = true;
+    }
+    if (keyWasPressed == true)
+        p1->getBody()->setLinearVelocity(velocityVector);
+ 
+    return true;
+}
+
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
+
     bool ret = BaseApplication::frameRenderingQueued(evt);
-    
-    if (!ret)
-        return ret;
+ 
+    if(!processUnbufferedInput(evt)) 
+        return false;
 
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
-
     // check collisions
     game_simulator->setHitFlags();
     // handle collisions

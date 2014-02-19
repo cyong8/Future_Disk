@@ -35,11 +35,25 @@ void Simulator::addObject (GameObject* o)
 {
 	if(o->typeName == "Player")
 	{
-		//o->getBody()->setAngularFactor(btVector3(0,0,0));
+		o->getBody()->setAngularFactor(btVector3(0,0,0));
 	}
+	o->getBody()->setActivationState(DISABLE_DEACTIVATION);
 	objList.push_back(o);
 	//use default collision group/mask values (dynamic/kinematic/static)
 	dynamicsWorld->addRigidBody(o->getBody());
+}
+
+GameObject* Simulator::getGameObject(Ogre::String name)
+{
+	for (int i = 0; i < objList.size(); i++)
+	{
+		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
+		{
+			return objList[i];
+		}
+		else 
+			return NULL;
+	}
 }
 
 // original stepSimulation is in btDiscreteDynamicsWorld

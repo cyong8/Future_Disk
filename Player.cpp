@@ -24,13 +24,14 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScal
 
 	// Set the position of the player
 	rootNode->setPosition(position);
-	// Translate the player - possibly not necesssary? (Kaitlin)
+
 	//rootNode->translate(0,0.1,0);
 	ent->setMaterialName("Examples/Robot");
 
 	// Set collision shape for Bullet
 	//shape = new btCapsuleShape(dimensions.x/2, dimensions.y/10);
-	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
+	shape = new btCapsuleShape(dimensions.x/32.1252, dimensions.y/101.673);
+
 	// Set mass of player
 	mass = 0.1f;
 }
