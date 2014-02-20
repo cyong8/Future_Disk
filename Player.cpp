@@ -1,6 +1,6 @@
 #include "Player.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScalar height, btScalar radius, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Player";

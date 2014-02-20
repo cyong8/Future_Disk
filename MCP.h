@@ -25,6 +25,7 @@ class MCP : public BaseApplication
 public:
 	Simulator* game_simulator;
 	Room *room;
+	bool gameStart;
 	MCP(void);
 	virtual ~MCP(void);
 

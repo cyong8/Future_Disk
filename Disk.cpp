@@ -1,9 +1,13 @@
 #include "Disk.h"
 #include "Player.h"
 
-Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real height, Ogre::Real radius, Ogre::Vector3 position) 
+Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer) 
 	: GameObject(nym, mgr, sim)
 {
+	/*  Added a dropToPlayer attribute that will randomly decide who gets to start with the disk
+		This is not implemented since we are in 1-player mode.
+	*/
+	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 1.0f, 0.1f);
 	typeName = "Disk";
 	heldBy = NULL;
 
@@ -14,18 +18,15 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	// Attach disk to a scene node
 	rootNode->attachObject(ent);
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
-	//rootNode->scale(1.0f/worldScale, 1.0f/(worldScale * 10), 1.0f/worldScale);
+	rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f);
 	// Set the position of the disk
-	rootNode->setPosition(position);
-	// Translate the disk - possibly not necesssary? (Kaitlin)
-	rootNode->translate(0,0.1,0);
+	rootNode->setPosition(position.x, position.y, position.z);
 
-	//ent->setMaterialName("Examples/Robot");
+	ent->setMaterialName("Examples/Droplet");
 
 	// Set collision shape for Bullet
-	//btCylindershape(x/2,y/2,z/2);
-	// Set mass of player
-	//mass = 0.1f;
+	btCylindershape(disk_dimensions.x/2, disk_dimensions.y/2, disk_dimensions.z/2);
+	mass = 0.1f;
 }
 
 

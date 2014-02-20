@@ -13,8 +13,11 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    game_simulator = new Simulator();
+    // initialize random number generate
+    srand(time(0));
 
+    game_simulator = new Simulator();
+    gameStart = false;
     /******************** LIGHTS ********************/
 	// initializing light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
@@ -33,11 +36,13 @@ void MCP::createScene(void)
 	// change the initially positioned camera from the BaseApplication (see BaseApplication::createCamera)
 
     /******************** ENTITIES ********************/
-    Ogre::Vector3 dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
-    Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 1.0f);
+    //Ogre::Vector3 dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
+    //Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 1.0f);
 
+
+    (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1))->addToSimulator();
     // Initialize player1
-    (new Player("Player1", mSceneMgr, game_simulator, 1, 1, dimensions, position))->addToSimulator();
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f))->addToSimulator();
     // Initialize the room
     new Room(mSceneMgr, game_simulator);
     // Initialize the disk
@@ -59,24 +64,28 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
     GameObject* p1 = game_simulator->getGameObject((Ogre::String)"Player1");
  
-    // can handle throwing the disk
+    // Tutorial code to possibly help us with throwing the disk:
+    // toggles a light currently when the mouse click is released
 /*    if (currMouse && ! mMouseDown)
     {
         Ogre::Light* light = mSceneMgr->getLight("pointLight");
         light->setVisible(! light->isVisible());
     }
- */
-    mMouseDown = currMouse;
- 
-    mToggle -= evt.timeSinceLastFrame;
- /*
     if ((mToggle < 0.0f ) && mKeyboard->isKeyDown(OIS::KC_1))
     {
         mToggle  = 0.5;
         Ogre::Light* light = mSceneMgr->getLight("pointLight");
         light->setVisible(! light->isVisible());
     }
+ 
  */
+    mMouseDown = currMouse;
+ 
+    mToggle -= evt.timeSinceLastFrame;
+ 
+
+    this->tdynamicnode->pitch(Ogre::Degree(tpitchchange),Ogre::Node::TS_LOCAL);               
+    this->tdynamicnode->yaw(Ogre::Degree(tyawchange),Ogre::Node::TS_WORLD); 
  //   btVector3 oldVelocity = p1->getBody()->getLinearVelocity();
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
  
@@ -94,12 +103,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     }
     if (mKeyboard->isKeyDown(OIS::KC_J)) // Left - yaw or strafe
     {
-        /*if(mKeyboard->isKeyDown( OIS::KC_LSHIFT ))
-        {
-            // Yaw left
-            mSceneMgr->getSceneNode("Player1")->yaw(Ogre::Degree(mRotate * 5));
-        } 
-        else */
         fx -= mMove; // Strafe left
         velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
         keyWasPressed = true;
@@ -107,12 +110,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     }
     if (mKeyboard->isKeyDown(OIS::KC_L)) // Right - yaw or strafe
     {
-        /*if(mKeyboard->isKeyDown( OIS::KC_LSHIFT ))
-        {
-            // Yaw right
-            mSceneMgr->getSceneNode("Player1")->yaw(Ogre::Degree(-mRotate * 5));
-        } 
-        else*/ 
         fx += mMove; // Strafe right
         velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
         keyWasPressed = true;
