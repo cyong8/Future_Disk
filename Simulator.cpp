@@ -33,14 +33,22 @@ Simulator::~Simulator()
 
 void Simulator::addObject (GameObject* o) 
 {
+	o->getBody()->setActivationState(DISABLE_DEACTIVATION);
+	
+	objList.push_back(o);
+	//use default collision group/mask values (dynamic/kinematic/static)
+	dynamicsWorld->addRigidBody(o->getBody());
+
+	/* Set custom btRigidBody WRT specific GameObjects */
 	if(o->typeName == "Player")
 	{
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 	}
-	o->getBody()->setActivationState(DISABLE_DEACTIVATION);
-	objList.push_back(o);
-	//use default collision group/mask values (dynamic/kinematic/static)
-	dynamicsWorld->addRigidBody(o->getBody());
+	if(o->typeName == "Disk")
+	{
+		o->getBody()->setAngularFactor(btVector3(0,0,0));
+		o->getBody()->setGravity(btVector3(0,0.0,0));
+	}
 }
 
 GameObject* Simulator::getGameObject(Ogre::String name)

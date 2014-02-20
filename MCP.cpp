@@ -39,15 +39,12 @@ void MCP::createScene(void)
     //Ogre::Vector3 dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
     //Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 1.0f);
 
-
-    (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1))->addToSimulator();
+    // Initialize the disk
+  //  (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
     // Initialize player1
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f))->addToSimulator();
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Initialize the room
     new Room(mSceneMgr, game_simulator);
-    // Initialize the disk
-   // new Disk("Disk", mSceneMgr, game_simulator, 0.1, 0.1, Ogre::Vector3(2.0f, 2.0f, 2.0f));
-
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
@@ -61,8 +58,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float fz = 0.0f;
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
     bool keyWasPressed = false;
-
-    GameObject* p1 = game_simulator->getGameObject((Ogre::String)"Player1");
  
     // Tutorial code to possibly help us with throwing the disk:
     // toggles a light currently when the mouse click is released
@@ -83,10 +78,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
  
     mToggle -= evt.timeSinceLastFrame;
  
-
-    this->tdynamicnode->pitch(Ogre::Degree(tpitchchange),Ogre::Node::TS_LOCAL);               
-    this->tdynamicnode->yaw(Ogre::Degree(tyawchange),Ogre::Node::TS_WORLD); 
- //   btVector3 oldVelocity = p1->getBody()->getLinearVelocity();
+    /* Use for rotation of Player by mouse */
+ //   this->tdynamicnode->pitch(Ogre::Degree(tpitchchange),Ogre::Node::TS_LOCAL);               
+ //   this->tdynamicnode->yaw(Ogre::Degree(tyawchange),Ogre::Node::TS_WORLD); 
+ 
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
  
     if (mKeyboard->isKeyDown(OIS::KC_I)) // Forward
@@ -115,8 +110,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         keyWasPressed = true;
     }
     if (keyWasPressed == true)
+    {
+        GameObject* p1 = game_simulator->getGameObject((Ogre::String)"Player1");
         p1->getBody()->setLinearVelocity(velocityVector);
- 
+    }
     return true;
 }
 

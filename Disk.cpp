@@ -7,7 +7,8 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	/*  Added a dropToPlayer attribute that will randomly decide who gets to start with the disk
 		This is not implemented since we are in 1-player mode.
 	*/
-	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 1.0f, 0.1f);
+	Ogre::Vector3 position = Ogre::Vector3(0.5f, 0.7f, 0.5f);
+	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);
 	typeName = "Disk";
 	heldBy = NULL;
 
@@ -22,10 +23,10 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	// Set the position of the disk
 	rootNode->setPosition(position.x, position.y, position.z);
 
-	ent->setMaterialName("Examples/Droplet");
+	ent->setMaterialName("Examples/Chrome");
 
-	// Set collision shape for Bullet
-	btCylindershape(disk_dimensions.x/2, disk_dimensions.y/2, disk_dimensions.z/2);
+	// Using Sphere shape so that it responds similarly to the ball in project1
+	shape = new btSphereShape(disk_dimensions.x/2.2);
 	mass = 0.1f;
 }
 
