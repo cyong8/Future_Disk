@@ -7,8 +7,9 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	/*  Added a dropToPlayer attribute that will randomly decide who gets to start with the disk
 		This is not implemented since we are in 1-player mode.
 	*/
-	Ogre::Vector3 position = Ogre::Vector3(0.5f, 0.7f, 0.5f);
+	Ogre::Vector3 position = Ogre::Vector3(-0.5f, 0.7f, 0.5f);
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);
+	
 	typeName = "Disk";
 	heldBy = NULL;
 

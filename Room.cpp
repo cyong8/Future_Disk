@@ -20,12 +20,12 @@ void Room::addWalls(vector<Wall> wallList, Ogre::SceneManager *mSceneMgr, Simula
 	Ogre::Vector3 *yzplane = new Ogre::Vector3(0.01f, dimension, dimension*2);
 	Ogre::Vector3 *xyplane = new Ogre::Vector3(dimension*2, dimension, 0.01f);
 	
-	(new Wall("Floor", mSceneMgr, game_simulator, *xzplane, Ogre::Vector3(0.0f, -dimension/2, 0.0f)))->addToSimulator();
-	(new Wall("Ceiling", mSceneMgr, game_simulator, *xzplane, Ogre::Vector3(0.0f, dimension/2, 0.0f)))->addToSimulator();
-	(new Wall("wall1", mSceneMgr, game_simulator, *yzplane, Ogre::Vector3(-dimension, 0.0f, 0.0f)))->addToSimulator();
-	(new Wall("wall2", mSceneMgr, game_simulator, *yzplane, Ogre::Vector3(dimension, 0.0f, 0.0f)))->addToSimulator();
-	(new Wall("wall3", mSceneMgr, game_simulator, *xyplane, Ogre::Vector3(0.0f, 0.0f, -dimension)))->addToSimulator();
-	(new Wall("wall4", mSceneMgr, game_simulator, *xyplane, Ogre::Vector3(0.0f, 0.0f, dimension)))->addToSimulator();
+	(new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), *xzplane, Ogre::Vector3(0.0f, -dimension/2, 0.0f)))->addToSimulator();
+	(new Wall("Ceiling", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), *xzplane, Ogre::Vector3(0.0f, dimension/2, 0.0f)))->addToSimulator();
+	(new Wall("wall1", mSceneMgr, game_simulator, Ogre::Vector3(0.0f, 1.0f, 1.0f), *yzplane, Ogre::Vector3(-dimension, 0.0f, 0.0f)))->addToSimulator();
+	(new Wall("wall2", mSceneMgr, game_simulator, Ogre::Vector3(0.0f, 1.0f, 1.0f), *yzplane, Ogre::Vector3(dimension, 0.0f, 0.0f)))->addToSimulator();
+	(new Wall("wall3", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 0.0f), *xyplane, Ogre::Vector3(0.0f, 0.0f, -dimension)))->addToSimulator();
+	(new Wall("wall4", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 0.0f), *xyplane, Ogre::Vector3(0.0f, 0.0f, dimension)))->addToSimulator();
 	/*
 	(new Wall("wall5", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
 	(new Wall("wall6", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();

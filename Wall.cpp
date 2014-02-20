@@ -1,6 +1,6 @@
 #include "Wall.h"
 
-Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position)
+Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 plane, Ogre::Vector3 dimensions, Ogre::Vector3 position)
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Wall";

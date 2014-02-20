@@ -48,6 +48,8 @@ void Simulator::addObject (GameObject* o)
 	{
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 		o->getBody()->setGravity(btVector3(0,0.0,0));
+		o->getBody()->setRestitution(0);
+		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 0.0f));
 	}
 }
 
@@ -59,9 +61,8 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 		{
 			return objList[i];
 		}
-		else 
-			return NULL;
 	}
+	return NULL;
 }
 
 // original stepSimulation is in btDiscreteDynamicsWorld

@@ -39,12 +39,12 @@ void MCP::createScene(void)
     //Ogre::Vector3 dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
     //Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 1.0f);
 
-    // Initialize the disk
-  //  (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
-    // Initialize player1
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Initialize the room
     new Room(mSceneMgr, game_simulator);
+    // Initialize the disk
+    (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
+    // Initialize player1
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
