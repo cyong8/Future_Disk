@@ -17,7 +17,6 @@ protected:
 
 	Simulator *simulator;
 	btCollisionShape *shape;
-	btTransform tr;
 	btVector3 inertia;
 
 	btScalar mass;
@@ -33,6 +32,7 @@ public:
 	void addToSimulator();	
 	Ogre::String getGameObjectName();
 	string typeName;
+	btTransform tr;
 };
 
 #endif // #ifndef __GameObject_h_
