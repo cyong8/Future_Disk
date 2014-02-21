@@ -44,12 +44,18 @@ void Simulator::addObject (GameObject* o)
 	{
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 	}
+	
 	if(o->typeName == "Disk")
 	{
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 		o->getBody()->setGravity(btVector3(0,0.0,0));
-		o->getBody()->setRestitution(0);
-		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 0.0f));
+		o->getBody()->setRestitution(1);
+		o->getBody()->setLinearVelocity(btVector3(0.0f, 5.0f, 0.0f));
+	}
+	
+	if(o->typeName == "Wall")
+	{
+		o->getBody()->setRestitution(.8);
 	}
 }
 

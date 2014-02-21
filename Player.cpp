@@ -20,7 +20,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->attachObject(ent);
 	// Scale the player to fit the world
 
-	rootNode->scale(dimensions.x/32.0, dimensions.y/101.0, dimensions.z/49.0);
+	rootNode->scale(dimensions.x/32.0, dimensions.y/50.0, dimensions.z/49.0);
 
 	// Set the position of the player
 	rootNode->setPosition(position);
@@ -30,7 +30,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	// Set collision shape for Bullet
 	//shape = new btCapsuleShape(dimensions.x/2, dimensions.y/10);
-	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
+	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
 
 	// Set mass of player
 	mass = 0.1f;
