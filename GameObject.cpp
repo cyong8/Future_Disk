@@ -43,9 +43,12 @@ void GameObject::addToSimulator()
 	motionState->setGameObject(this);
 	updateTransform();
 	
-	if(mass != 0.0f) 
+	if(mass != 0.0f || typeName != "Disk" || typeName == "Wall")  
 		shape->calculateLocalInertia(mass, inertia);
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, shape, inertia);
+	if (typeName == "Disk")
+		rbInfo.m_friction = 0.0f;
+
 	body = new btRigidBody(rbInfo);
 	simulator->addObject(this);
 }

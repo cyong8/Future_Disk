@@ -1,7 +1,7 @@
 #include "Target.h"
 
 
-Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScalar height, btScalar radius, Ogre::Vector3 dimensions, Ogre::Vector3 position)
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position)
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Target";
@@ -11,12 +11,16 @@ Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, btScalar heigh
 
 	rootNode->attachObject(ent);
 
-	// rootNode->scale();
-	// rootNode->setPosition();
-	// rootNode->translate();
+	rootNode->scale(dimensions.x/100.0f, dimensions.y/100.0f, dimensions.z/100.0f);
+	
+	rootNode->setPosition(position);
 
-	ent->setMaterialName("Examples/Droplet");
+	ent->setMaterialName("Examples/Bullseye");
 
-//	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
+	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
 }
 
+void Target::setTargetHit()
+{
+	hit = true;
+}

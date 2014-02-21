@@ -114,10 +114,16 @@ void BaseApplication::createFrameListener(void)
     //Register as a Window listener
     Ogre::WindowEventUtilities::addWindowEventListener(mWindow, this);
 
+    // create FPS tracker
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mMouse, this);
     mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
     mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
     mTrayMgr->hideCursor();
+
+    // create timer and score table
+ //   mScoreMgr = new OgreBites::SdkTrayManager("ScoreManager", mWindow, mMouse, this);
+        // create widget to apply to the score manager tray above
+   // TextBox* OgreBites::SdkTrayManager::createTextBox();
 
     // create a params panel for displaying sample details
     Ogre::StringVector items;

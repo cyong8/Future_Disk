@@ -16,6 +16,7 @@
 #include "Disk.h"
 #include "Room.h"
 #include "Wall.h"
+#include "Target.h"
 
 //#include "ControlListener.h"
 class Simulator;

@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "OgreMotionState.h"
 #include "Player.h"
+#include "Target.h"
 
 Simulator::Simulator() 
 {
@@ -48,8 +49,12 @@ void Simulator::addObject (GameObject* o)
 	{
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 		o->getBody()->setGravity(btVector3(0,0.0,0));
-		o->getBody()->setRestitution(0);
-		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 0.0f));
+		o->getBody()->setRestitution(1);
+		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, -1.0f));
+	}
+	if(o->typeName == "Disk")
+	{
+		o->getBody()->setRestitution(.8);
 	}
 }
 
@@ -96,6 +101,14 @@ void Simulator::setHitFlags(void)
 		if (gB->typeName == "Player")
 		{
 			((Player*)gB)->setPlayerHit(gA->typeName);
+		}
+		if (gA->typeName == "Target") // and other object was disk
+		{
+			((Target*)gA)->setTargetHit();
+		}
+		if (gB->typeName == "Target")
+		{
+			((Target*)gB)->setTargetHit();
 		}
 
 		//contactManifold->clearManifold();	
