@@ -27,6 +27,9 @@ public:
 	Simulator* game_simulator;
 	Room *room;
 	bool gameStart;
+	Ogre::Real minutes;
+	Ogre::Real seconds;
+
 	MCP(void);
 	virtual ~MCP(void);
 

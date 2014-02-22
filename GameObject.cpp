@@ -21,6 +21,10 @@ btRigidBody* GameObject::getBody()
 {
 	return (*this).body;		
 }
+Ogre::SceneNode* GameObject::getSceneNode()
+{
+	return this->rootNode;
+}
 
 void GameObject::updateTransform() 
 {

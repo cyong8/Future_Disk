@@ -15,7 +15,7 @@ void Room::addWall(Wall *w)
 
 void Room::addWalls(vector<Wall> wallList, Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
-	double dimension = 5.0f;
+	double dimension = 10.0f;
 	Ogre::Vector3 *xzplane = new Ogre::Vector3(dimension*2, 0.01f, dimension*2);
 	Ogre::Vector3 *yzplane = new Ogre::Vector3(0.01f, dimension, dimension*2);
 	Ogre::Vector3 *xyplane = new Ogre::Vector3(dimension*2, dimension, 0.01f);

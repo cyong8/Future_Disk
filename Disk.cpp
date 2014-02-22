@@ -11,29 +11,31 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);
 	
 	typeName = "Disk";
-	heldBy = NULL;
 
 	double scale = 0.1;
-	// Creates a Ogre::Entity for the player using a mesh of our choice
-	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
 
-	// Attach disk to a scene node
-	rootNode->attachObject(ent);
+	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh"); // Create Entity; apply mesh
+	rootNode->attachObject(ent); // Attach disk to a scene node
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
 	rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f);
-	// Set the position of the disk
-	rootNode->setPosition(position.x, position.y, position.z);
+	rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
 
-	ent->setMaterialName("Examples/Chrome");
+	ent->setMaterialName("Examples/Chrome"); // apply a material to the mesh
 
-	// Using Sphere shape so that it responds similarly to the ball in project1
-	shape = new btSphereShape(disk_dimensions.x/2.2);
+	shape = new btSphereShape(disk_dimensions.x/2.0f); // Sphere shape similar to project1
 	mass = 0.1f;
 }
 
-
-void Disk::setPlayer(Player* p)
+// Function to update the orientation of the SceneNode on collision with a wall
+void Disk::updateDiskSNodeOrientation(Ogre::Vector3 v)
 {
-	heldBy = p;
+
 }
 
+void Disk::updateDiskPosition(Ogre::Vector3 v)
+{
+	// update position in Ogre
+	this->getSceneNode()->setPosition(v);
+	// update position in Bullet
+	this->updateTransform();
+}

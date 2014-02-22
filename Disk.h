@@ -9,9 +9,8 @@ class Disk : public GameObject
 {
 public:
 	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
-	void setPlayer(Player* p); //player caught the disk
-
-	Player* heldBy;
+	void updateDiskPosition(Ogre::Vector3 v);
+	void updateDiskSNodeOrientation(Ogre::Vector3 v);
 };
 
 #endif // #ifndef __Disk_h_

@@ -44,7 +44,7 @@ void MCP::createScene(void)
     // Initialize the disk
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
     // Initialize player1
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
@@ -112,8 +112,12 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     }
     if (keyWasPressed == true)
     {
-        GameObject* p1 = game_simulator->getGameObject((Ogre::String)"Player1");
+        Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
         p1->getBody()->setLinearVelocity(velocityVector);
+        if (p1->checkHolding())
+        {
+            //p1->getPlayerDisk()->updateDiskPosition();    
+        }
     }
     return true;
 }

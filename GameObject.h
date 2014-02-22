@@ -31,6 +31,7 @@ public:
 	void updateTransform();
 	void addToSimulator();	
 	Ogre::String getGameObjectName();
+	Ogre::SceneNode* getSceneNode();
 	string typeName;
 	btTransform tr;
 };

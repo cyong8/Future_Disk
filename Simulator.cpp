@@ -51,7 +51,7 @@ void Simulator::addObject (GameObject* o)
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 		o->getBody()->setGravity(btVector3(0,0.0,0));
 		o->getBody()->setRestitution(1);
-		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, -1.0f));
+		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 1.0f));
 	}
 	
 	if(o->typeName == "Wall")
@@ -98,19 +98,30 @@ void Simulator::setHitFlags(void)
 
 		if (gA->typeName == "Player")
 		{
-			((Player*)gA)->setPlayerHit(gB->typeName);
+			if (gB->typeName == "Disk")
+			{
+				if (((Player*)gA)->checkHolding() == false)
+					((Player*)gA)->attachDisk((Disk*)gB);
+			}
 		}
 		if (gB->typeName == "Player")
 		{
-			((Player*)gB)->setPlayerHit(gA->typeName);
+			if (gA->typeName == "Disk")
+			{
+				if (((Player*)gB)->checkHolding() == false)
+					((Player*)gB)->attachDisk((Disk*)gA);
+
+			}
 		}
 		if (gA->typeName == "Target") // and other object was disk
 		{
-			((Target*)gA)->setTargetHit();
+			if (gB->typeName == "Disk")
+				((Target*)gA)->setTargetHit();
 		}
 		if (gB->typeName == "Target")
 		{
-			((Target*)gB)->setTargetHit();
+			if (gA->typeName == "Disk")
+				((Target*)gB)->setTargetHit();
 		}
 
 		//contactManifold->clearManifold();	

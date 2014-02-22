@@ -117,13 +117,8 @@ void BaseApplication::createFrameListener(void)
     // create FPS tracker
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mMouse, this);
     mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
-    mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
+   // mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
     mTrayMgr->hideCursor();
-
-    // create timer and score table
- //   mScoreMgr = new OgreBites::SdkTrayManager("ScoreManager", mWindow, mMouse, this);
-        // create widget to apply to the score manager tray above
-   // TextBox* OgreBites::SdkTrayManager::createTextBox();
 
     // create a params panel for displaying sample details
     Ogre::StringVector items;
@@ -144,6 +139,25 @@ void BaseApplication::createFrameListener(void)
     mDetailsPanel->setParamValue(10, "Solid");
     mDetailsPanel->hide();
 
+     /************************************************************/
+    /*************** create timer and score table ***************/
+    /************************************************************/
+    // create paramsPanel
+    Ogre::StringVector scores;
+    scores.push_back("Score ");
+    scores.push_back("Time ");
+    scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
+    scorePanel->setParamValue(0, Ogre::StringConverter::toString(0));
+    Ogre::Real initialMinutes = 2;
+    scorePanel->setParamValue(1, Ogre::StringConverter::toString(initialMinutes) + ":00");
+/*    mScoreMgr = new OgreBites::SdkTrayManager("ScoreManager", mWindow, mMouse, this);
+        // create paramsPanel to apply to the score manager tray above
+    Ogre::StringVector scores;
+    scores.push_back("Score: ");
+    scores.push_back("Time: ");
+    scorePanel = mScoreMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
+    scorePanel->setParamValue(0, 0);
+*/
     mRoot->addFrameListener(this);
 }
 //-------------------------------------------------------------------------------------
