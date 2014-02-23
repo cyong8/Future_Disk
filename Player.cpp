@@ -4,6 +4,10 @@
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
 	: GameObject(nym, mgr, sim)
 {
+	// initialize Cameras
+	this->mSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(position.x, position.y, 8.0f));
+	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(position.x, position.y, -12.0f));
+
 	this->dimensions = dimensions;
 	typeName = "Player";
 
@@ -28,25 +32,31 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 void Player::attachDisk(Disk* d)
 {
-	d->getSceneNode()->setPosition(this->rootNode->getPosition()); // set position equal to parent's 
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
+	d->getSceneNode()->setInheritScale(false);
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
-	// move SceneNode 
-	d->getSceneNode()->translate(Ogre::Vector3(dimensions.x/100.0f, 0.0f, 0.0f));
+	// Check/Try _setDerivedPosition() instead of setPosition
+	d->getSceneNode()->setPosition(Ogre::Vector3(this->rootNode->getPosition()) + Ogre::Vector3(this->dimensions.x, 0, 0)); // set position equal to parent's 
 	// make the disk stop moving
 	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));
-	// move btRigidBody WRT to the SceneNode
+	// move btRigidBody WRT to the scenenode
 	d->updateTransform();
 	// set the activation state of the body so it doesn't move in bullet
 	d->getBody()->setActivationState(DISABLE_SIMULATION);
 
-	player_disk = d; // player now has a pointer to this disk
+
+	playerDisk = d; // player now has a pointer to this disk
 	this->isHolding = true;
+
+	// DEBUGGING
+	playerDisk->getSceneNode()->showBoundingBox(true);
+	this->rootNode->showBoundingBox(true);
+	this->rootNode->setVisible(false, false);
 }
 
 Disk* Player::getPlayerDisk()
 {
-	return (*this).player_disk;
+	return (*this).playerDisk;
 }
 
 void Player::setHolding()
@@ -57,4 +67,14 @@ void Player::setHolding()
 bool Player::checkHolding()
 {
 	return this->isHolding;
+}
+
+Ogre::SceneNode* Player::getPlayerSightNode()
+{
+	return this->mSightNode;
+}
+
+Ogre::SceneNode* Player::getPlayerCameraNode()
+{
+	return this->pCamNode;
 }

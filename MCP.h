@@ -5,12 +5,8 @@
 #include "BaseApplication.h"
 
 #include "Simulator.h"
-
 #include "OgreMotionState.h"
-
 #include "PlayerCamera.h"
-#include "ControlListener.h"
-
 #include "GameObject.h"
 #include "Player.h"
 #include "Disk.h"

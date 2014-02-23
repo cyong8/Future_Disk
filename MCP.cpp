@@ -16,7 +16,6 @@ void MCP::createScene(void)
     // initialize random number generate
     srand(time(0));
 
-    game_simulator = new Simulator();
     gameStart = false;
     /******************** LIGHTS ********************/
 	// initializing light
@@ -31,28 +30,29 @@ void MCP::createScene(void)
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
 
-    /******************** CAMERAS ********************/
+    /******************** GAME OBJECTS ********************/
+    // initialize global Players and PlayerCameras
+    PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
+    game_simulator = new Simulator();
 
-	// change the initially positioned camera from the BaseApplication (see BaseApplication::createCamera)
+    // Add PlayerCamera to Simulator so it can update it when Player moves
+    game_simulator->setCamera(p1Cam);
 
-    /******************** ENTITIES ********************/
-    //Ogre::Vector3 dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
-    //Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 1.0f);
-
-    // Initialize the room
+    // Initialize the Room & add Walls to simulator
     new Room(mSceneMgr, game_simulator);
-    // Initialize the disk
+    // Add Disk to simulator
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
-    // Initialize player1
+    // Add Player1 to simulator
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
+    // Add Target to simulator
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     static bool mMouseDown = false;     // If a mouse button is depressed
-    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
-    static Ogre::Real mRotate = 0.13;   // The rotate constant
+//    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
+//    static Ogre::Real mRotate = 0.13;   // The rotate constant
     static Ogre::Real mMove = 3.0f;      // The movement constant
     float fx = 0.0f;
     float fy = 0.0f;
@@ -76,12 +76,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
  
  */
     mMouseDown = currMouse;
- 
-    mToggle -= evt.timeSinceLastFrame;
- 
-    /* Use for rotation of Player by mouse */
- //   this->tdynamicnode->pitch(Ogre::Degree(tpitchchange),Ogre::Node::TS_LOCAL);               
- //   this->tdynamicnode->yaw(Ogre::Degree(tyawchange),Ogre::Node::TS_WORLD); 
  
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
  
@@ -114,10 +108,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
         p1->getBody()->setLinearVelocity(velocityVector);
-        if (p1->checkHolding())
-        {
-            //p1->getPlayerDisk()->updateDiskPosition();    
-        }
     }
     return true;
 }

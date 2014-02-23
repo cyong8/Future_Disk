@@ -4,20 +4,24 @@
 #include "BaseApplication.h"
 
 class Player;
-
+// Framework implemented from: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=3rd+person+camera+system+tutorial
 class PlayerCamera
 {
+protected:
+    Ogre::SceneNode *mTargetNode; // The camera target
+    Ogre::SceneNode *mCameraNode; // The camera itself
+    Ogre::Camera *mCamera; // Ogre camera
+    Ogre::SceneManager *mCamSceneMgr;
+    Player* p;
 
 public: 
-	Player* p;
-	Ogre::SceneNode *CameraNode;
-
-	PlayerCamera(void);
+	PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Camera *camera);
 	virtual ~PlayerCamera(void);
-
-	virtual void createCamera(void);
-	void switchToThirdView(void);
-	void switchToFirstView(void);
+	void initializePosition(Ogre::Vector3 iV);
+    void update(Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition);
+    void switchToThirdView(void);
+    
+	Ogre::String name;
 };
 
 

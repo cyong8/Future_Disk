@@ -4,6 +4,8 @@
 #include "BaseApplication.h"
 
 class GameObject;
+class Player;
+class PlayerCamera;
 
 class Simulator
 {
@@ -16,13 +18,15 @@ class Simulator
 		btConstraintSolver* mConstraintsolver;
 		//btCollisionWorld* mWorld;
 		Ogre::SceneManager* sceneMgr;
-		/* Fussell originally had a objList as a deque,
-		   but I don't know how to work with that so I
-		   changed it to a vector
-		*/
-		//std::deque<GameObject*> objList;  
 		vector<GameObject*> objList;
 
+		// Attributes to update PlayerCamera
+		Player* p1;
+		Player* p2;
+		PlayerCamera* player1Cam;
+		PlayerCamera* player2Cam;
+		bool viewChangeP1;
+		bool viewChangeP2;
 
 	public:
 		Simulator();
@@ -30,12 +34,12 @@ class Simulator
 		void addObject(GameObject* o);
 		btCollisionShape *box_shape;
 
-		// not sure where this removeObject is defined;
-		// will most likely have to change it tho
-		bool removeObject(GameObject* o);
-		void stepSimulation(const Ogre::Real elapsedTime, 	int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
+		void removeObject(Ogre::String name);
+		void stepSimulation(const Ogre::Real elapsedTime, int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 		void setHitFlags(void);
-		GameObject* getGameObject(string name);
+		GameObject* getGameObject(Ogre::String name);
+		void setCamera(PlayerCamera* pcam);
+		void setPlayer(Player* p);
 };
 
 #endif // #ifndef __Simulator_h_

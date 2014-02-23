@@ -3,6 +3,7 @@
 #include "OgreMotionState.h"
 #include "Player.h"
 #include "Target.h"
+#include "PlayerCamera.h"
 
 Simulator::Simulator() 
 {
@@ -43,7 +44,11 @@ void Simulator::addObject (GameObject* o)
 	/* Set custom btRigidBody WRT specific GameObjects */
 	if(o->typeName == "Player")
 	{
+		this->setPlayer((Player*)o);
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
+
+		// Initialize PlayerCam Position now that you have the player and its CameraNode position
+		this->player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition());
 	}
 	
 	if(o->typeName == "Disk")
@@ -72,12 +77,26 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 	return NULL;
 }
 
+void Simulator::removeObject(Ogre::String name)
+{
+	for (int i = 0; i < objList.size(); i++)
+	{
+		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
+		{
+			objList.erase(objList.begin() + i);
+		}
+	}
+}
+
 // original stepSimulation is in btDiscreteDynamicsWorld
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
 	//do we need to update positions in simulator for dynamic objects?
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
-
+	if (player1Cam)
+	{
+		player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+	}
 }
 
 void Simulator::setHitFlags(void)
@@ -110,7 +129,6 @@ void Simulator::setHitFlags(void)
 			{
 				if (((Player*)gB)->checkHolding() == false)
 					((Player*)gB)->attachDisk((Disk*)gA);
-
 			}
 		}
 		if (gA->typeName == "Target") // and other object was disk
@@ -126,4 +144,20 @@ void Simulator::setHitFlags(void)
 
 		//contactManifold->clearManifold();	
 	}
+}
+
+void Simulator::setCamera(PlayerCamera* pcam)
+{
+	if (Ogre::StringUtil::match(pcam->name, "P1_cam", true))
+		this->player1Cam = pcam;
+	if (Ogre::StringUtil::match(pcam->name, "P2_cam", true))
+		this->player2Cam = pcam;
+}
+
+void Simulator::setPlayer(Player* p)
+{
+	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player1", true))
+		this->p1 = p;
+	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player2", true))
+		this->p2 = p;
 }

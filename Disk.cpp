@@ -31,11 +31,3 @@ void Disk::updateDiskSNodeOrientation(Ogre::Vector3 v)
 {
 
 }
-
-void Disk::updateDiskPosition(Ogre::Vector3 v)
-{
-	// update position in Ogre
-	this->getSceneNode()->setPosition(v);
-	// update position in Bullet
-	this->updateTransform();
-}
