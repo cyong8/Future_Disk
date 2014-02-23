@@ -40,6 +40,7 @@ class Simulator
 		GameObject* getGameObject(Ogre::String name);
 		void setCamera(PlayerCamera* pcam);
 		void setPlayer(Player* p);
+		PlayerCamera* getPlayerCamera(Ogre::String name);
 };
 
 #endif // #ifndef __Simulator_h_

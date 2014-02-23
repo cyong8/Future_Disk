@@ -48,7 +48,7 @@ void Simulator::addObject (GameObject* o)
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 
 		// Initialize PlayerCam Position now that you have the player and its CameraNode position
-		this->player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition());
+		this->player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
 	}
 	
 	if(o->typeName == "Disk")
@@ -160,4 +160,12 @@ void Simulator::setPlayer(Player* p)
 		this->p1 = p;
 	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player2", true))
 		this->p2 = p;
+}
+
+PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
+{
+	if (Ogre::StringUtil::match(name, "P1_cam", true))
+		return this->player1Cam;
+	if (Ogre::StringUtil::match(name, "P2_cam", true))
+		return this->player2Cam;
 }

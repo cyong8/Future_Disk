@@ -51,6 +51,7 @@ void MCP::createScene(void)
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     static bool mMouseDown = false;     // If a mouse button is depressed
+    static bool vKeyDown = false;       // If the v key was held down in the previous frame
 //    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
 //    static Ogre::Real mRotate = 0.13;   // The rotate constant
     static Ogre::Real mMove = 3.0f;      // The movement constant
@@ -58,6 +59,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float fy = 0.0f;
     float fz = 0.0f;
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
+    bool vState = mKeyboard->isKeyDown(OIS::KC_V);
     bool keyWasPressed = false;
  
     // Tutorial code to possibly help us with throwing the disk:
@@ -78,7 +80,13 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     mMouseDown = currMouse;
  
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
- 
+    // Move into aiming-mode
+    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
+    {
+        PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
+        pc->toggleThirdPersonView();
+    }
+    // Move the player
     if (mKeyboard->isKeyDown(OIS::KC_I)) // Forward
     {
         fz -= mMove;
