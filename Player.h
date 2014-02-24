@@ -12,7 +12,9 @@ public:
 	void setHolding(void);
 	void attachDisk(Disk* d);
 	bool checkHolding(void);
+	bool checkIsInHand(void);
 	Disk* getPlayerDisk(void);
+	void setInHand(void);
 
 	Ogre::SceneNode* getPlayerSightNode(void);
 	Ogre::SceneNode* getPlayerCameraNode(void);
@@ -21,6 +23,7 @@ public:
 
 protected:
 	bool isHolding;		
+	bool isInHand;
 	Disk* playerDisk;
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here

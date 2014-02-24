@@ -12,6 +12,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	typeName = "Player";
 
 	isHolding = false; // Is the player holding the disk?
+	isInHand = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 
@@ -44,6 +45,8 @@ void Player::attachDisk(Disk* d)
 	// d->getSceneNode()->translate(Ogre::Vector3(this->dimensions.x, 0, 0));
 	d->getSceneNode()->needUpdate(true);
 
+//	d->getSceneNode()->setPosition(this->rootNode->getPosition() + Ogre::Vector3(this->dimensions.x, 0.0f, 0.0f)); // set position equal to parent's 
+	
 	// make the disk stop moving
 	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));
 	// move btRigidBody WRT to the scenenode
@@ -72,6 +75,17 @@ bool Player::checkHolding()
 	return this->isHolding;
 }
 
+bool Player::checkIsInHand()
+{
+	return this->isInHand;
+}
+
+void Player::setInHand()
+{
+	this->getPlayerDisk()->getSceneNode()->setPosition(this->rootNode->getPosition() + Ogre::Vector3(this->dimensions.x, 0.0f, 0.0f));
+	this->isInHand = true;
+}
+
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
 	return this->mSightNode;
@@ -81,8 +95,11 @@ Ogre::SceneNode* Player::getPlayerCameraNode()
 {
 	return this->pCamNode;
 }
+<<<<<<< HEAD
 
 Ogre::Vector3 Player::getPlayerDimensions()
 {
 	return this->dimensions;
 }
+=======
+>>>>>>> b535f3ff27958b2f0220352875ee88b68bf6703c

@@ -17,10 +17,10 @@ protected:
 public: 
 	PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Camera *camera);
 	virtual ~PlayerCamera(void);
-	void initializePosition(Ogre::Vector3 iV);
+	void initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition);
     void update(Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition);
-    void switchToThirdView(void);
-    
+    void toggleThirdPersonView(void);
+
 	Ogre::String name;
 };
 
