@@ -37,10 +37,11 @@ class Simulator
 		void removeObject(Ogre::String name);
 		void stepSimulation(const Ogre::Real elapsedTime, int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 		void setHitFlags(void);
-		GameObject* getGameObject(Ogre::String name);
 		void setCamera(PlayerCamera* pcam);
 		void setPlayer(Player* p);
+		GameObject* getGameObject(Ogre::String name);
 		PlayerCamera* getPlayerCamera(Ogre::String name);
+		void toggleViewChange(Ogre::String name);
 };
 
 #endif // #ifndef __Simulator_h_

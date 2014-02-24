@@ -27,7 +27,7 @@ protected:
 	Disk* playerDisk;
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
-	Ogre::SceneNode* mSightNode; // The character is supposed to be looking here
+	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
 };
 
 #endif // #ifndef __Player_h_

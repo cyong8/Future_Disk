@@ -86,14 +86,16 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         // if 'v' is pressed and was not pressed last frame - go to aim mode
     if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
     {
-        vKeyDown = true;
         PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
+        game_simulator->toggleViewChange("Player1");
         pc->toggleThirdPersonView();
+        vKeyDown = true;
     }
         // if 'v' is not pressed and was pressed last frame - exit aim mode
     if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
     {
         PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
+        game_simulator->toggleViewChange("Player1");
         pc->toggleThirdPersonView();
         vKeyDown = false;
     }

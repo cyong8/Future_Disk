@@ -5,8 +5,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	: GameObject(nym, mgr, sim)
 {
 	// initialize Cameras
-	this->mSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(position.x, position.y, -8.0f));
-	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(position.x, position.y, 12.0f));
+	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -8.0f));
+	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 2.0f, 20.0f));
 
 	this->dimensions = dimensions;
 	typeName = "Player";
@@ -41,28 +41,12 @@ void Player::attachDisk(Disk* d)
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+
+	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));// make the disk stop moving
+
+	d->updateTransform(); 	// move btRigidBody WRT to the scenenode
 	
-	// // Check/Try _setDerivedPosition() instead of setPosition
-	// d->getSceneNode()->translate(Ogre::Vector3(5.0f, 0.0f, 0.0f), Ogre::Node::TS_WORLD);
-	// rootNode->_update(true, false);
-
-
-// 	Ogre::Entity* ent = (this->getSceneNode()->getCreator())->createEntity("attach_disk", "column.mesh"); // Create Entity; apply mesh
-// 	Ogre::SceneNode* attachDiskNode = rootNode->createChildSceneNode("a_diskNode");
-
-// 	attachDiskNode->attachObject(ent); // Attach disk to a scene node
-// 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
-// 	attachDiskNode->scale(0.5f/47.0f, 0.01f/442.0f, 0.5f/47.0f);
-// 	//rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
-// 	attachDiskNode->translate(Ogre::Vector3(3.0f, -4.0f, 0.0f));
-
-
- 	// make the disk stop moving
-	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));
-	// move btRigidBody WRT to the scenenode
-	d->updateTransform();
-	// set the activation state of the body so it doesn't move in bullet
-	d->getBody()->setActivationState(DISABLE_SIMULATION);
+	d->getBody()->setActivationState(DISABLE_SIMULATION); // set the activation state of the body so it doesn't move in bullet
 
  	// DEBUGGING
  	playerDisk->getSceneNode()->showBoundingBox(true);
@@ -90,7 +74,7 @@ bool Player::checkIsInHand()
 	return this->isInHand;
 }
 
-void Player::setInHand()
+void Player::setInHand() // is this being called at all (refer to StepSimulation)
 {
 	this->getPlayerDisk()->getSceneNode()->setPosition(this->rootNode->getPosition() + Ogre::Vector3(this->dimensions.x, 0.0f, 0.0f));
 	this->isInHand = true;
@@ -98,7 +82,7 @@ void Player::setInHand()
 
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
-	return this->mSightNode;
+	return this->pSightNode;
 }
 
 Ogre::SceneNode* Player::getPlayerCameraNode()

@@ -24,6 +24,9 @@ Simulator::Simulator()
 	//keep track of the shapes, we release memory at exit
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
+
+	viewChangeP1 = false;
+	viewChangeP2 = false;
 }
 
 Simulator::~Simulator()
@@ -45,11 +48,11 @@ void Simulator::addObject (GameObject* o)
 	/* Set custom btRigidBody WRT specific GameObjects */
 	if(o->typeName == "Player")
 	{
-		this->setPlayer((Player*)o);
+		setPlayer((Player*)o);
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 
 		// Initialize PlayerCam Position now that you have the player and its CameraNode position
-		this->player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
+		player1Cam->initializePosition(Ogre::Vector3(0.0f, 5.0f, 20.0f), ((Player*)o)->getPlayerSightNode()->getPosition());
 		player1Cam->setPlayer((Player*)o);
 	}
 	
@@ -97,24 +100,35 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 	if (player1Cam)
 	{
-		if(player1Cam->isInAimMode())
+		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
 		{
-			player1Cam->getMCamera()->setPosition(p1->getSceneNode()->getPosition());
-			player1Cam->update(elapseTime, p1->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-		}
-		else
-		{
+			toggleViewChange("Player1"); // want to set toggle flag back since you are now either entering or leaving Aim View
+			if(player1Cam->isInAimMode()) // Go into Aim view
+			{
 
-    		player1Cam->getMCamera()->setPosition(Ogre::Vector3(0,5,20)); 
-			player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+				// player1Cam->getMCamera()->setPosition(p1->getSceneNode()->getPosition());
+				// player1Cam->update(elapseTime, p1->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+			}
+			else // Return from Aim view
+			{
+				player1Cam->initializePosition(Ogre::Vector3(0.0f, 2.0f, 20.0f), p1->getPlayerSightNode()->_getDerivedPosition());
+			}
+		}
+		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+		{
+     		//player1Cam->getMCamera()->setPosition(Ogre::Vector3(0,5,20)); 
+			if (player1Cam->isInAimMode())
+			{
+				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+			}
+			else
+				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 2.0f, 20.0f), p1->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
 
-	if(p1->checkHolding())
-	{
+	if(p1->checkHolding()) // move the ball into the players hand
 		p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(p1->getPlayerDimensions().x/2, 0.0f, 0.0f), Ogre::Node::TS_WORLD);
-		//p1->getPlayerDisk()->getSceneNode()->getParent()->_update(true, false);
-	}
 
 }
 
@@ -152,9 +166,8 @@ void Simulator::setHitFlags(void)
 					((Player*)gB)->attachDisk((Disk*)gA);
 			}
 		}
-		// ********** Attach Disk *************
 
-
+		// ********** Hit Targets *************
 		if (gA->typeName == "Target") // and other object was disk
 		{
 			if (gB->typeName == "Disk")
@@ -192,4 +205,12 @@ PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
 		return this->player1Cam;
 	if (Ogre::StringUtil::match(name, "P2_cam", true))
 		return this->player2Cam;
+}
+
+void Simulator::toggleViewChange(Ogre::String name)
+{
+	if (Ogre::StringUtil::match(name, "Player1", true))
+		viewChangeP1 = !viewChangeP1;
+	if (Ogre::StringUtil::match(name, "Player2", true))
+		viewChangeP2 = !viewChangeP2;
 }

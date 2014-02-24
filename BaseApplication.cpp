@@ -78,7 +78,7 @@ void BaseApplication::createCamera(void)
     // Create the camera
     mCamera = mSceneMgr->createCamera("PlayerCam"); 
     mCamera->setNearClipDistance(.1);
-    mCamera->setPosition(Ogre::Vector3(0,5,20)); 
+    mCamera->setPosition(Ogre::Vector3(0,0,0)); 
 
  /*   // Position it at 500 in Z direction
     
