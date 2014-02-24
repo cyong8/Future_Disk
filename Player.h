@@ -16,6 +16,7 @@ public:
 
 	Ogre::SceneNode* getPlayerSightNode(void);
 	Ogre::SceneNode* getPlayerCameraNode(void);
+	Ogre::Vector3 getPlayerDimensions(void);
 
 
 protected:

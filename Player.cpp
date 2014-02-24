@@ -5,8 +5,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	: GameObject(nym, mgr, sim)
 {
 	// initialize Cameras
-	this->mSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(position.x, position.y, 8.0f));
-	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(position.x, position.y, -12.0f));
+	this->mSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(position.x, position.y, -8.0f));
+	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(position.x, position.y, 12.0f));
 
 	this->dimensions = dimensions;
 	typeName = "Player";
@@ -32,21 +32,24 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 void Player::attachDisk(Disk* d)
 {
-	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
-	d->getSceneNode()->setInheritScale(false);
-	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+	this->isHolding = true;
+	playerDisk = d; // player now has a pointer to this disk
+
+	// d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
+	// d->getSceneNode()->setInheritScale(false);
+	// this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+	
 	// Check/Try _setDerivedPosition() instead of setPosition
-	d->getSceneNode()->setPosition(Ogre::Vector3(this->rootNode->getPosition()) + Ogre::Vector3(this->dimensions.x, 0, 0)); // set position equal to parent's 
+	d->getSceneNode()->setPosition(this->rootNode->getPosition()); // set position equal to parent's 
+	// d->getSceneNode()->translate(Ogre::Vector3(this->dimensions.x, 0, 0));
+	d->getSceneNode()->needUpdate(true);
+
 	// make the disk stop moving
 	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));
 	// move btRigidBody WRT to the scenenode
 	d->updateTransform();
 	// set the activation state of the body so it doesn't move in bullet
 	d->getBody()->setActivationState(DISABLE_SIMULATION);
-
-
-	playerDisk = d; // player now has a pointer to this disk
-	this->isHolding = true;
 
 	// DEBUGGING
 	playerDisk->getSceneNode()->showBoundingBox(true);
@@ -77,4 +80,9 @@ Ogre::SceneNode* Player::getPlayerSightNode()
 Ogre::SceneNode* Player::getPlayerCameraNode()
 {
 	return this->pCamNode;
+}
+
+Ogre::Vector3 Player::getPlayerDimensions()
+{
+	return this->dimensions;
 }

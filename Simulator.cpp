@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "Target.h"
 #include "PlayerCamera.h"
+#include "Disk.h"
 
 Simulator::Simulator() 
 {
@@ -91,12 +92,23 @@ void Simulator::removeObject(Ogre::String name)
 // original stepSimulation is in btDiscreteDynamicsWorld
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
+	if(p1->checkHolding())
+	{
+		Ogre::LogManager::getSingletonPtr()->logMessage("\n\n\n__________HOLDING UPDATING_________\n\n\n\n");
+		p1->getPlayerDisk()->getSceneNode()->setPosition(p1->getSceneNode()->getPosition());
+		p1->getPlayerDisk()->getSceneNode()->needUpdate(true);
+		// p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(p1->getPlayerDimensions().x, 0, 0));
+	}
+
+
 	//do we need to update positions in simulator for dynamic objects?
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 	if (player1Cam)
 	{
 		player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 	}
+
+
 }
 
 void Simulator::setHitFlags(void)

@@ -37,6 +37,8 @@ This source file is part of the
 #include <vector>
 #include "btBulletDynamicsCommon.h"
 
+#include <assert.h>
+
 using namespace std;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS

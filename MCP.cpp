@@ -79,26 +79,26 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
  
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
  
-    if (mKeyboard->isKeyDown(OIS::KC_I)) // Forward
+    if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
     {
         fz -= mMove;
         velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
         keyWasPressed = true;
     }
-    if (mKeyboard->isKeyDown(OIS::KC_K)) // Backward
+    if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
     {
         fz += mMove;
         velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
         keyWasPressed = true;
     }
-    if (mKeyboard->isKeyDown(OIS::KC_J)) // Left - yaw or strafe
+    if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
     {
         fx -= mMove; // Strafe left
         velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
         keyWasPressed = true;
         
     }
-    if (mKeyboard->isKeyDown(OIS::KC_L)) // Right - yaw or strafe
+    if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
     {
         fx += mMove; // Strafe right
         velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
