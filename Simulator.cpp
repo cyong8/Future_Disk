@@ -50,6 +50,7 @@ void Simulator::addObject (GameObject* o)
 
 		// Initialize PlayerCam Position now that you have the player and its CameraNode position
 		this->player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
+		player1Cam->setPlayer((Player*)o);
 	}
 	
 	if(o->typeName == "Disk")
@@ -92,22 +93,28 @@ void Simulator::removeObject(Ogre::String name)
 // original stepSimulation is in btDiscreteDynamicsWorld
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
-	if(p1->checkHolding())
-	{
-		Ogre::LogManager::getSingletonPtr()->logMessage("\n\n\n__________HOLDING UPDATING_________\n\n\n\n");
-		p1->getPlayerDisk()->getSceneNode()->setPosition(p1->getSceneNode()->getPosition());
-		p1->getPlayerDisk()->getSceneNode()->needUpdate(true);
-		// p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(p1->getPlayerDimensions().x, 0, 0));
-	}
-
-
 	//do we need to update positions in simulator for dynamic objects?
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 	if (player1Cam)
 	{
-		player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+		if(player1Cam->isInAimMode())
+		{
+			player1Cam->getMCamera()->setPosition(p1->getSceneNode()->getPosition());
+			player1Cam->update(elapseTime, p1->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+		}
+		else
+		{
+
+    		player1Cam->getMCamera()->setPosition(Ogre::Vector3(0,5,20)); 
+			player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+		}
 	}
 
+	if(p1->checkHolding())
+	{
+		p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(p1->getPlayerDimensions().x/2, 0.0f, 0.0f), Ogre::Node::TS_WORLD);
+		//p1->getPlayerDisk()->getSceneNode()->getParent()->_update(true, false);
+	}
 
 }
 
@@ -127,6 +134,8 @@ void Simulator::setHitFlags(void)
 		GameObject* gA = OMSA->getGameObject();
 		GameObject* gB = OMSB->getGameObject();
 
+
+		// ********** Attach Disk *************
 		if (gA->typeName == "Player")
 		{
 			if (gB->typeName == "Disk")
@@ -143,6 +152,9 @@ void Simulator::setHitFlags(void)
 					((Player*)gB)->attachDisk((Disk*)gA);
 			}
 		}
+		// ********** Attach Disk *************
+
+
 		if (gA->typeName == "Target") // and other object was disk
 		{
 			if (gB->typeName == "Disk")

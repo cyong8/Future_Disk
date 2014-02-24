@@ -13,6 +13,7 @@ protected:
     Ogre::Camera *mCamera; // Ogre camera
     Ogre::SceneManager *mCamSceneMgr;
     Player* p;
+    bool inAimMode;
 
 public: 
 	PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Camera *camera);
@@ -20,6 +21,9 @@ public:
 	void initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition);
     void update(Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition);
     void toggleThirdPersonView(void);
+    void setPlayer(Player* player);
+    bool isInAimMode(void);
+    Ogre::Camera* getMCamera(void);
 
 	Ogre::String name;
 };

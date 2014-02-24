@@ -13,12 +13,12 @@ public:
 	void attachDisk(Disk* d);
 	bool checkHolding(void);
 	bool checkIsInHand(void);
-	Disk* getPlayerDisk(void);
 	void setInHand(void);
 
 	Ogre::SceneNode* getPlayerSightNode(void);
 	Ogre::SceneNode* getPlayerCameraNode(void);
 	Ogre::Vector3 getPlayerDimensions(void);
+	Disk* getPlayerDisk(void);
 
 
 protected:

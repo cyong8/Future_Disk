@@ -13,6 +13,8 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    game_simulator = new Simulator();
+
     // initialize random number generate
     srand(time(0));
 
@@ -31,10 +33,9 @@ void MCP::createScene(void)
     pointLight->setVisible(true);
 
     /******************** GAME OBJECTS ********************/
-    // initialize global Players and PlayerCameras
-    PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
-    game_simulator = new Simulator();
 
+    PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
+    
     // Add PlayerCamera to Simulator so it can update it when Player moves
     game_simulator->setCamera(p1Cam);
 
@@ -82,42 +83,55 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 
     // Move into aiming-mode
+        // if 'v' is pressed and was not pressed last frame - go to aim mode
     if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
     {
+        vKeyDown = true;
         PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
         pc->toggleThirdPersonView();
     }
-    // Move the player
-    if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
+        // if 'v' is not pressed and was pressed last frame - exit aim mode
+    if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
     {
-        fz -= mMove;
-        velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-        keyWasPressed = true;
+        PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
+        pc->toggleThirdPersonView();
+        vKeyDown = false;
     }
-    if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
+    if (!vKeyDown)  // disable movement while in aim mode
     {
-        fz += mMove;
-        velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-        keyWasPressed = true;
+        // Move the player
+        if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
+        {
+            fz -= mMove;
+            velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
+            keyWasPressed = true;
+        }
+        if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
+        {
+            fz += mMove;
+            velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
+            keyWasPressed = true;
+        }
+        if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
+        {
+            fx -= mMove; // Strafe left
+            velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
+            keyWasPressed = true;
+            
+        }
+        if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
+        {
+            fx += mMove; // Strafe right
+            velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
+            keyWasPressed = true;
+        }
+        if (keyWasPressed == true)
+        {
+            Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
+            p1->getBody()->setLinearVelocity(velocityVector);
+        }
     }
-    if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
-    {
-        fx -= mMove; // Strafe left
-        velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-        keyWasPressed = true;
-        
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
-    {
-        fx += mMove; // Strafe right
-        velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-        keyWasPressed = true;
-    }
-    if (keyWasPressed == true)
-    {
-        Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
-        p1->getBody()->setLinearVelocity(velocityVector);
-    }
+
     return true;
 }
 
@@ -126,6 +140,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 
     bool ret = BaseApplication::frameRenderingQueued(evt);
+     // if(mShutDown)
+     //    return false;
  
     if(!processUnbufferedInput(evt)) 
         return false;
@@ -133,7 +149,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     // check collisions
     game_simulator->setHitFlags();
-    // handle collisions
 
     return ret;
 }

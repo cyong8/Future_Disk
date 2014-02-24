@@ -29,6 +29,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	// Set mass of player
 	mass = 0.1f;
+
+
 }
 
 void Player::attachDisk(Disk* d)
@@ -36,28 +38,36 @@ void Player::attachDisk(Disk* d)
 	this->isHolding = true;
 	playerDisk = d; // player now has a pointer to this disk
 
-	// d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
-	// d->getSceneNode()->setInheritScale(false);
-	// this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
+	d->getSceneNode()->setInheritScale(false);
+	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 	
-	// Check/Try _setDerivedPosition() instead of setPosition
-	d->getSceneNode()->setPosition(this->rootNode->getPosition()); // set position equal to parent's 
-	// d->getSceneNode()->translate(Ogre::Vector3(this->dimensions.x, 0, 0));
-	d->getSceneNode()->needUpdate(true);
+	// // Check/Try _setDerivedPosition() instead of setPosition
+	// d->getSceneNode()->translate(Ogre::Vector3(5.0f, 0.0f, 0.0f), Ogre::Node::TS_WORLD);
+	// rootNode->_update(true, false);
 
-//	d->getSceneNode()->setPosition(this->rootNode->getPosition() + Ogre::Vector3(this->dimensions.x, 0.0f, 0.0f)); // set position equal to parent's 
-	
-	// make the disk stop moving
+
+// 	Ogre::Entity* ent = (this->getSceneNode()->getCreator())->createEntity("attach_disk", "column.mesh"); // Create Entity; apply mesh
+// 	Ogre::SceneNode* attachDiskNode = rootNode->createChildSceneNode("a_diskNode");
+
+// 	attachDiskNode->attachObject(ent); // Attach disk to a scene node
+// 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
+// 	attachDiskNode->scale(0.5f/47.0f, 0.01f/442.0f, 0.5f/47.0f);
+// 	//rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
+// 	attachDiskNode->translate(Ogre::Vector3(3.0f, -4.0f, 0.0f));
+
+
+ 	// make the disk stop moving
 	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));
 	// move btRigidBody WRT to the scenenode
 	d->updateTransform();
 	// set the activation state of the body so it doesn't move in bullet
 	d->getBody()->setActivationState(DISABLE_SIMULATION);
 
-	// DEBUGGING
-	playerDisk->getSceneNode()->showBoundingBox(true);
+ 	// DEBUGGING
+ 	playerDisk->getSceneNode()->showBoundingBox(true);
 	this->rootNode->showBoundingBox(true);
-	this->rootNode->setVisible(false, false);
+ 	this->rootNode->setVisible(false, false);
 }
 
 Disk* Player::getPlayerDisk()
@@ -95,11 +105,8 @@ Ogre::SceneNode* Player::getPlayerCameraNode()
 {
 	return this->pCamNode;
 }
-<<<<<<< HEAD
 
 Ogre::Vector3 Player::getPlayerDimensions()
 {
 	return this->dimensions;
 }
-=======
->>>>>>> b535f3ff27958b2f0220352875ee88b68bf6703c

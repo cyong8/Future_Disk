@@ -6,6 +6,7 @@ PlayerCamera::PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Came
     name = nym;
     mCamSceneMgr = mgr;
     mCamera = pCamera;
+    inAimMode = false;
 
     // create nodes for cameras
     mCameraNode = mCamSceneMgr->getRootSceneNode()->createChildSceneNode(nym);
@@ -27,6 +28,8 @@ PlayerCamera::~PlayerCamera(void)
 void PlayerCamera::toggleThirdPersonView(void)
 {
     // Implement by translation of the CameraNode of the player class, toggle visibility of player and targetnode
+    inAimMode = !inAimMode;    
+    //camera position is changed in stepSimulation.
 }
 
 void PlayerCamera::initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition)
@@ -45,4 +48,19 @@ void PlayerCamera::update (Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition,
  
     displacement = (targetPosition - mTargetNode->getPosition());
     mTargetNode->translate(displacement);
+}
+
+void PlayerCamera::setPlayer(Player* player)
+{
+    p = player;
+}
+
+bool PlayerCamera::isInAimMode()
+{
+    return inAimMode;
+}
+
+Ogre::Camera* PlayerCamera::getMCamera()
+{
+    return mCamera;
 }
