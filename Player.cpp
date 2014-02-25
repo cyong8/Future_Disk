@@ -4,7 +4,7 @@
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
 	: GameObject(nym, mgr, sim)
 {
-	crossHairDimensions = Ogre::Vector3(0.02f, 0.1f, 0.1f);
+	crossHairDimensions = Ogre::Vector3(0.3f, 0.3f, 0.3f);
 	// initialize Cameras
 	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -8.0f));
 	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 2.0f, 20.0f));
@@ -19,11 +19,11 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	pSightNode->scale(crossHairDimensions.x/100, crossHairDimensions.y/100, crossHairDimensions.z/100);
 	crossHairNode->scale(crossHairDimensions.x/100, crossHairDimensions.y/100, crossHairDimensions.z/100);
 	// Rotate Nodes so they look like an X
-//	pSightNode->rotate();
-//	crossHairNode->rotate();
+	pSightNode->yaw((Ogre::Radian)1.570795);
+	crossHairNode->yaw((Ogre::Radian)1.570795);
 	// Initialize Nodes to invisible and toggle in Aim View
-//	pSightNode->setVisible(false);
-//	crossHairNode->setVisible(false);
+	pSightNode->setVisible(false);
+	crossHairNode->setVisible(false);
 
 	this->dimensions = dimensions;
 	typeName = "Player";
