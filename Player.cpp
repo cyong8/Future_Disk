@@ -8,13 +8,6 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -8.0f));
 	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 2.0f, 20.0f));
 
-	// Rotate Nodes so they look like an X
-	pSightNode->yaw((Ogre::Radian)1.570795);
-	crossHairNode->yaw((Ogre::Radian)1.570795);
-	// Initialize Nodes to invisible and toggle in Aim View
-	pSightNode->setVisible(false);
-	crossHairNode->setVisible(false);
-
 	this->dimensions = dimensions;
 	typeName = "Player";
 
