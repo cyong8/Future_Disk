@@ -19,7 +19,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
 	rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f);
 	rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
-
+	
 	ent->setMaterialName("Examples/Chrome"); // apply a material to the mesh
 
 	shape = new btSphereShape(disk_dimensions.x/2.0f); // Sphere shape similar to project1

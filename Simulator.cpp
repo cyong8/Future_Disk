@@ -29,6 +29,9 @@ Simulator::Simulator()
 	viewChangeP2 = false;
 }
 
+/*
+	Simulator destructor class
+*/
 Simulator::~Simulator()
 {
 	delete(collisionConfiguration);
@@ -37,15 +40,21 @@ Simulator::~Simulator()
 	delete(dynamicsWorld);
 }
 
+/*
+	Add a GameObject to the simulator
+*/
 void Simulator::addObject (GameObject* o) 
 {
+	// Put the object back in the simulator
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);
 	
+	// Add the object to the list of object
 	objList.push_back(o);
+
 	//use default collision group/mask values (dynamic/kinematic/static)
 	dynamicsWorld->addRigidBody(o->getBody());
 
-	/* Set custom btRigidBody WRT specific GameObjects */
+	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
 		setPlayer((Player*)o);
@@ -105,10 +114,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			toggleViewChange("Player1"); // want to set toggle flag back since you are now either entering or leaving Aim View
 			if(player1Cam->isInAimMode()) // Go into Aim view
 			{
-
 				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-				// player1Cam->getMCamera()->setPosition(p1->getSceneNode()->getPosition());
-				// player1Cam->update(elapseTime, p1->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 			}
 			else // Return from Aim view
 			{
@@ -117,7 +123,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		}
 		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
 		{
-     		//player1Cam->getMCamera()->setPosition(Ogre::Vector3(0,5,20)); 
 			if (player1Cam->isInAimMode())
 			{
 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
@@ -128,7 +133,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	}
 
 	if(p1->checkHolding()) // move the ball into the players hand
-		p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(p1->getPlayerDimensions().x/2, 0.0f, 0.0f), Ogre::Node::TS_WORLD);
+		p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(0.0f, p1->getPlayerDimensions().y, 0.0f), Ogre::Node::TS_WORLD);
 
 }
 

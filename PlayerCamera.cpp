@@ -27,9 +27,13 @@ PlayerCamera::~PlayerCamera(void)
 
 void PlayerCamera::toggleThirdPersonView(void)
 {
-    // Implement by translation of the CameraNode of the player class, toggle visibility of player and targetnode
     inAimMode = !inAimMode;    
-    //camera position is changed in stepSimulation.
+ 
+    if (!inAimMode) // Restore SightNode to default position when the player leaves Aim View
+    {
+        p->getPlayerSightNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -8.0f));
+        mTargetNode->setPosition(Ogre::Vector3(0.0f, 0.0f, -8.0f));
+    }
 }
 
 void PlayerCamera::initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition)

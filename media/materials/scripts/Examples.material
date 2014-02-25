@@ -1458,6 +1458,7 @@ material Examples/Rockwall
 			texture_unit
 			{
 				texture rockwall.tga
+				scale .3 .3
 			}
 		}
 	}
