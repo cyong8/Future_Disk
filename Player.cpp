@@ -65,16 +65,6 @@ void Player::throwDisk()
 	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode
 	
 }
-
-bool Player::checkIsInHand()
-{
-	return this->isInHand;
-}
-void Player::setInHand() // is this being called at all (refer to StepSimulation)
-{
-	this->getPlayerDisk()->getSceneNode()->setPosition(this->rootNode->getPosition() + Ogre::Vector3(this->dimensions.x, 0.0f, 0.0f));
-	this->isInHand = true;
-}
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
 	return this->pSightNode;

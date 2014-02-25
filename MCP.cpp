@@ -83,8 +83,6 @@ void MCP::createScene(void)
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     static bool mMouseDown = false;     // If a mouse button is depressed
-//    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
-//    static Ogre::Real mRotate = 0.13;   // The rotate constant
     static Ogre::Real mMove = 3.0f;      // The movement constant
     float fx = 0.0f;
     float fy = 0.0f;
@@ -92,21 +90,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
     bool keyWasPressed = false;
     float sprintFactor = 1.0f;
-
-    // Tutorial code to possibly help us with throwing the disk:
-    // toggles a light currently when the mouse click is released
-/*    if (currMouse && ! mMouseDown)
-    {
-        Ogre::Light* light = mSceneMgr->getLight("pointLight");
-        light->setVisible(! light->isVisible());
-    }
-    if ((mToggle < 0.0f ) && mKeyboard->isKeyDown(OIS::KC_1))
-    {
-        mToggle  = 0.5;
-        Ogre::Light* light = mSceneMgr->getLight("pointLight");
-        light->setVisible(! light->isVisible());
-    }
-  */
  
     mMouseDown = currMouse;
     Player *p = (Player *)game_simulator->getGameObject("Player1");
@@ -115,7 +98,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         p->setHolding();
     }
- 
     // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 
@@ -134,6 +116,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
         game_simulator->toggleViewChange("Player1");
         pc->toggleThirdPersonView();
+        
         vKeyDown = false;
     }
     // Sprint mode - press spacebar to activate
