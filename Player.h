@@ -9,16 +9,16 @@ class Player : public GameObject
 {
 public:
 	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition);
-	void setHolding(void);
-	void attachDisk(Disk* d);
-	bool checkHolding(void);
-	void throwDisk(void);
 
-	Ogre::SceneNode* getPlayerSightNode(void);
-	Ogre::SceneNode* getPlayerCameraNode(void);
-	Ogre::Vector3 getPlayerDimensions(void);
-	Disk* getPlayerDisk(void);
+	void setHolding(void); // Set whether the player is holding the disk
+	void attachDisk(Disk* d); // Attach the disk to the player
+	bool checkHolding(void); // Check if the player is holding the disk
+	void throwDisk(void); // Throw the disk in a particular direction
 
+	Ogre::SceneNode* getPlayerSightNode(void); // Get the scene node where the player is looking
+	Ogre::SceneNode* getPlayerCameraNode(void); // Get the camera node attached to the player
+	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
+	Disk* getPlayerDisk(void); // Get the disk that the player is holding
 
 protected:
 	bool isHolding;		
