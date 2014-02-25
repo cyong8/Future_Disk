@@ -28,6 +28,7 @@ public:
 	bool vKeyDown;
 	int p1score; // Score for the first player
 
+
 	MCP(void);
 	virtual ~MCP(void);
 

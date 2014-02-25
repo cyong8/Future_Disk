@@ -2,6 +2,7 @@
 #define __PlayerCamera_h_
 
 #include "BaseApplication.h"
+#include "MCP.h"
 
 class Player;
 // Framework implemented from: http://www.ogre3d.org/tikiwiki/tiki-index.php?page=3rd+person+camera+system+tutorial
@@ -24,8 +25,11 @@ public:
     void setPlayer(Player* player);
     bool isInAimMode(void);
     Ogre::Camera* getMCamera(void);
+    void setCHOverlays(Ogre::Overlay* o, Ogre::Overlay* o2);
 
 	Ogre::String name;
+    Ogre::Overlay* overlay;
+    Ogre::Overlay* overlay2;
 };
 
 

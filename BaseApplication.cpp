@@ -444,8 +444,15 @@ void BaseApplication::updateTimer(time_t currTime)
 
     if(minutes < 10)
         mins = "0"+mins;
+
+    if(minutes <= 0)
+        mins = "00";
+
     if(seconds < 10)
         sec = "0"+sec;
+
+    if(seconds <= 0)
+        sec = "00";
     
     scorePanel->setParamValue(1, mins + ":" + sec);
 }
@@ -453,5 +460,7 @@ void BaseApplication::updateTimer(time_t currTime)
 void BaseApplication::modifyScore(int num)
 {
     score += num;
+    if(score<=0)
+        score = 0;
     scorePanel->setParamValue(0,Ogre::StringConverter::toString(score));
 }

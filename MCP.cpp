@@ -62,7 +62,7 @@ void MCP::createScene(void)
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
 
 
-
+    //___Crosshair creation___!
     Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
          // Create an overlay
     Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
@@ -89,10 +89,10 @@ void MCP::createScene(void)
 
 
     // Show the overlay
-    overlay->show();
-    overlay2->show();
+    overlay->hide();
+    overlay2->hide();
 
-
+    p1Cam->setCHOverlays(overlay, overlay2);
 
 }
 
