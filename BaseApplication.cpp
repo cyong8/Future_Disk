@@ -149,10 +149,11 @@ void BaseApplication::createFrameListener(void)
     scores.push_back("Score ");
     scores.push_back("Time ");
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
-    scorePanel->setParamValue(0, Ogre::StringConverter::toString(0));
-    Ogre::Real initialMinutes = 2;
-    scorePanel->setParamValue(1, Ogre::StringConverter::toString(initialMinutes) + ":00");
-
+    score = 0;
+    scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
+    initMinutes = 2;
+    scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
+    time(&initTime);
     mRoot->addFrameListener(this);
 }
 //-------------------------------------------------------------------------------------
@@ -296,6 +297,10 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
+    time_t currTime;
+    time(&currTime);
+    updateTimer(currTime);
+
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -424,4 +429,29 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
             mInputManager = 0;
         }
     }
+}
+
+void BaseApplication::updateTimer(time_t currTime)
+{
+    double secondsElapsed = difftime(currTime, initTime);
+    int secondsLeft = (initMinutes*60) - secondsElapsed;
+
+    int minutes = secondsLeft / 60;
+    int seconds = secondsLeft % 60;
+
+    Ogre::String mins = Ogre::StringConverter::toString(minutes);
+    Ogre::String sec = Ogre::StringConverter::toString(seconds);
+
+    if(minutes < 10)
+        mins = "0"+mins;
+    if(seconds < 10)
+        sec = "0"+sec;
+    
+    scorePanel->setParamValue(1, mins + ":" + sec);
+}
+
+void BaseApplication::modifyScore(int num)
+{
+    score += num;
+    scorePanel->setParamValue(0,Ogre::StringConverter::toString(score));
 }
