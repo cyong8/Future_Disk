@@ -38,6 +38,7 @@ This source file is part of the
 #include "btBulletDynamicsCommon.h"
 
 #include <assert.h>
+#include <time.h>
 
 using namespace std;
 
@@ -91,6 +92,8 @@ protected:
     virtual void windowResized(Ogre::RenderWindow* rw);
     //Unattach OIS before window shutdown (very important under Linux)
     virtual void windowClosed(Ogre::RenderWindow* rw);
+    void updateTimer(time_t currTime);
+    void modifyScore(int num);
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
@@ -101,7 +104,10 @@ protected:
 
     // OgreBites
     OgreBites::ParamsPanel* scorePanel;       // scoring panel for TronGame
-
+    int initMinutes;
+    time_t initTime;
+    int score;
+    
     OgreBites::SdkTrayManager* mTrayMgr;
  //   OgreBites::SdkCameraMan* mCameraMan;       // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;     // sample details panel
