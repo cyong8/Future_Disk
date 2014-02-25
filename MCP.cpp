@@ -66,15 +66,29 @@ void MCP::createScene(void)
     Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
 
     // Create a panel
-    Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
-    panel->setPosition( 0.0, 0.0 );
-    panel->setDimensions( 0.1, 0.1 );
-    panel->setMaterialName( "BaseWhite" );
-    // Add the panel to the overlay
-    overlay->add2D( panel );
+    Ogre::OverlayContainer* CHV = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
+    CHV->setPosition( 0.5, 0.4 );
+    CHV->setDimensions( 0.001, 0.2 );
+    CHV->setMaterialName( "BaseWhite" );
+    CHV->getMaterial()->setReceiveShadows(false);
+
+    // Add the CHV to the overlay
+    overlay->add2D( CHV );
+
+    Ogre::Overlay* overlay2 = overlayManager.create( "OverlayName2" );
+    // // Create a panel
+    Ogre::OverlayContainer* CHH = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName2" ) );
+    CHH->setPosition( 0.425, 0.5 );
+    CHH->setDimensions( 0.15, 0.001 );
+    CHH->setMaterialName( "BaseWhite" );
+    CHH->getMaterial()->setReceiveShadows(false);
+    // Add the CHH to the overlay
+    overlay2->add2D( CHH );
+
 
     // Show the overlay
     overlay->show();
+    overlay2->show();
 
 
 
