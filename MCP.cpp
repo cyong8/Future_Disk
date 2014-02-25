@@ -21,18 +21,28 @@ void MCP::createScene(void)
 
     gameStart = false;
     /******************** LIGHTS ********************/
-	// initializing light
+	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
-    		/* more light sources here */
+    // Point light 1 
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
-    pointLight->setType(Ogre::Light::LT_POINT);
-    pointLight->setPosition(Ogre::Vector3(0.1f,0.0f, 0.0f));
+    //pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setType(Ogre::Light::LT_DIRECTIONAL);
+    pointLight->setDirection(Ogre::Vector3(0.0f, -1.0f, 0.0f));
+    //pointLight->setPosition(Ogre::Vector3(0.0f,0.1f, 0.0f));
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
 
+    /*// Point light 2
+    Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
+    pointLight->setType(Ogre::Light::LT_DIFFUSE);
+    pointLight->setPosition(Ogre::Vector3(0.1f,0.0f, 0.0f));
+    pointLight->setDiffuseColour(Ogre::ColourValue::White);
+    pointLight->setSpecularColour(Ogre::ColourValue::White);
+    pointLight->setVisible(true);
+    */
     /******************** GAME OBJECTS ********************/
 
     PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
@@ -61,7 +71,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float fz = 0.0f;
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
     bool keyWasPressed = false;
- 
+    float sprintFactor = 1.0f;
+
     // Tutorial code to possibly help us with throwing the disk:
     // toggles a light currently when the mouse click is released
 /*    if (currMouse && ! mMouseDown)
@@ -79,6 +90,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
  */
     mMouseDown = currMouse;
  
+    // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 
     // Move into aiming-mode
@@ -98,6 +110,17 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         pc->toggleThirdPersonView();
         vKeyDown = false;
     }
+    // Sprint mode - press spacebar to activate
+    if(mKeyboard->isKeyDown(OIS::KC_SPACE))
+    {
+        sprintFactor = 3.0f;
+    }
+    else
+    {
+        sprintFactor = 1.0f;
+    }
+
+
     if (!vKeyDown)  // disable movement while in aim mode
     {
         // Move the player
@@ -129,7 +152,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         if (keyWasPressed == true)
         {
             Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
-            p1->getBody()->setLinearVelocity(velocityVector);
+            p1->getBody()->setLinearVelocity(velocityVector * sprintFactor);
         }
     }
 
