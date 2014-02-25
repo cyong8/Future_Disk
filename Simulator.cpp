@@ -132,8 +132,10 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		}
 	}
 
-	if(p1->checkHolding()) // move the ball into the players hand
+	if(p1->checkHolding()) // move the disk into the players hand
 		p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(0.0f, p1->getPlayerDimensions().y, 0.0f), Ogre::Node::TS_WORLD);
+	
+
 
 }
 
