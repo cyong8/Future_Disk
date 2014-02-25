@@ -9,6 +9,7 @@ Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	rootNode->attachObject(ent); // Attach wall to scenenode
 	rootNode->scale(dimensions.x/100, dimensions.y/100, dimensions.z/100); // Scale the wall to fit the world
 	rootNode->setPosition(position); // Set the position of the wall
+	//ent->setMaterialName("Examples/WaterStream");
 	ent->setMaterialName("Examples/Rockwall");
 
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));

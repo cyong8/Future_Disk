@@ -60,14 +60,32 @@ void MCP::createScene(void)
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Add Target to simulator every newTarget number of seconds or if there are no targets in targetList
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+
+
+
+    Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+         // Create an overlay
+    Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
+
+    // Create a panel
+    Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
+    panel->setPosition( 0.0, 0.0 );
+    panel->setDimensions( 0.1, 0.1 );
+    panel->setMaterialName( "BaseWhite" );
+    // Add the panel to the overlay
+    overlay->add2D( panel );
+
+    // Show the overlay
+    overlay->show();
+
+
+
 }
 
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     static bool mMouseDown = false;     // If a mouse button is depressed
-//    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
-//    static Ogre::Real mRotate = 0.13;   // The rotate constant
     static Ogre::Real mMove = 3.0f;      // The movement constant
     float fx = 0.0f;
     float fy = 0.0f;
@@ -75,21 +93,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
     bool keyWasPressed = false;
     float sprintFactor = 1.0f;
-
-    // Tutorial code to possibly help us with throwing the disk:
-    // toggles a light currently when the mouse click is released
-/*    if (currMouse && ! mMouseDown)
-    {
-        Ogre::Light* light = mSceneMgr->getLight("pointLight");
-        light->setVisible(! light->isVisible());
-    }
-    if ((mToggle < 0.0f ) && mKeyboard->isKeyDown(OIS::KC_1))
-    {
-        mToggle  = 0.5;
-        Ogre::Light* light = mSceneMgr->getLight("pointLight");
-        light->setVisible(! light->isVisible());
-    }
-  */
  
     mMouseDown = currMouse;
     Player *p = (Player *)game_simulator->getGameObject("Player1");
@@ -101,7 +104,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         // Give a velocity vector to the disk
         p->throwDisk();
     }
- 
     // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 
@@ -120,6 +122,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
         game_simulator->toggleViewChange("Player1");
         pc->toggleThirdPersonView();
+        
         vKeyDown = false;
     }
     // Sprint mode - press spacebar to activate

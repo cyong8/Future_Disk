@@ -9,11 +9,10 @@ class Player : public GameObject
 {
 public:
 	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition);
+
 	void setHolding(void); // Set whether the player is holding the disk
 	void attachDisk(Disk* d); // Attach the disk to the player
 	bool checkHolding(void); // Check if the player is holding the disk
-	bool checkIsInHand(void); // Check if the disk is in the player's hand
-	void setInHand(void); // Set whether the disk is in the player's hand
 	void throwDisk(void); // Throw the disk in a particular direction
 
 	Ogre::SceneNode* getPlayerSightNode(void); // Get the scene node where the player is looking
@@ -25,11 +24,10 @@ protected:
 	bool isHolding;		
 	bool isInHand;
 	Disk* playerDisk;
-	Ogre::Vector3 crossHairDimensions;
+	// Ogre::Vector3 crossHairDimensions;
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
-	Ogre::SceneNode* crossHairNode; // The helper SceneNode  
 };
 
 #endif // #ifndef __Player_h_

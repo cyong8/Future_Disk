@@ -4,26 +4,9 @@
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
 	: GameObject(nym, mgr, sim)
 {
-	crossHairDimensions = Ogre::Vector3(0.02f, 0.1f, 0.1f);
 	// initialize Cameras
 	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -8.0f));
 	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 2.0f, 20.0f));
-	this->crossHairNode = pSightNode->createChildSceneNode("CrossHairNode");
-	// Entities for Crosshair
-	Ogre::Entity* crossHair1 = mgr->createEntity("CrossHair1", "cube.mesh");
-	Ogre::Entity* crossHair2 = mgr->createEntity("CrossHair2", "cube.mesh");
-	// Attach the Entities
-	pSightNode->attachObject(crossHair1);
-	crossHairNode->attachObject(crossHair2);
-	// Scale the Nodes
-	pSightNode->scale(crossHairDimensions.x/100, crossHairDimensions.y/100, crossHairDimensions.z/100);
-	crossHairNode->scale(crossHairDimensions.x/100, crossHairDimensions.y/100, crossHairDimensions.z/100);
-	// Rotate Nodes so they look like an X
-//	pSightNode->rotate();
-//	crossHairNode->rotate();
-	// Initialize Nodes to invisible and toggle in Aim View
-//	pSightNode->setVisible(false);
-//	crossHairNode->setVisible(false);
 
 	this->dimensions = dimensions;
 	typeName = "Player";
@@ -96,16 +79,6 @@ void Player::throwDisk()
 
 	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION); // set the activation state of the body so it doesn't move in bullet
 	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode	
-}
-
-bool Player::checkIsInHand()
-{
-	return this->isInHand;
-}
-void Player::setInHand() // is this being called at all (refer to StepSimulation)
-{
-	this->getPlayerDisk()->getSceneNode()->setPosition(this->rootNode->getPosition() + Ogre::Vector3(this->dimensions.x, 0.0f, 0.0f));
-	this->isInHand = true;
 }
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
