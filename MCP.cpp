@@ -24,25 +24,25 @@ void MCP::createScene(void)
 	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
-
+/*
     // Point light 1 
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
     //pointLight->setType(Ogre::Light::LT_POINT);
-    pointLight->setType(Ogre::Light::LT_DIRECTIONAL);
-    pointLight->setDirection(Ogre::Vector3(0.0f, -1.0f, 0.0f));
-    //pointLight->setPosition(Ogre::Vector3(0.0f,0.1f, 0.0f));
+    pointLight->setType(Ogre::Light::LT_POINT);
+    //pointLight->setDirection(Ogre::Vector3(0.0f, -1.0f, 0.0f));
+    pointLight->setPosition(Ogre::Vector3(0.0f,0.1f, 0.0f));
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-
-    /*// Point light 2
+*/
+    // Point light 2
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
-    pointLight->setType(Ogre::Light::LT_DIFFUSE);
-    pointLight->setPosition(Ogre::Vector3(0.1f,0.0f, 0.0f));
+    pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setPosition(Ogre::Vector3(0.0f,1.0f, 0.0f));
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-    */
+    
     /******************** GAME OBJECTS ********************/
 
     PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
@@ -106,9 +106,15 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         Ogre::Light* light = mSceneMgr->getLight("pointLight");
         light->setVisible(! light->isVisible());
     }
+  */
  
- */
     mMouseDown = currMouse;
+    Player *p = (Player *)game_simulator->getGameObject("Player1");
+        
+    if(mMouseDown && p->checkHolding())
+    {
+        p->setHolding();
+    }
  
     // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
