@@ -29,13 +29,13 @@ void Room::addWall(Wall *w)
 void Room::addWalls(vector<Wall> wallList, Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
 	double dimension = 10.0f;
-	Ogre::Vector3 *xzplane = new Ogre::Vector3(dimension*2, 0.01f, dimension*2);
-	Ogre::Vector3 *yzplane = new Ogre::Vector3(0.01f, dimension, dimension*2);
+	Ogre::Vector3 *xzplane = new Ogre::Vector3(dimension*2, 0.01f, dimension*4);
+	Ogre::Vector3 *yzplane = new Ogre::Vector3(0.01f, dimension, dimension*4);
 	Ogre::Vector3 *xyplane = new Ogre::Vector3(dimension*2, dimension, 0.01f);
 	
 	// Specify name, axis it needs to be along, how big the wall needs to be, 
 	//new Wall("WallExample", )
-
+	// Format is nym, sceneManager, Simulator, plane, dimensions, position
 	(new Wall("Floor", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), *xzplane, Ogre::Vector3(0.0f, -dimension/2, 0.0f)))->addToSimulator();
 	(new Wall("Ceiling", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), *xzplane, Ogre::Vector3(0.0f, dimension/2, 0.0f)))->addToSimulator();
 	(new Wall("leftwall", mSceneMgr, game_simulator, Ogre::Vector3(0.0f, 1.0f, 2.0f), *yzplane, Ogre::Vector3(-dimension, 0.0f, 0.0f)))->addToSimulator();
