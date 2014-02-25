@@ -21,18 +21,28 @@ void MCP::createScene(void)
 
     gameStart = false;
     /******************** LIGHTS ********************/
-	// initializing light
+	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
-
-    		/* more light sources here */
+/*
+    // Point light 1 
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
+    //pointLight->setType(Ogre::Light::LT_POINT);
     pointLight->setType(Ogre::Light::LT_POINT);
-    pointLight->setPosition(Ogre::Vector3(0.1f,0.0f, 0.0f));
+    //pointLight->setDirection(Ogre::Vector3(0.0f, -1.0f, 0.0f));
+    pointLight->setPosition(Ogre::Vector3(0.0f,0.1f, 0.0f));
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-
+*/
+    // Point light 2
+    Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
+    pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setPosition(Ogre::Vector3(0.0f,1.0f, 0.0f));
+    pointLight->setDiffuseColour(Ogre::ColourValue::White);
+    pointLight->setSpecularColour(Ogre::ColourValue::White);
+    pointLight->setVisible(true);
+    
     /******************** GAME OBJECTS ********************/
 
     PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
@@ -48,6 +58,26 @@ void MCP::createScene(void)
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Add Target to simulator
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+
+
+
+    Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+         // Create an overlay
+    Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
+
+    // Create a panel
+    Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
+    panel->setPosition( 0.0, 0.0 );
+    panel->setDimensions( 0.1, 0.1 );
+    panel->setMaterialName( "BaseWhite" );
+    // Add the panel to the overlay
+    overlay->add2D( panel );
+
+    // Show the overlay
+    overlay->show();
+
+
+
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
@@ -61,7 +91,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float fz = 0.0f;
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
     bool keyWasPressed = false;
- 
+    float sprintFactor = 1.0f;
+
     // Tutorial code to possibly help us with throwing the disk:
     // toggles a light currently when the mouse click is released
 /*    if (currMouse && ! mMouseDown)
@@ -75,10 +106,17 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         Ogre::Light* light = mSceneMgr->getLight("pointLight");
         light->setVisible(! light->isVisible());
     }
+  */
  
- */
     mMouseDown = currMouse;
+    Player *p = (Player *)game_simulator->getGameObject("Player1");
+        
+    if(mMouseDown && p->checkHolding())
+    {
+        p->setHolding();
+    }
  
+    // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 
     // Move into aiming-mode
@@ -98,6 +136,17 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         pc->toggleThirdPersonView();
         vKeyDown = false;
     }
+    // Sprint mode - press spacebar to activate
+    if(mKeyboard->isKeyDown(OIS::KC_SPACE))
+    {
+        sprintFactor = 3.0f;
+    }
+    else
+    {
+        sprintFactor = 1.0f;
+    }
+
+
     if (!vKeyDown)  // disable movement while in aim mode
     {
         // Move the player
@@ -129,7 +178,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         if (keyWasPressed == true)
         {
             Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
-            p1->getBody()->setLinearVelocity(velocityVector);
+            p1->getBody()->setLinearVelocity(velocityVector * sprintFactor);
         }
     }
 
