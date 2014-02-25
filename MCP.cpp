@@ -58,6 +58,26 @@ void MCP::createScene(void)
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Add Target to simulator
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+
+
+
+    Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
+         // Create an overlay
+    Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
+
+    // Create a panel
+    Ogre::OverlayContainer* panel = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
+    panel->setPosition( 0.0, 0.0 );
+    panel->setDimensions( 0.1, 0.1 );
+    panel->setMaterialName( "BaseWhite" );
+    // Add the panel to the overlay
+    overlay->add2D( panel );
+
+    // Show the overlay
+    overlay->show();
+
+
+
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
