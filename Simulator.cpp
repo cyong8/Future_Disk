@@ -136,7 +136,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(0.0f, p1->getPlayerDimensions().y, 0.0f), Ogre::Node::TS_WORLD);
 	
 
-
 }
 
 void Simulator::setHitFlags(void)
