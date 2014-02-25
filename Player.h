@@ -14,6 +14,7 @@ public:
 	bool checkHolding(void);
 	bool checkIsInHand(void);
 	void setInHand(void);
+	void throwDisk(void);
 
 	Ogre::SceneNode* getPlayerSightNode(void);
 	Ogre::SceneNode* getPlayerCameraNode(void);

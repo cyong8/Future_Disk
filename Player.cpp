@@ -38,7 +38,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	ent->setMaterialName("Examples/Robot");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
-	mass = 0.1f; // Set mass of player
+	mass = 0.5f; // Set mass of player
 }
 
 void Player::attachDisk(Disk* d)
@@ -71,6 +71,18 @@ bool Player::checkHolding()
 {
 	return this->isHolding;
 }
+void Player::throwDisk()
+{
+	// Get position vector of sight node
+	Ogre::Vector3 posVector = pSightNode->getPosition();
+	// Set linear velocity vector to 2x along sight node vector
+	playerDisk->getBody()->setLinearVelocity(btVector3(posVector.x, posVector.y, posVector.z));
+
+	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION); // set the activation state of the body so it doesn't move in bullet
+	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode
+	
+}
+
 bool Player::checkIsInHand()
 {
 	return this->isInHand;
