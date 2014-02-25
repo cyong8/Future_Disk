@@ -4,6 +4,7 @@
 MCP::MCP(void)
 {
 }
+
 //-------------------------------------------------------------------------------------
 MCP::~MCP(void)
 {
@@ -24,6 +25,7 @@ void MCP::createScene(void)
 	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+
 /*
     // Point light 1 
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
@@ -56,9 +58,10 @@ void MCP::createScene(void)
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
     // Add Player1 to simulator
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
-    // Add Target to simulator
+    // Add Target to simulator every newTarget number of seconds or if there are no targets in targetList
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
 }
+
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
@@ -93,7 +96,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         
     if(mMouseDown && p->checkHolding())
     {
+        // Let the player know they are no longer holding the disk
         p->setHolding();
+        // Give a velocity vector to the disk
+        p->throwDisk();
     }
  
     // Default velocity vector - this can be changed if we want to sprint

@@ -55,22 +55,38 @@ void Player::attachDisk(Disk* d)
 	d->getBody()->setActivationState(DISABLE_SIMULATION); // set the activation state of the body so it doesn't move in bullet
 
  	// DEBUGGING
+ 	// /*
  	playerDisk->getSceneNode()->showBoundingBox(true);
 	this->rootNode->showBoundingBox(true);
  	this->rootNode->setVisible(false, false);
+ 	// */
 }
+
+/*
+	return the disk that the player is holding on to
+*/
 Disk* Player::getPlayerDisk()
 {
 	return (*this).playerDisk;
 }
+
+/*
+	
+*/
 void Player::setHolding()
 {
 	isHolding = !isHolding;
 }
+
 bool Player::checkHolding()
 {
 	return this->isHolding;
 }
+
+/*
+	throw the disk
+	To do this you need to call setHolding() to release the disk, then send the disk in the direction of the sightNode of the player. 
+*/
 void Player::throwDisk()
 {
 	// Get position vector of sight node
@@ -79,8 +95,7 @@ void Player::throwDisk()
 	playerDisk->getBody()->setLinearVelocity(btVector3(posVector.x, posVector.y, posVector.z));
 
 	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION); // set the activation state of the body so it doesn't move in bullet
-	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode
-	
+	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode	
 }
 
 bool Player::checkIsInHand()

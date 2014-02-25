@@ -29,6 +29,9 @@ Simulator::Simulator()
 	viewChangeP2 = false;
 }
 
+/*
+	Simulator destructor class
+*/
 Simulator::~Simulator()
 {
 	delete(collisionConfiguration);
@@ -37,15 +40,21 @@ Simulator::~Simulator()
 	delete(dynamicsWorld);
 }
 
+/*
+	Add a GameObject to the simulator
+*/
 void Simulator::addObject (GameObject* o) 
 {
+	// Put the object back in the simulator
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);
 	
+	// Add the object to the list of object
 	objList.push_back(o);
+
 	//use default collision group/mask values (dynamic/kinematic/static)
 	dynamicsWorld->addRigidBody(o->getBody());
 
-	/* Set custom btRigidBody WRT specific GameObjects */
+	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
 		setPlayer((Player*)o);
