@@ -25,6 +25,7 @@ public:
 	bool gameStart;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
+	bool vKeyDown;
 
 	MCP(void);
 	virtual ~MCP(void);
@@ -33,6 +34,7 @@ protected:
 	virtual void createScene(void);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
+	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 };
 
 #endif // #ifndef __MCP_h_

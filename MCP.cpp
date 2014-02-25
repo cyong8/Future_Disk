@@ -14,6 +14,7 @@ MCP::~MCP(void)
 void MCP::createScene(void)
 {
     game_simulator = new Simulator();
+    vKeyDown = false;
 
     // initialize random number generate
     srand(time(0));
@@ -52,7 +53,6 @@ void MCP::createScene(void)
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     static bool mMouseDown = false;     // If a mouse button is depressed
-    static bool vKeyDown = false;       // If the v key was held down in the previous frame
 //    static Ogre::Real mToggle = 0.0;    // The time left until next toggle
 //    static Ogre::Real mRotate = 0.13;   // The rotate constant
     static Ogre::Real mMove = 3.0f;      // The movement constant
@@ -60,7 +60,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float fy = 0.0f;
     float fz = 0.0f;
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
-    bool vState = mKeyboard->isKeyDown(OIS::KC_V);
     bool keyWasPressed = false;
  
     // Tutorial code to possibly help us with throwing the disk:
@@ -137,13 +136,27 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     return true;
 }
 
+bool MCP::mouseMoved(const OIS::MouseEvent &evt)
+{
+    // if 'v' is pressed and was pressed last frame - still in aim mode
+    if (vKeyDown)
+    {
+        // must update Sight Node position by the mouse event state
+        // evt.state.X.rel - change in x
+        // evt.state.Y.rel - change in y
+        // evt.state.Z.rel - could add change in z so that player can adjust depth of crosshair 
+            // this would simplify the case of the crosshair being further than wall (i.e. let player fix it)
+        Player* p = (Player*)game_simulator->getGameObject("Player1");
+       // if (getPlayerSightNode()->)
+        p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, -evt.state.Y.rel/25.0f, 0);
+    }
+}
+
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 
     bool ret = BaseApplication::frameRenderingQueued(evt);
-     // if(mShutDown)
-     //    return false;
  
     if(!processUnbufferedInput(evt)) 
         return false;
