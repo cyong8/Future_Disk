@@ -157,10 +157,10 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 				sZ = 1;
 			else if(sZ < 0)
 				sZ = -1;
-			p1->getPlayerDisk()->getSceneNode()->rotate(p1->getPlayerDisk()->getSceneNode()->getPosition().getRotationTo(p1->getPlayerSightNode()->getPosition()));
+			p1->getPlayerDisk()->getSceneNode()->yaw((p1->getPlayerDisk()->getSceneNode()->getPosition().getRotationTo(p1->getPlayerSightNode()->getPosition())).getYaw());
 			p1->getSceneNode()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach the disk from it's parent (root or other player)
 			sceneMgr->getRootSceneNode()->addChild(p1->getPlayerDisk()->getSceneNode());
-			p1->getPlayerDisk()->getBody()->setActivationState(DISABLE_DEACTIVATION);
+			//p1->getPlayerDisk()->getBody()->setActivationState(DISABLE_DEACTIVATION);
 			p1->getPlayerDisk()->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
 			p1->getPlayerDisk()->updateTransform();
 			throwFlag = false;
@@ -168,6 +168,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
         else
         {
 			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z) + p1->getSceneNode()->getPosition());
+        	p1->getPlayerDisk()->updateTransform();
+
         }
 	}
 }

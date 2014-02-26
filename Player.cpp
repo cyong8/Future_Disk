@@ -86,7 +86,7 @@ void Player::throwDisk()
 	playerDisk->getSceneNode()->rotate(playerDisk->getSceneNode()->getPosition().getRotationTo(pSightNode->getPosition()));
 	playerDisk->getSceneNode()->getParent()->removeChild(playerDisk->getSceneNode()); // detach the disk from it's parent (root or other player)
 	sceneMgr->getRootSceneNode()->addChild(playerDisk->getSceneNode());
-	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION);
+	//playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION);
 	playerDisk->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
 	playerDisk->updateTransform();
 }
