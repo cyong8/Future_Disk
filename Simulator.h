@@ -2,6 +2,9 @@
 #define __Simulator_h_
 
 #include "BaseApplication.h"
+#include <vector>
+#include "Target.h"
+using namespace std;
 
 class GameObject;
 class Player;
@@ -25,6 +28,7 @@ class Simulator
 		Player* p2;
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
+		vector<Target*> targetList;
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;

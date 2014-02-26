@@ -40,7 +40,7 @@ void MCP::createScene(void)
     new Room(mSceneMgr, game_simulator);
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
-    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(2.0f, 0.01f, 2.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator();
     gameDisk = (Disk*)game_simulator->getGameObject("Disk");
 
     // Now that the room is created we can initialize the position of the light to be at the top of it and in the center
