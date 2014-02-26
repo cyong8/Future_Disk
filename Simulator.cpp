@@ -6,8 +6,9 @@
 #include "PlayerCamera.h"
 #include "Disk.h"
 
-Simulator::Simulator() 
+Simulator::Simulator(Ogre::SceneManager* mSceneMgr) 
 {
+	sceneMgr = mSceneMgr;
 	//collision configuration contains default setup for memory, collision setup.
 	collisionConfiguration = new btDefaultCollisionConfiguration();
 	//use the default collision dispatcher. For parallel processing you can use a different dispatcher
@@ -138,6 +139,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
         if (throwFlag)
         {
         	//p1->throwDisk();
+        	//Ogre::LogManager::getSingletonPtr()->logMessage("\n\n\n\n_______THROW FLAG TRUE_______\n\n\n\n");
         	p1->setHolding();
 
 			Ogre::Real sX = p1->getPlayerSightNode()->getPosition().x;
@@ -145,12 +147,18 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			Ogre::Real sZ = p1->getPlayerSightNode()->getPosition().z;
 			if (sX > 0)
 				sX = 1;
+			else if(sX < 0)
+				sX = -1;
 			if (sY > 0)
 				sY = 1;
+			else if(sY < 0)
+				sY = -1;
 			if (sZ > 0)
 				sZ = 1;
+			else if(sZ < 0)
+				sZ = -1;
 			p1->getPlayerDisk()->getSceneNode()->rotate(p1->getPlayerDisk()->getSceneNode()->getPosition().getRotationTo(p1->getPlayerSightNode()->getPosition()));
-			p1->getPlayerDisk()->getSceneNode()->getParent()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach the disk from it's parent (root or other player)
+			p1->getSceneNode()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach the disk from it's parent (root or other player)
 			sceneMgr->getRootSceneNode()->addChild(p1->getPlayerDisk()->getSceneNode());
 			p1->getPlayerDisk()->getBody()->setActivationState(DISABLE_DEACTIVATION);
 			p1->getPlayerDisk()->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
@@ -158,7 +166,9 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			throwFlag = false;
         }
         else
-			p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z/1.5), Ogre::Node::TS_WORLD);
+        {
+			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z) + p1->getSceneNode()->getPosition());
+        }
 	}
 }
 

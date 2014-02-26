@@ -50,7 +50,7 @@ void Player::attachDisk(Disk* d)
 */
 Disk* Player::getPlayerDisk()
 {
-	return (*this).playerDisk;
+	return playerDisk;
 }
 
 /*

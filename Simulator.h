@@ -30,7 +30,7 @@ class Simulator
 		bool throwFlag;
 
 	public:
-		Simulator();
+		Simulator(Ogre::SceneManager* mSceneMgr);
 		~Simulator();
 		void addObject(GameObject* o);
 		btCollisionShape *box_shape;

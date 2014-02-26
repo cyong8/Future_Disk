@@ -19,7 +19,7 @@ public:
 	Ogre::SceneNode* getPlayerCameraNode(void); // Get the camera node attached to the player
 	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
 	Disk* getPlayerDisk(void); // Get the disk that the player is holding
-
+	
 protected:
 	bool isHolding;		
 	bool isInHand;
