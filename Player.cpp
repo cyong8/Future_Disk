@@ -72,13 +72,23 @@ bool Player::checkHolding()
 */
 void Player::throwDisk()
 {
-	// Get position vector of sight node
-	Ogre::Vector3 posVector = pSightNode->getPosition();
-	// Set linear velocity vector to 2x along sight node vector
-	playerDisk->getBody()->setLinearVelocity(btVector3(posVector.x, posVector.y, posVector.z));
+	isHolding = false;
 
-	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION); // set the activation state of the body so it doesn't move in bullet
-	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode	
+	Ogre::Real sX = pSightNode->getPosition().x;
+	Ogre::Real sY = pSightNode->getPosition().y;
+	Ogre::Real sZ = pSightNode->getPosition().z;
+	if (sX > 0)
+		sX = 1;
+	if (sY > 0)
+		sY = 1;
+	if (sZ > 0)
+		sZ = 1;
+	playerDisk->getSceneNode()->rotate(playerDisk->getSceneNode()->getPosition().getRotationTo(pSightNode->getPosition()));
+	playerDisk->getSceneNode()->getParent()->removeChild(playerDisk->getSceneNode()); // detach the disk from it's parent (root or other player)
+	sceneMgr->getRootSceneNode()->addChild(playerDisk->getSceneNode());
+	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION);
+	playerDisk->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
+	playerDisk->updateTransform();
 }
 Ogre::SceneNode* Player::getPlayerSightNode()
 {

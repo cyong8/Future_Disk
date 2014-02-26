@@ -108,15 +108,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     bool keyWasPressed = false;
     float sprintFactor = 1.0f;
  
-    mMouseDown = currMouse;
     Player *p = (Player *)game_simulator->getGameObject("Player1");
         
-    if(mMouseDown && p->checkHolding())
+    if(mMouseDown && !currMouse && p->checkHolding() && vKeyDown)
     {
-        // Let the player know they are no longer holding the disk
-        p->setHolding();
-        // Give a velocity vector to the disk
-        p->throwDisk();
+        game_simulator->setThrowFlag();
     }
     // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
@@ -203,6 +199,7 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
         p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, -evt.state.Y.rel/25.0f, 0);
     }
 }
+
 
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)

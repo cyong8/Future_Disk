@@ -27,6 +27,7 @@ class Simulator
 		PlayerCamera* player2Cam;
 		bool viewChangeP1;
 		bool viewChangeP2;
+		bool throwFlag;
 
 	public:
 		Simulator();
@@ -42,6 +43,7 @@ class Simulator
 		GameObject* getGameObject(Ogre::String name);
 		PlayerCamera* getPlayerCamera(Ogre::String name);
 		void toggleViewChange(Ogre::String name);
+		void setThrowFlag(void);
 };
 
 #endif // #ifndef __Simulator_h_
