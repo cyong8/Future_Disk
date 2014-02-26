@@ -23,7 +23,7 @@ void MCP::createScene(void)
     gameStart = false;
     /******************** LIGHTS ********************/
 	// Ambient light
-    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
     // Point light
@@ -33,53 +33,44 @@ void MCP::createScene(void)
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
     
-    /******************** GAME OBJECTS ********************/
-
+    /********************** GAME OBJECTS **********************/
+    /* Add and create GameObjects to be added to the simulator */
     PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
-    
-    // Add PlayerCamera to Simulator so it can update it when Player moves
     game_simulator->setCamera(p1Cam);
-
-    // Initialize the Room & add Walls to simulator
-    gameRoom = new Room(mSceneMgr, game_simulator);
-    // Set point light position to be at the roof
-    pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
-    // Add Disk to simulator
+    new Room(mSceneMgr, game_simulator);
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
-    gameDisk = (Disk*)game_simulator->getGameObject("Disk");
-    // Add Player1 to simulator
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
-    // Add Target to simulator every newTarget number of seconds or if there are no targets in targetList
-    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+    gameDisk = (Disk*)game_simulator->getGameObject("Disk");
 
-    //___Crosshair creation___!
+    // Now that the room is created we can initialize the position of the light to be at the top of it and in the center
+    pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+
+    /********************** Overlay (Crosshair) **********************/
     Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
-         // Create an overlay
-    Ogre::Overlay* overlay = overlayManager.create( "OverlayName" );
+    Ogre::Overlay* overlay = overlayManager.create( "OverlayName" ); // Create an overlay
 
     // Create a panel
-    Ogre::OverlayContainer* CHV = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName" ) );
-    CHV->setPosition( 0.5, 0.4 );
-    CHV->setDimensions( 0.001, 0.2 );
-    CHV->setMaterialName( "BaseWhite" );
+    Ogre::OverlayContainer* CHV = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement("Panel", "PanelName"));
+    CHV->setPosition(0.5f, 0.4f);
+    CHV->setDimensions(0.001f, 0.2f);
+    CHV->setMaterialName("BaseWhite");
     CHV->getMaterial()->setReceiveShadows(false);
 
-    // Add the CHV to the overlay
-    overlay->add2D( CHV );
+    overlay->add2D( CHV ); // Add the CHV to the overlay
 
     Ogre::Overlay* overlay2 = overlayManager.create( "OverlayName2" );
+
     // // Create a panel
     Ogre::OverlayContainer* CHH = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName2" ) );
     CHH->setPosition( 0.425, 0.5 );
     CHH->setDimensions( 0.15, 0.001 );
     CHH->setMaterialName( "BaseWhite" );
     CHH->getMaterial()->setReceiveShadows(false);
-    // Add the CHH to the overlay
-    overlay2->add2D( CHH );
 
+    overlay2->add2D( CHH );     // Add the CHH to the overlay
 
-    // Show the overlay
-    overlay->hide();
+    overlay->hide();    // Hide the Crosshair till Aim View activated
     overlay2->hide();
 
     p1Cam->setCHOverlays(overlay, overlay2);
@@ -101,13 +92,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     Player *p = (Player *)game_simulator->getGameObject("Player1");
         
     if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown)
-    {
-        //Ogre::LogManager::getSingletonPtr()->logMessage("\n\n\n\n_______setting throw flag_______\n\n\n\n");
         game_simulator->setThrowFlag();
-    }
+
     mMouseDown = currMouse;
-    // Default velocity vector - this can be changed if we want to sprint
-    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
+    
+    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
 
     // Move into aiming-mode
         // if 'v' is pressed and was not pressed last frame - go to aim mode
@@ -127,17 +116,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         
         vKeyDown = false;
     }
-    // Sprint mode - press spacebar to activate
-    if(mKeyboard->isKeyDown(OIS::KC_SPACE))
+    if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Sprint mode - activate by Left Shift
     {
         sprintFactor = 3.0f;
     }
-    else
-    {
-        sprintFactor = 1.0f;
-    }
-
-
     if (!vKeyDown)  // disable movement while in aim mode
     {
         // Move the player
@@ -166,23 +148,47 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
             keyWasPressed = true;
         }
+        if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
+        {
+            if (p->getSceneNode()->getPosition().y == game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y)
+            {
+                fy += mMove; // Jump, Jump
+                velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
+                keyWasPressed = true;
+            }
+        }
         if (keyWasPressed == true)
         {
-            Player* p1 = (Player*)(game_simulator->getGameObject((Ogre::String)"Player1"));
-            p1->getBody()->setLinearVelocity(velocityVector * sprintFactor);
+            p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
         }
     }
-
     return true;
 }
 
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
+    Player* p = (Player*)game_simulator->getGameObject("Player1");
+    PlayerCamera* pcam = game_simulator->getPlayerCamera("P1_cam");
+
     // if 'v' is pressed and was pressed last frame - still in aim mode
     if (vKeyDown)
+    {   
+        // Set bounds are not working
+       // if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
+     //       && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
+            p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
+      //  if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
+      //      && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
+            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
+    }
+    else
     {
-        Player* p = (Player*)game_simulator->getGameObject("Player1");
-        p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, -evt.state.Y.rel/25.0f, 0);
+    //   if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
+    //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
+            p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
+   //     if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
+    //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
+            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
     }
 }
 
@@ -199,9 +205,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     // check collisions
     game_simulator->setHitFlags();
-
-    // Light tracking Disk
-    pointLight->setPosition(gameDisk->getSceneNode()->getPosition().x, pointLight->getPosition().y, gameDisk->getSceneNode()->getPosition().z);
 
     return ret;
 }

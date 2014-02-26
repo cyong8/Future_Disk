@@ -15,9 +15,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr)
 	overlappingPairCache = new btDbvtBroadphase();
 	//the default constraint solver. For parallel processing you can use a different solver (see Extras/BulletMultiThreaded)
 	solver = new btSequentialImpulseConstraintSolver();
-	//assign collision dispatcher to the collision configuration (Cody)
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
-
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	
 	dynamicsWorld->setGravity(btVector3(0,-9.8, 0));
@@ -63,7 +61,7 @@ void Simulator::addObject (GameObject* o)
 		o->getBody()->setAngularFactor(btVector3(0,0,0));
 
 		// Initialize PlayerCam Position now that you have the player and its CameraNode position
-		player1Cam->initializePosition(Ogre::Vector3(0.0f, 5.0f, 20.0f), ((Player*)o)->getPlayerSightNode()->getPosition());
+		player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
 		player1Cam->setPlayer((Player*)o);
 	}
 	
@@ -120,7 +118,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			}
 			else // Return from Aim view
 			{
-				player1Cam->initializePosition(Ogre::Vector3(0.0f, 2.0f, 20.0f), p1->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 			}
 		}
 		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
@@ -130,7 +128,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 			}
 			else
-				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 2.0f, 20.0f), p1->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
 

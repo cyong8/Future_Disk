@@ -14,14 +14,14 @@
 #include "Wall.h"
 #include "Target.h"
 
-//#include "ControlListener.h"
+
 class Simulator;
 
 class MCP : public BaseApplication
 {
 public:
 	Simulator* game_simulator;
-	Room* gameRoom;
+	vector<Wall> wallList;
 	bool gameStart;
 	Ogre::Real minutes;
 	Ogre::Real seconds;

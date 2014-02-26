@@ -25,20 +25,14 @@ PlayerCamera::~PlayerCamera(void)
     mCamSceneMgr->destroySceneNode(name + "_target");
 }
 
-void PlayerCamera::setCHOverlays(Ogre::Overlay* o, Ogre::Overlay* o2)
-{
-    overlay = o;
-    overlay2 = o2;
-}
-
 void PlayerCamera::toggleThirdPersonView(void)
 {
     inAimMode = !inAimMode;    
  
+    p->getPlayerSightNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -8.0f));
+    mTargetNode->setPosition(Ogre::Vector3(0.0f, 0.0f, -8.0f));
     if (!inAimMode) // Restore SightNode to default position when the player leaves Aim View
     {
-        p->getPlayerSightNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -8.0f));
-        mTargetNode->setPosition(Ogre::Vector3(0.0f, 0.0f, -8.0f));
         overlay->hide();
         overlay2->hide();
     }
@@ -80,4 +74,15 @@ bool PlayerCamera::isInAimMode()
 Ogre::Camera* PlayerCamera::getMCamera()
 {
     return mCamera;
+}
+
+void PlayerCamera::setCHOverlays(Ogre::Overlay* o, Ogre::Overlay* o2)
+{
+    overlay = o;
+    overlay2 = o2;
+}
+
+Ogre::SceneNode* PlayerCamera::getPCamSceneNode()
+{
+    return mCameraNode;
 }
