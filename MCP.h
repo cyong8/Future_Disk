@@ -21,7 +21,7 @@ class MCP : public BaseApplication
 {
 public:
 	Simulator* game_simulator;
-	Room *room;
+	Room* gameRoom;
 	bool gameStart;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
@@ -36,7 +36,7 @@ protected:
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
-
+	Ogre::Light* pointLight;
 	Disk* gameDisk;
 };
 

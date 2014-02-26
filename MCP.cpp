@@ -26,19 +26,8 @@ void MCP::createScene(void)
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5,0.5,0.5));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
-/*
-    // Point light 1 
-    Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
-    //pointLight->setType(Ogre::Light::LT_POINT);
-    pointLight->setType(Ogre::Light::LT_POINT);
-    //pointLight->setDirection(Ogre::Vector3(0.0f, -1.0f, 0.0f));
-    pointLight->setPosition(Ogre::Vector3(0.0f,0.1f, 0.0f));
-    pointLight->setDiffuseColour(Ogre::ColourValue::White);
-    pointLight->setSpecularColour(Ogre::ColourValue::White);
-    pointLight->setVisible(true);
-*/
-    // Point light 2
-    Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
+    // Point light
+    pointLight = mSceneMgr->createLight("pointLight");
     pointLight->setType(Ogre::Light::LT_POINT);
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
@@ -52,11 +41,12 @@ void MCP::createScene(void)
     game_simulator->setCamera(p1Cam);
 
     // Initialize the Room & add Walls to simulator
-    new Room(mSceneMgr, game_simulator);
+    gameRoom = new Room(mSceneMgr, game_simulator);
     // Set point light position to be at the roof
     pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
     // Add Disk to simulator
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
+    gameDisk = (Disk*)game_simulator->getGameObject("Disk");
     // Add Player1 to simulator
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Add Target to simulator every newTarget number of seconds or if there are no targets in targetList
@@ -191,13 +181,7 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     // if 'v' is pressed and was pressed last frame - still in aim mode
     if (vKeyDown)
     {
-        // must update Sight Node position by the mouse event state
-        // evt.state.X.rel - change in x
-        // evt.state.Y.rel - change in y
-        // evt.state.Z.rel - could add change in z so that player can adjust depth of crosshair 
-            // this would simplify the case of the crosshair being further than wall (i.e. let player fix it)
         Player* p = (Player*)game_simulator->getGameObject("Player1");
-       // if (getPlayerSightNode()->)
         p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, -evt.state.Y.rel/25.0f, 0);
     }
 }
@@ -215,6 +199,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     // check collisions
     game_simulator->setHitFlags();
+
+    // Light tracking Disk
+    pointLight->setPosition(gameDisk->getSceneNode()->getPosition().x, pointLight->getPosition().y, gameDisk->getSceneNode()->getPosition().z);
 
     return ret;
 }
