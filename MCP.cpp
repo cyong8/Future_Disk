@@ -50,7 +50,7 @@ void MCP::createScene(void)
     // Add Player1 to simulator
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Add Target to simulator every newTarget number of seconds or if there are no targets in targetList
-    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
+    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(2.0f, 0.01f, 2.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator();
 
     //___Crosshair creation___!
     Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();

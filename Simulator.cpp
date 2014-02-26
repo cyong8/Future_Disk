@@ -2,7 +2,6 @@
 #include "GameObject.h"
 #include "OgreMotionState.h"
 #include "Player.h"
-#include "Target.h"
 #include "PlayerCamera.h"
 #include "Disk.h"
 
@@ -78,6 +77,11 @@ void Simulator::addObject (GameObject* o)
 	if(o->typeName == "Wall")
 	{
 		o->getBody()->setRestitution(.8);
+	}
+
+	if(o->typeName == "Target")
+	{
+		targetList.push_back((Target*)o);
 	}
 }
 
@@ -170,6 +174,18 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z) + p1->getSceneNode()->getPosition());
         	p1->getPlayerDisk()->updateTransform();
         }
+	}
+
+	//COLLISION BETWEEN TARGET AND DISK, CHANGE TARGET POSITION
+	Target* t = targetList[0];
+	if(t->isHit())
+	{
+		t->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
+										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
+					Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
+					Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2,
+									getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 	}
 }
 
