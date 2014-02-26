@@ -14,7 +14,7 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    game_simulator = new Simulator();
+    game_simulator = new Simulator(mSceneMgr);
     vKeyDown = false;
 
     // initialize random number generate
@@ -110,12 +110,12 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
  
     Player *p = (Player *)game_simulator->getGameObject("Player1");
         
-    if(mMouseDown && !currMouse && p->checkHolding() && vKeyDown)
+    if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown)
     {
+        //Ogre::LogManager::getSingletonPtr()->logMessage("\n\n\n\n_______setting throw flag_______\n\n\n\n");
         game_simulator->setThrowFlag();
     }
     mMouseDown = currMouse;
-    
     // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 
