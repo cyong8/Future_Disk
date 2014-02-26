@@ -40,7 +40,6 @@ void MCP::createScene(void)
     // Point light 2
     Ogre::Light* pointLight = mSceneMgr->createLight("pointLight");
     pointLight->setType(Ogre::Light::LT_POINT);
-    pointLight->setPosition(Ogre::Vector3(0.0f,1.0f, 0.0f));
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
@@ -54,13 +53,14 @@ void MCP::createScene(void)
 
     // Initialize the Room & add Walls to simulator
     new Room(mSceneMgr, game_simulator);
+    // Set point light position to be at the roof
+    pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
     // Add Disk to simulator
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
     // Add Player1 to simulator
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
     // Add Target to simulator every newTarget number of seconds or if there are no targets in targetList
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(0.5f, 0.01f, 0.5f), Ogre::Vector3(0.0f, 0.5f, 0.0f)))->addToSimulator();
-
 
     //___Crosshair creation___!
     Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
@@ -114,6 +114,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         game_simulator->setThrowFlag();
     }
+    mMouseDown = currMouse;
+    
     // Default velocity vector - this can be changed if we want to sprint
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
 

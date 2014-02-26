@@ -12,7 +12,6 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	typeName = "Player";
 
 	isHolding = false; // Is the player holding the disk?
-	isInHand = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
@@ -27,7 +26,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 void Player::attachDisk(Disk* d)
 {
 	this->isHolding = true;
-	playerDisk = d; // player now has a pointer to this disk
+	this->playerDisk = d; // player now has a pointer to this disk
 
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
@@ -50,7 +49,7 @@ void Player::attachDisk(Disk* d)
 */
 Disk* Player::getPlayerDisk()
 {
-	return (*this).playerDisk;
+	return this->playerDisk;
 }
 
 /*

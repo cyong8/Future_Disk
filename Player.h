@@ -22,7 +22,6 @@ public:
 
 protected:
 	bool isHolding;		
-	bool isInHand;
 	Disk* playerDisk;
 	// Ogre::Vector3 crossHairDimensions;
 	Ogre::Vector3 dimensions;

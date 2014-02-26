@@ -28,7 +28,6 @@ public:
 	bool vKeyDown;
 	int p1score; // Score for the first player
 
-
 	MCP(void);
 	virtual ~MCP(void);
 
@@ -37,6 +36,8 @@ protected:
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
+
+	Disk* gameDisk;
 };
 
 #endif // #ifndef __MCP_h_

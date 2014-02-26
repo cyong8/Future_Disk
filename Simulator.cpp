@@ -133,7 +133,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		}
 	}
 
-	if(p1->checkHolding()) // move the disk into the players hand
+	if (p1->checkHolding()) // move the disk into or out of the player's hand
 	{
         if (throwFlag)
         {
@@ -151,14 +151,17 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 				sZ = 1;
 			p1->getPlayerDisk()->getSceneNode()->rotate(p1->getPlayerDisk()->getSceneNode()->getPosition().getRotationTo(p1->getPlayerSightNode()->getPosition()));
 			p1->getPlayerDisk()->getSceneNode()->getParent()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach the disk from it's parent (root or other player)
-			sceneMgr->getRootSceneNode()->addChild(p1->getPlayerDisk()->getSceneNode());
+			sceneMgr->getRootSceneNode()->attachObject(p1->getPlayerDisk()->getSceneNode());
 			p1->getPlayerDisk()->getBody()->setActivationState(DISABLE_DEACTIVATION);
 			p1->getPlayerDisk()->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
 			p1->getPlayerDisk()->updateTransform();
 			throwFlag = false;
         }
         else
-			p1->getPlayerDisk()->getSceneNode()->translate(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z/1.5), Ogre::Node::TS_WORLD);
+        { 
+			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z/1.5) + p1->getSceneNode()->getPosition());
+			
+		}
 	}
 }
 
