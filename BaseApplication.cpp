@@ -151,7 +151,7 @@ void BaseApplication::createFrameListener(void)
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
     score = 0;
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    initMinutes = 2;
+    initMinutes = 3;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
     time(&initTime);
     mRoot->addFrameListener(this);

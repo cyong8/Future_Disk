@@ -32,6 +32,7 @@ class Simulator
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
+		int score;
 
 	public:
 		Simulator(Ogre::SceneManager* mSceneMgr);
@@ -46,6 +47,7 @@ class Simulator
 		PlayerCamera* getPlayerCamera(Ogre::String name);
 		void toggleViewChange(Ogre::String name);
 		void setThrowFlag(void);
+		int tallyScore(void);
 };
 
 #endif // #ifndef __Simulator_h_
