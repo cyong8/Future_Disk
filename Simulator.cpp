@@ -49,6 +49,7 @@ void Simulator::addObject (GameObject* o)
 {
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);	
 	objList.push_back(o); // Add the object to the list of object
+
 	dynamicsWorld->addRigidBody(o->getBody());
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
@@ -77,23 +78,18 @@ void Simulator::addObject (GameObject* o)
 			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
 		}
 	}
-	
-	if(o->typeName == "Wall")
-	{
-		o->getBody()->setRestitution(.8);
-	}
-
 	if(o->typeName == "Target")
 	{
 		if (o->checkReAddFlag()){
-			o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
-										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
-									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
-									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
+			((Target*)o)->resetHit();
+			score = 10;
+
 		}
 		targetList.push_back((Target*)o);
+	}
+	if(o->typeName == "Wall")
+	{
+		o->getBody()->setRestitution(.8);
 	}
 }
 
@@ -256,6 +252,12 @@ void Simulator::setHitFlags(void)
 				{
 					((Target*)gA)->targetHit();
 					removeObject("Target");
+					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
+										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
+									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
+									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 					gA->addToSimulator();
 				}
 			}
@@ -268,6 +270,12 @@ void Simulator::setHitFlags(void)
 				{
 					((Target*)gB)->targetHit();
 					removeObject("Target");
+					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
+										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
+									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
+									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 					gB->addToSimulator();
 				}
 			}
@@ -306,4 +314,10 @@ void Simulator::toggleViewChange(Ogre::String name)
 void Simulator::setThrowFlag()
 {
 	throwFlag = !throwFlag;
+}
+int Simulator::tallyScore(void)
+{
+	int tmpScore = score;
+	score = 0;
+	return tmpScore;
 }
