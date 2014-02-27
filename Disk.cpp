@@ -9,6 +9,8 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	*/
 	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);
+
+	diskDirection = Ogre::Vector3(0.0f, 0.0f, -1.0f);
 	
 	typeName = "Disk";
 
@@ -24,10 +26,23 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 
 	shape = new btSphereShape(disk_dimensions.x/2.0f); // Sphere shape similar to project1
 	mass = 0.1f;
+	offWallRotation = false;
 }
-
-// Function to update the orientation of the SceneNode on collision with a wall
-void Disk::updateDiskSNodeOrientation(Ogre::Vector3 v)
+bool Disk::checkOffWallRotation()
 {
+	return offWallRotation;
+}
+void Disk::setRotateOffWall()
+{
+	offWallRotation = true;
+}
+void Disk::rotateOffWall()
+{
+	// perform rotation of sceneNode to the angle v
+	btVector3 lv = body->getLinearVelocity();
+	Ogre::Vector3 velocityDirection = Ogre::Vector3(lv.x(), lv.y(), lv.z()).normalisedCopy(); //direction of the velocity
 
+	Ogre::Quaternion diskRoll = diskDirection.getRotationTo(velocityDirection);
+	rootNode->roll(diskRoll.getRoll());
+	offWallRotation = false;
 }
