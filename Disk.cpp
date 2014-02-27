@@ -43,6 +43,7 @@ void Disk::rotateOffWall()
 	Ogre::Vector3 velocityDirection = Ogre::Vector3(lv.x(), lv.y(), lv.z()).normalisedCopy(); //direction of the velocity
 
 	Ogre::Quaternion diskRoll = diskDirection.getRotationTo(velocityDirection);
-	rootNode->roll(diskRoll.getRoll());
+	rootNode->setOrientation(diskRoll);	
+	diskDirection = velocityDirection;
 	offWallRotation = false;
 }

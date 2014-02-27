@@ -201,13 +201,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(!processUnbufferedInput(evt)) 
         return false;
 
-    if (gameDisk->checkOffWallRotation())
-        gameDisk->rotateOffWall();
-
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     // check collisions
     game_simulator->setHitFlags();
+
     modifyScore(game_simulator->tallyScore());
+
+    if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
+        gameDisk->rotateOffWall();
 
     return ret;
 }
