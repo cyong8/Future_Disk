@@ -30,7 +30,7 @@ material Examples/tdg
 			{
 				texture RustySteel.jpg
 			}
-
+			
 			texture_unit
 			{
 				texture terr_dirt-grass.jpg
