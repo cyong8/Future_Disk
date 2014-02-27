@@ -418,6 +418,25 @@ material Examples/Chrome
 	}
 }
 
+material Examples/BlueChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 0.0 1.0
+			diffuse 0.0 0.0 1.0 
+			specular 0.0 0.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
 material Examples/SpaceSkyPlane
 {
 	technique

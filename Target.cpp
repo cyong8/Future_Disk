@@ -11,14 +11,14 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	rootNode->attachObject(ent);
 
-	rootNode->scale(dimensions.x/100.0f, dimensions.y/100.0f, dimensions.z/100.0f);
+	rootNode->scale(dimensions.x/47.0f, dimensions.y/442.0f, dimensions.z/47.0f);
 	
 	rootNode->setPosition(position);
 	rootNode->pitch(Ogre::Degree(90));
 
-	ent->setMaterialName("Examples/BumpyMetal");
+	ent->setMaterialName("Examples/BlueChrome");
 
-	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
+	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
 	this->rootNode->showBoundingBox(true);
 }
 
