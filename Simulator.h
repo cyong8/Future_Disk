@@ -2,6 +2,9 @@
 #define __Simulator_h_
 
 #include "BaseApplication.h"
+#include <vector>
+#include "Target.h"
+using namespace std;
 
 class GameObject;
 class Player;
@@ -19,6 +22,7 @@ class Simulator
 		//btCollisionWorld* mWorld;
 		Ogre::SceneManager* sceneMgr;
 		vector<GameObject*> objList;
+		vector<Target*> targetList;
 
 		// Attributes to update PlayerCamera
 		Player* p1;
@@ -27,13 +31,12 @@ class Simulator
 		PlayerCamera* player2Cam;
 		bool viewChangeP1;
 		bool viewChangeP2;
+		bool throwFlag;
 
 	public:
-		Simulator();
+		Simulator(Ogre::SceneManager* mSceneMgr);
 		~Simulator();
 		void addObject(GameObject* o);
-		btCollisionShape *box_shape;
-
 		void removeObject(Ogre::String name);
 		void stepSimulation(const Ogre::Real elapsedTime, int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 		void setHitFlags(void);
@@ -42,6 +45,7 @@ class Simulator
 		GameObject* getGameObject(Ogre::String name);
 		PlayerCamera* getPlayerCamera(Ogre::String name);
 		void toggleViewChange(Ogre::String name);
+		void setThrowFlag(void);
 };
 
 #endif // #ifndef __Simulator_h_

@@ -6,13 +6,12 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 {
 	// initialize Cameras
 	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -8.0f));
-	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 2.0f, 20.0f));
+	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 0.0f, 25.0f));
 
 	this->dimensions = dimensions;
 	typeName = "Player";
 
 	isHolding = false; // Is the player holding the disk?
-	isInHand = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
@@ -26,69 +25,42 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 void Player::attachDisk(Disk* d)
 {
-	this->isHolding = true;
+	isHolding = true;
 	playerDisk = d; // player now has a pointer to this disk
 
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 
-	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));// make the disk stop moving
-	d->updateTransform(); 	// move btRigidBody WRT to the scenenode
-	d->getBody()->setActivationState(DISABLE_SIMULATION); // set the activation state of the body so it doesn't move in bullet
-
  	// DEBUGGING
- 	// /*
  	playerDisk->getSceneNode()->showBoundingBox(true);
 	this->rootNode->showBoundingBox(true);
  	this->rootNode->setVisible(false, false);
- 	// */
 }
-
-/*
-	return the disk that the player is holding on to
-*/
+void Player::throwDisk()
+{
+}
 Disk* Player::getPlayerDisk()
 {
-	return (*this).playerDisk;
+	return playerDisk;
 }
-
-/*
-	
-*/
 void Player::setHolding()
 {
 	isHolding = !isHolding;
 }
-
 bool Player::checkHolding()
 {
-	return this->isHolding;
-}
-
-/*
-	throw the disk
-	To do this you need to call setHolding() to release the disk, then send the disk in the direction of the sightNode of the player. 
-*/
-void Player::throwDisk()
-{
-	// Get position vector of sight node
-	Ogre::Vector3 posVector = pSightNode->getPosition();
-	// Set linear velocity vector to 2x along sight node vector
-	playerDisk->getBody()->setLinearVelocity(btVector3(posVector.x, posVector.y, posVector.z));
-
-	playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION); // set the activation state of the body so it doesn't move in bullet
-	playerDisk->updateTransform(); 	// move btRigidBody WRT to the scenenode	
+	return isHolding;
 }
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
-	return this->pSightNode;
+	return pSightNode;
 }
 Ogre::SceneNode* Player::getPlayerCameraNode()
 {
-	return this->pCamNode;
+	return pCamNode;
 }
 Ogre::Vector3 Player::getPlayerDimensions()
 {
-	return this->dimensions;
+	return dimensions;
 }

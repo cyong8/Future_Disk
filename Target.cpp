@@ -14,13 +14,20 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/100.0f, dimensions.y/100.0f, dimensions.z/100.0f);
 	
 	rootNode->setPosition(position);
+	rootNode->pitch(Ogre::Degree(90));
 
-	ent->setMaterialName("Examples/Bullseye");
+	ent->setMaterialName("Examples/BumpyMetal");
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
+	this->rootNode->showBoundingBox(true);
 }
 
 void Target::setTargetHit()
 {
-	hit = true;
+	hit = !hit;
+}
+
+bool Target::isHit()
+{
+	return hit;
 }

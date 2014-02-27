@@ -15,8 +15,12 @@ Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
 	mass = 0.0f;
 
-	if (nym == "wall4")
+	if (nym == "frontwall")
 	{
 		rootNode->setVisible(false);
+	}
+	if (nym == "Ceiling")
+	{
+		//ent->getSubEntity(nym)->getMaterial()->setTransparencyCastsShadows(false);
 	}
 }

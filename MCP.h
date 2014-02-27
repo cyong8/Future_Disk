@@ -14,20 +14,19 @@
 #include "Wall.h"
 #include "Target.h"
 
-//#include "ControlListener.h"
+
 class Simulator;
 
 class MCP : public BaseApplication
 {
 public:
 	Simulator* game_simulator;
-	Room *room;
+	vector<Wall> wallList;
 	bool gameStart;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
 	bool vKeyDown;
 	int p1score; // Score for the first player
-
 
 	MCP(void);
 	virtual ~MCP(void);
@@ -37,6 +36,8 @@ protected:
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
+	Ogre::Light* pointLight;
+	Disk* gameDisk;
 };
 
 #endif // #ifndef __MCP_h_

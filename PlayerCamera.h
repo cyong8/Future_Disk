@@ -26,6 +26,7 @@ public:
     bool isInAimMode(void);
     Ogre::Camera* getMCamera(void);
     void setCHOverlays(Ogre::Overlay* o, Ogre::Overlay* o2);
+    Ogre::SceneNode* getPCamSceneNode(void);
 
 	Ogre::String name;
     Ogre::Overlay* overlay;
