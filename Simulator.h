@@ -22,13 +22,13 @@ class Simulator
 		//btCollisionWorld* mWorld;
 		Ogre::SceneManager* sceneMgr;
 		vector<GameObject*> objList;
+		vector<Target*> targetList;
 
 		// Attributes to update PlayerCamera
 		Player* p1;
 		Player* p2;
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
-		vector<Target*> targetList;
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
@@ -37,8 +37,6 @@ class Simulator
 		Simulator(Ogre::SceneManager* mSceneMgr);
 		~Simulator();
 		void addObject(GameObject* o);
-		btCollisionShape *box_shape;
-
 		void removeObject(Ogre::String name);
 		void stepSimulation(const Ogre::Real elapsedTime, int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 		void setHitFlags(void);

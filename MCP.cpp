@@ -62,13 +62,13 @@ void MCP::createScene(void)
     Ogre::Overlay* overlay2 = overlayManager.create( "OverlayName2" );
 
     // // Create a panel
-    Ogre::OverlayContainer* CHH = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement( "Panel", "PanelName2" ) );
-    CHH->setPosition( 0.425, 0.5 );
-    CHH->setDimensions( 0.15, 0.001 );
-    CHH->setMaterialName( "BaseWhite" );
+    Ogre::OverlayContainer* CHH = static_cast<Ogre::OverlayContainer*>(overlayManager.createOverlayElement("Panel", "PanelName2"));
+    CHH->setPosition(0.425, 0.5);
+    CHH->setDimensions(0.15, 0.001);
+    CHH->setMaterialName("BaseWhite");
     CHH->getMaterial()->setReceiveShadows(false);
 
-    overlay2->add2D( CHH );     // Add the CHH to the overlay
+    overlay2->add2D(CHH);     // Add the CHH to the overlay
 
     overlay->hide();    // Hide the Crosshair till Aim View activated
     overlay2->hide();
@@ -91,7 +91,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
  
     Player *p = (Player *)game_simulator->getGameObject("Player1");
         
-    if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown)
+    if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
         game_simulator->setThrowFlag();
 
     mMouseDown = currMouse;
@@ -185,10 +185,10 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     {
     //   if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
-            p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
+            p->getPlayerSightNode()->translate(evt.state.X.rel/10.0f, 0.0f, 0.0f);
    //     if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
+            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/10.0f, 0.0f);
     }
 }
 

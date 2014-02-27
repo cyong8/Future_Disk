@@ -18,14 +18,14 @@ PlayerCamera::PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Came
     mCameraNode->attachObject(pCamera); // attach Ogre::Camera to camera node
 }
 
-PlayerCamera::~PlayerCamera(void)
+PlayerCamera::~PlayerCamera()
 {
 	mCameraNode->detachAllObjects();
     mCamSceneMgr->destroySceneNode(name);
     mCamSceneMgr->destroySceneNode(name + "_target");
 }
 
-void PlayerCamera::toggleThirdPersonView(void)
+void PlayerCamera::toggleThirdPersonView()
 {
     inAimMode = !inAimMode;    
  

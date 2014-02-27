@@ -25,50 +25,21 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 void Player::attachDisk(Disk* d)
 {
-	this->isHolding = true;
-	this->playerDisk = d; // player now has a pointer to this disk
+	isHolding = true;
+	playerDisk = d; // player now has a pointer to this disk
 
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
-
-	d->getBody()->setLinearVelocity(btVector3(0.0f , 0.0f, 0.0f));// make the disk stop moving
-	d->updateTransform(); 	// move btRigidBody WRT to the scenenode
-	d->getBody()->setActivationState(DISABLE_SIMULATION); // set the activation state of the body so it doesn't move in bullet
 
  	// DEBUGGING
  	playerDisk->getSceneNode()->showBoundingBox(true);
 	this->rootNode->showBoundingBox(true);
  	this->rootNode->setVisible(false, false);
 }
-/*
-	throw the disk
-	To do this you need to call setHolding() to release the disk, then send the disk in the direction of the sightNode of the player. 
-*/
 void Player::throwDisk()
 {
-	isHolding = false;
-
-	Ogre::Real sX = pSightNode->getPosition().x;
-	Ogre::Real sY = pSightNode->getPosition().y;
-	Ogre::Real sZ = pSightNode->getPosition().z;
-	if (sX > 0)
-		sX = 1;
-	if (sY > 0)
-		sY = 1;
-	if (sZ > 0)
-		sZ = 1;
-	playerDisk->getSceneNode()->rotate(playerDisk->getSceneNode()->getPosition().getRotationTo(pSightNode->getPosition()));
-	playerDisk->getSceneNode()->getParent()->removeChild(playerDisk->getSceneNode()); // detach the disk from it's parent (root or other player)
-	sceneMgr->getRootSceneNode()->addChild(playerDisk->getSceneNode());
-	//playerDisk->getBody()->setActivationState(DISABLE_DEACTIVATION);
-	playerDisk->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
-	playerDisk->updateTransform();
 }
-
-/*
-	return the disk that the player is holding on to
-*/
 Disk* Player::getPlayerDisk()
 {
 	return playerDisk;
@@ -77,20 +48,19 @@ void Player::setHolding()
 {
 	isHolding = !isHolding;
 }
-
 bool Player::checkHolding()
 {
-	return this->isHolding;
+	return isHolding;
 }
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
-	return this->pSightNode;
+	return pSightNode;
 }
 Ogre::SceneNode* Player::getPlayerCameraNode()
 {
-	return this->pCamNode;
+	return pCamNode;
 }
 Ogre::Vector3 Player::getPlayerDimensions()
 {
-	return this->dimensions;
+	return dimensions;
 }

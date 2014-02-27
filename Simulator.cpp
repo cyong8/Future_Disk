@@ -7,6 +7,9 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr) 
 {
+	// initialize random number generate
+    srand(time(0));
+
 	sceneMgr = mSceneMgr;
 	//collision configuration contains default setup for memory, collision setup.
 	collisionConfiguration = new btDefaultCollisionConfiguration();
@@ -44,32 +47,35 @@ Simulator::~Simulator()
 */
 void Simulator::addObject (GameObject* o) 
 {
-	// Put the object back in the simulator
-	o->getBody()->setActivationState(DISABLE_DEACTIVATION);
-	
-	// Add the object to the list of object
-	objList.push_back(o);
-
-	//use default collision group/mask values (dynamic/kinematic/static)
+	o->getBody()->setActivationState(DISABLE_DEACTIVATION);	
+	objList.push_back(o); // Add the object to the list of object
 	dynamicsWorld->addRigidBody(o->getBody());
-
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
 		setPlayer((Player*)o);
-		o->getBody()->setAngularFactor(btVector3(0,0,0));
-
+		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		// Initialize PlayerCam Position now that you have the player and its CameraNode position
 		player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
 		player1Cam->setPlayer((Player*)o);
 	}
-	
 	if(o->typeName == "Disk")
 	{
-		o->getBody()->setAngularFactor(btVector3(0,0,0));
-		o->getBody()->setGravity(btVector3(0,0.0,0));
-		o->getBody()->setRestitution(1);
-		o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 1.0f));
+		if (!o->checkReAddFlag())
+		{
+			o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+			o->getBody()->setRestitution(1);
+			o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 1.0f));
+		}
+		else 
+		{
+			Ogre::Vector3 diskDirection = p1->getPlayerSightNode()->getPosition().normalisedCopy();
+			o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+			o->getBody()->setRestitution(1);
+			o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 5.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
+		}
 	}
 	
 	if(o->typeName == "Wall")
@@ -101,6 +107,8 @@ void Simulator::removeObject(Ogre::String name)
 	{
 		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
 		{
+			dynamicsWorld->removeRigidBody(getGameObject(name)->getBody());
+			getGameObject(name)->removeFromSimulator();
 			objList.erase(objList.begin() + i);
 		}
 	}
@@ -111,6 +119,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 {
 	//do we need to update positions in simulator for dynamic objects?
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
+
 	if (player1Cam)
 	{
 		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
@@ -135,42 +144,26 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
-
-	if (p1->checkHolding()) // move the disk into or out of the player's hand
+	if (p1->checkHolding())
 	{
-        if (throwFlag)
-        {
-        	//p1->throwDisk();
-        	//Ogre::LogManager::getSingletonPtr()->logMessage("\n\n\n\n_______THROW FLAG TRUE_______\n\n\n\n");
+        if (throwFlag) // Impart throw velocity along SightNode direction
+        {	
+        	Ogre::Vector3 toParentPosition = p1->getPlayerDisk()->getSceneNode()->_getDerivedPosition();
         	p1->setHolding();
-
-			Ogre::Real sX = p1->getPlayerSightNode()->getPosition().x;
-			Ogre::Real sY = p1->getPlayerSightNode()->getPosition().y;
-			Ogre::Real sZ = p1->getPlayerSightNode()->getPosition().z;
-			if (sX > 0)
-				sX = 1;
-			else if(sX < 0)
-				sX = -1;
-			if (sY > 0)
-				sY = 1;
-			else if(sY < 0)
-				sY = -1;
-			if (sZ > 0)
-				sZ = 1;
-			else if(sZ < 0)
-				sZ = -1;
-			p1->getPlayerDisk()->getSceneNode()->yaw((p1->getPlayerDisk()->getSceneNode()->getPosition().getRotationTo(p1->getPlayerSightNode()->getPosition())).getYaw());
-			p1->getSceneNode()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach the disk from it's parent (root or other player)
-			sceneMgr->getRootSceneNode()->addChild(p1->getPlayerDisk()->getSceneNode());
-			//p1->getPlayerDisk()->getBody()->setActivationState(DISABLE_DEACTIVATION);
-			p1->getPlayerDisk()->getBody()->setLinearVelocity(btVector3(5.0f * sX, 5.0f * sY, 5.0f * sZ));
-			p1->getPlayerDisk()->updateTransform();
+			// rotate disk node here
+			p1->getSceneNode()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach disk from parent
+			sceneMgr->getRootSceneNode()->addChild(p1->getPlayerDisk()->getSceneNode()); // attach disk to world (root)
+			p1->getPlayerDisk()->getSceneNode()->setPosition(toParentPosition);
+        	p1->getPlayerDisk()->addToSimulator(); // Add the Disk back into the Simulator 
 			throwFlag = false;
         }
-        else
+        else // Move to front of player
         {
-			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, -p1->getPlayerDimensions().z) + p1->getSceneNode()->getPosition());
-        	p1->getPlayerDisk()->updateTransform();
+        	//float newDiskX = p1->getPlayerSightNode()->_getDerivedPosition().x - p1->getPlayerDisk()->getSceneNode()->getPosition().x;
+        	//float newDiskY = p1->getPlayerSightNode()->_getDerivedPosition().y - p1->getPlayerDisk()->getSceneNode()->getPosition().y;
+        	float newDiskZ = -p1->getPlayerDimensions().z;
+
+			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p1->getSceneNode()->getPosition());
         }
 	}
 
@@ -180,10 +173,10 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	{
 		t->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
 										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
-					Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
+									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
-					Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2,
-									getGameObject("Ceiling")->getSceneNode()->getPosition().z));
+									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 	}
 }
 
@@ -203,14 +196,16 @@ void Simulator::setHitFlags(void)
 		GameObject* gA = OMSA->getGameObject();
 		GameObject* gB = OMSB->getGameObject();
 
-
 		// ********** Attach Disk *************
 		if (gA->typeName == "Player")
 		{
 			if (gB->typeName == "Disk")
 			{
 				if (((Player*)gA)->checkHolding() == false)
+				{
 					((Player*)gA)->attachDisk((Disk*)gB);
+					removeObject("Disk");
+				}
 			}
 		}
 		if (gB->typeName == "Player")
@@ -218,10 +213,12 @@ void Simulator::setHitFlags(void)
 			if (gA->typeName == "Disk")
 			{
 				if (((Player*)gB)->checkHolding() == false)
+				{
 					((Player*)gB)->attachDisk((Disk*)gA);
+					removeObject("Disk");
+				}
 			}
 		}
-
 		// ********** Hit Targets *************
 		if (gA->typeName == "Target") // and other object was disk
 		{
@@ -233,8 +230,7 @@ void Simulator::setHitFlags(void)
 			if (gA->typeName == "Disk")
 				((Target*)gB)->setTargetHit();
 		}
-
-		//contactManifold->clearManifold();	
+		contactManifold->clearManifold();
 	}
 }
 

@@ -25,14 +25,18 @@ protected:
 	bool kinematic;
 	bool needsUpdates;
 	bool hit;
+	bool ReAddFlag;
 
 public:
-	btRigidBody* getBody(void);
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
+	btRigidBody* getBody(void);
 	void updateTransform();
 	void addToSimulator();	
-	Ogre::String getGameObjectName();
-	Ogre::SceneNode* getSceneNode();
+	void removeFromSimulator();
+	Ogre::String getGameObjectName(void);
+	Ogre::SceneNode* getSceneNode(void);
+	OgreMotionState* getOgreMotionState(void);
+	bool checkReAddFlag(void);
 	string typeName;
 	btTransform tr;
 };
