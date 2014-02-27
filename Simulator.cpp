@@ -225,6 +225,28 @@ void Simulator::setHitFlags(void)
 				}
 			}
 		}
+		// ********** Rotate Disk *************
+		if (gA->typeName == "Disk")
+		{
+			if (gB->typeName == "Wall")
+			{
+				if (((Disk*)gA)->checkOffWallRotation() == false)
+				{
+					((Disk*)gA)->setRotateOffWall();
+				}
+			}
+		}
+		if (gB->typeName == "Disk")
+		{
+			if (gA->typeName == "Wall")
+			{
+				if (((Disk*)gB)->checkOffWallRotation() == false)
+				{
+					((Disk*)gB)->setRotateOffWall();	
+				}
+			}
+		}
+
 		// ********** Hit Targets *************
 		if (gA->typeName == "Target") // and other object was disk
 		{
@@ -234,7 +256,7 @@ void Simulator::setHitFlags(void)
 				{
 					((Target*)gA)->targetHit();
 					removeObject("Target");
-					t->addToSimulator();
+					gA->addToSimulator();
 				}
 			}
 		}
@@ -246,14 +268,13 @@ void Simulator::setHitFlags(void)
 				{
 					((Target*)gB)->targetHit();
 					removeObject("Target");
-					t->addToSimulator();
+					gB->addToSimulator();
 				}
 			}
 		}
 		contactManifold->clearManifold();
 	}
 }
-
 void Simulator::setCamera(PlayerCamera* pcam)
 {
 	if (Ogre::StringUtil::match(pcam->name, "P1_cam", true))
@@ -261,7 +282,6 @@ void Simulator::setCamera(PlayerCamera* pcam)
 	if (Ogre::StringUtil::match(pcam->name, "P2_cam", true))
 		this->player2Cam = pcam;
 }
-
 void Simulator::setPlayer(Player* p)
 {
 	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player1", true))
@@ -269,7 +289,6 @@ void Simulator::setPlayer(Player* p)
 	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player2", true))
 		this->p2 = p;
 }
-
 PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
 {
 	if (Ogre::StringUtil::match(name, "P1_cam", true))
@@ -277,7 +296,6 @@ PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
 	if (Ogre::StringUtil::match(name, "P2_cam", true))
 		return this->player2Cam;
 }
-
 void Simulator::toggleViewChange(Ogre::String name)
 {
 	if (Ogre::StringUtil::match(name, "Player1", true))
@@ -285,7 +303,6 @@ void Simulator::toggleViewChange(Ogre::String name)
 	if (Ogre::StringUtil::match(name, "Player2", true))
 		viewChangeP2 = !viewChangeP2;
 }
-
 void Simulator::setThrowFlag()
 {
 	throwFlag = !throwFlag;
