@@ -9,11 +9,27 @@ MCP::MCP(void)
 MCP::~MCP(void)
 {
 	delete mRoot;
+    //Mix_FreeChunk(collisionSound);
+    //Mix_FreeMusic(music);
+    SDL_Quit();
 }
 
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    // Initialize SDL
+    SDL_Init(SDL_INIT_AUDIO);
+/*
+    Mix_Music *music = NULL;
+
+    Mix_Chunk *collisionSound = NULL;
+
+    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
+
+    music = Mix_LoadMUS( "test.wav");
+    collisionSound = Mix_LoadWAV("collide.wav");
+*/
+    /************* SIMULATOR *************/
     game_simulator = new Simulator(mSceneMgr);
     vKeyDown = false;
 
@@ -21,6 +37,7 @@ void MCP::createScene(void)
     srand(time(0));
 
     gameStart = false;
+
     /******************** LIGHTS ********************/
 	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
@@ -147,6 +164,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             fx += mMove; // Strafe right
             velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
             keyWasPressed = true;
+        }
+        if (mKeyboard->isKeyDown(OIS::KC_Y))
+        {
+            //if(Mix_PlayChannel(-1, collisionSound, 0) == -1 )
+              //  return 1;
         }
         if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
         {
