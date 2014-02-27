@@ -7,7 +7,8 @@ class Target : public GameObject
 {
 public:
 	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition);
-	void setTargetHit();
+	void targetHit();
+	void resetHit();
 	bool isHit(); 
 
 protected:

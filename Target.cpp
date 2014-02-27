@@ -18,13 +18,18 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	ent->setMaterialName("Examples/BumpyMetal");
 
-	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
+	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2));
 	this->rootNode->showBoundingBox(true);
 }
 
-void Target::setTargetHit()
+void Target::targetHit()
 {
-	hit = !hit;
+	hit = true;
+}
+
+void Target::resetHit()
+{
+	hit = false;
 }
 
 bool Target::isHit()

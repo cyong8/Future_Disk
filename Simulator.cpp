@@ -66,7 +66,7 @@ void Simulator::addObject (GameObject* o)
 			o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
-			o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 1.0f));
+			o->getBody()->setLinearVelocity(btVector3(8.0f, 8.0f, 4.0f));
 		}
 		else 
 		{
@@ -74,7 +74,7 @@ void Simulator::addObject (GameObject* o)
 			o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
-			o->getBody()->setLinearVelocity(btVector3(5.0f, 5.0f, 5.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
+			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
 		}
 	}
 	
@@ -85,6 +85,14 @@ void Simulator::addObject (GameObject* o)
 
 	if(o->typeName == "Target")
 	{
+		if (o->checkReAddFlag()){
+			o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
+										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
+									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
+									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
+		}
 		targetList.push_back((Target*)o);
 	}
 }
@@ -103,6 +111,16 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 
 void Simulator::removeObject(Ogre::String name)
 {
+	if (getGameObject(name)->typeName == "Target")
+	{
+		for (int i = 0; i < targetList.size(); i++)
+		{	
+			if (Ogre::StringUtil::match(targetList[i]->getGameObjectName(), name, true))
+			{
+				targetList.erase(targetList.begin());	
+			}
+		}
+	}	
 	for (int i = 0; i < objList.size(); i++)
 	{
 		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
@@ -166,18 +184,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p1->getSceneNode()->getPosition());
         }
 	}
-
-	//COLLISION BETWEEN TARGET AND DISK, CHANGE TARGET POSITION
-	Target* t = targetList[0];
-	if(t->isHit())
-	{
-		t->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x
-										,getGameObject("leftwall")->getSceneNode()->getPosition().x), 
-									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y), 
-									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
-	}
 }
 
 void Simulator::setHitFlags(void)
@@ -223,12 +229,26 @@ void Simulator::setHitFlags(void)
 		if (gA->typeName == "Target") // and other object was disk
 		{
 			if (gB->typeName == "Disk")
-				((Target*)gA)->setTargetHit();
+			{
+				if (((Target*)gA)->isHit() == false)
+				{
+					((Target*)gA)->targetHit();
+					removeObject("Target");
+					t->addToSimulator();
+				}
+			}
 		}
 		if (gB->typeName == "Target")
 		{
 			if (gA->typeName == "Disk")
-				((Target*)gB)->setTargetHit();
+			{
+				if (((Target*)gB)->isHit() == false)
+				{
+					((Target*)gB)->targetHit();
+					removeObject("Target");
+					t->addToSimulator();
+				}
+			}
 		}
 		contactManifold->clearManifold();
 	}
