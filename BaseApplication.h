@@ -26,6 +26,9 @@ This source file is part of the
 #include <OgreRenderWindow.h>
 #include <OgreConfigFile.h>
 
+#include <OgreTextAreaOverlayElement.h>
+#include <OgreFontManager.h>
+
 #include <OISEvents.h>
 #include <OISInputManager.h>
 #include <OISKeyboard.h>

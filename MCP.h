@@ -27,6 +27,7 @@ public:
 	Ogre::Real seconds;
 	bool vKeyDown;
 	int p1score; // Score for the first player
+	bool gamePause;
 
 	Ogre::OverlayContainer* startMenu;
 
