@@ -7,6 +7,7 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr) 
 {
+	gameStart = false;
 	// initialize random number generate
     srand(time(0));
 
@@ -56,7 +57,6 @@ void Simulator::addObject (GameObject* o)
 	{
 		setPlayer((Player*)o);
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
-		// Initialize PlayerCam Position now that you have the player and its CameraNode position
 		player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
 		player1Cam->setPlayer((Player*)o);
 	}
@@ -64,6 +64,7 @@ void Simulator::addObject (GameObject* o)
 	{
 		if (!o->checkReAddFlag())
 		{
+			gameDisk = (Disk*)o;
 			o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
@@ -134,6 +135,9 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	//do we need to update positions in simulator for dynamic objects?
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 
+	// update the rotation of the disk scene node
+	gameDisk->rotateOffWall();
+
 	if (player1Cam)
 	{
 		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
@@ -173,8 +177,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
         }
         else // Move to front of player
         {
-        	//float newDiskX = p1->getPlayerSightNode()->_getDerivedPosition().x - p1->getPlayerDisk()->getSceneNode()->getPosition().x;
-        	//float newDiskY = p1->getPlayerSightNode()->_getDerivedPosition().y - p1->getPlayerDisk()->getSceneNode()->getPosition().y;
         	float newDiskZ = -p1->getPlayerDimensions().z;
 
 			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p1->getSceneNode()->getPosition());
@@ -209,6 +211,10 @@ void Simulator::setHitFlags(void)
 					removeObject("Disk");
 				}
 			}
+			if (gB->getGameObjectName() == "Floor" && gameStart == false)
+			{
+				gameStart = true;
+			}
 		}
 		if (gB->typeName == "Player")
 		{
@@ -219,6 +225,10 @@ void Simulator::setHitFlags(void)
 					((Player*)gB)->attachDisk((Disk*)gA);
 					removeObject("Disk");
 				}
+			}
+			if (gA->getGameObjectName() == "Floor" && gameStart == false)
+			{
+				gameStart = true;
 			}
 		}
 		// ********** Rotate Disk *************
@@ -320,4 +330,8 @@ int Simulator::tallyScore(void)
 	int tmpScore = score;
 	score = 0;
 	return tmpScore;
+}
+bool Simulator::gameStartCheck(void)
+{
+	return gameStart;
 }

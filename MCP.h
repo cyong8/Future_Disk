@@ -14,6 +14,8 @@
 #include "Wall.h"
 #include "Target.h"
 
+#include <SDL.h>
+
 
 class Simulator;
 

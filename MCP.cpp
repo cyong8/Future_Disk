@@ -91,85 +91,88 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float sprintFactor = 1.0f;
  
     Player *p = (Player *)game_simulator->getGameObject("Player1");
-        
-    if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
-        game_simulator->setThrowFlag();
 
-    mMouseDown = currMouse;
-    
-    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
+    if (gameStart == true)
+    {
+        if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
+            game_simulator->setThrowFlag();
 
-    // Move into aiming-mode
-        // if 'v' is pressed and was not pressed last frame - go to aim mode
-    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
-    {
-        PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
-        game_simulator->toggleViewChange("Player1");
-        pc->toggleThirdPersonView();
-        vKeyDown = true;
-    }
-        // if 'v' is not pressed and was pressed last frame - exit aim mode
-    if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
-    {
-        PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
-        game_simulator->toggleViewChange("Player1");
-        pc->toggleThirdPersonView();
-        
-        vKeyDown = false;
-    }
-    if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Sprint mode - activate by Left Shift
-    {
-        sprintFactor = 3.0f;
-    }
-    if (!vKeyDown)  // disable movement while in aim mode
-    {
-        // Move the player
-        if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
+        mMouseDown = currMouse;
+
+        btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
+
+        // Move into aiming-mode
+            // if 'v' is pressed and was not pressed last frame - go to aim mode
+        if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
         {
-            fz -= mMove;
-            velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-            keyWasPressed = true;
-            pressedLastFrame = true;
+            PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
+            game_simulator->toggleViewChange("Player1");
+            pc->toggleThirdPersonView();
+            vKeyDown = true;
         }
-        if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
+            // if 'v' is not pressed and was pressed last frame - exit aim mode
+        if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
         {
-            fz += mMove;
-            velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-            keyWasPressed = true;
-            pressedLastFrame = true;
-        }
-        if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
-        {
-            fx -= mMove; // Strafe left
-            velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-            keyWasPressed = true;
-            pressedLastFrame = true;
+            PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
+            game_simulator->toggleViewChange("Player1");
+            pc->toggleThirdPersonView();
             
+            vKeyDown = false;
         }
-        if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
+        if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Sprint mode - activate by Left Shift
         {
-            fx += mMove; // Strafe right
-            velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-            keyWasPressed = true;
-            pressedLastFrame = true;
+            sprintFactor = 3.0f;
         }
-        if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
+        if (!vKeyDown)  // disable movement while in aim mode
         {
-            if (p->getSceneNode()->getPosition().y == game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y)
+            // Move the player
+            if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
             {
-                fy += mMove; // Jump, Jump
-                velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
+                fz -= mMove;
+                velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
                 pressedLastFrame = true;
             }
-        }
-        if (keyWasPressed == true)
-        {
-            p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
-        }
-        if (keyWasPressed == false && pressedLastFrame == true)
-        {
-            p->getBody()->setLinearVelocity(velocityVector);
+            if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
+            {
+                fz += mMove;
+                velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
+                keyWasPressed = true;
+                pressedLastFrame = true;
+            }
+            if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
+            {
+                fx -= mMove; // Strafe left
+                velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
+                keyWasPressed = true;
+                pressedLastFrame = true;
+                
+            }
+            if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
+            {
+                fx += mMove; // Strafe right
+                velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
+                keyWasPressed = true;
+                pressedLastFrame = true;
+            }
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
+            {
+                if (p->getSceneNode()->getPosition().y == game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y)
+                {
+                    fy += mMove; // Jump, Jump
+                    velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
+                    keyWasPressed = true;
+                    pressedLastFrame = true;
+                }
+            }
+            if (keyWasPressed == true)
+            {
+                p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
+            }
+            if (keyWasPressed == false && pressedLastFrame == true)
+            {
+                p->getBody()->setLinearVelocity(velocityVector);
+            }
         }
     }
     return true;
@@ -207,21 +210,24 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
+
+    game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
  
     if(!processUnbufferedInput(evt)) 
         return false;
 
-    game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     // check collisions
     game_simulator->setHitFlags();
 
     modifyScore(game_simulator->tallyScore());
 
-    // if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
-    // {
-    //     gameDisk->rotateOffWall();
-    //     gameDisk->updateTransform();
-    // }
+    if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
+    {
+         gameDisk->rotateOffWall();
+         gameDisk->updateTransform();
+    }
+    if (game_simulator->gameStartCheck())
+        gameStart = true;
     return ret;
 }
 
