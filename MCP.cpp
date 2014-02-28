@@ -94,42 +94,31 @@ void MCP::createScene(void)
 
     p1Cam->setCHOverlays(overlay, overlay2);
 
-    /******************** Overlay (Start Menu) ********************/
-    Ogre::Overlay* startOverlay = overlayManager->create( "startOverlay" ); // Create an overlay
+    // /******************** Overlay (Start Menu) ********************/
+    // Ogre::Overlay* startOverlay = overlayManager->create( "startOverlay" ); // Create an overlay
 
-    // Create a panel
-    startMenu = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "startPanel"));
-    startMenu->setMetricsMode(Ogre::GMM_RELATIVE);
-    startMenu->setPosition(0.2f, 0.2f);
-    startMenu->setDimensions(.5f, .5f);
-    startMenu->setMaterialName("BaseWhite");
-    startMenu->getMaterial()->setReceiveShadows(false);
+    // // Create a panel
+    // startMenu = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "startPanel"));
+    // startMenu->setMetricsMode(Ogre::GMM_RELATIVE);
+    // startMenu->setPosition(0.2f, 0.2f);
+    // startMenu->setDimensions(.5f, .5f);
+    // startMenu->setMaterialName("BaseBlack");
+    // startMenu->getMaterial()->setReceiveShadows(false);
 
-    //Ogre::FontManager::getSingletonPtr()->load( "BlueHighway", "Popular" );
-/*
-    Ogre::TextAreaOverlayElement* pTextArea = static_cast<Ogre::TextAreaOverlayElement*>( overlayManager->createOverlayElement("TextArea", "MyTextArea"));
+    // Ogre::TextAreaOverlayElement* pTextArea = static_cast<Ogre::TextAreaOverlayElement*>( overlayManager->createOverlayElement("TextArea", "MyTextArea"));
+    // pTextArea->setMetricsMode(Ogre::GMM_RELATIVE);
+    // pTextArea->setPosition(0,0);
+    // pTextArea->setDimensions(.4,.4);
+    // pTextArea->setCaption("Some text");
+    // pTextArea->setCharHeight(1.0);
+    // pTextArea->setFontName("BlueHighway");
+    // pTextArea->setColour(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
     
-    //pTextArea->setMetricsMode(Ogre::GMM_RELATIVE);
-    pTextArea->setPosition(0,0);
-    pTextArea->setDimensions(.4,.4);
-    pTextArea->setCaption("Some text");
-    pTextArea->setCharHeight(.5);
-    //pTextArea->setFontName("BlueHighway");
-    pTextArea->setColour(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
-    pTextArea->show();
-    /*
-    // Create a pause panel
-    startMenu = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "startPanel"));
-    startMenu->setMetricsMode(Ogre::GMM_RELATIVE);
-    startMenu->setPosition(0.2f, 0.2f);
-    startMenu->setDimensions(.5f, .5f);
-    startMenu->setMaterialName("BaseWhite");
-    startMenu->getMaterial()->setReceiveShadows(false);
-    startMenu->addChild(pTextArea);
-*/
+
+    // startMenu->addChild(pTextArea);
     
-    startOverlay->add2D( startMenu ); // Add the startMenu to the overlay
-    startOverlay->show();
+    // startOverlay->add2D( startMenu ); // Add the startMenu to the overlay
+    // startOverlay->show();
 }
 
 //-------------------------------------------------------------------------------------
@@ -181,11 +170,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             game_simulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
         }
-
         mMouseDown = currMouse;
-
-        btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
-
         // Move into aiming-mode
             // if 'v' is pressed and was not pressed last frame - go to aim mode
 
@@ -202,7 +187,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
             game_simulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
-            
             vKeyDown = false;
         }
         if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Sprint mode - activate by Left Shift
