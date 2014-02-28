@@ -37,7 +37,7 @@ void MCP::createScene(void)
     srand(time(0));
 
     gameStart = false;
-    gamePause = false;
+    gamePause = true;
 
     /******************** LIGHTS ********************/
 	// Ambient light
@@ -105,6 +105,8 @@ void MCP::createScene(void)
     startMenu->setMaterialName("BaseWhite");
     startMenu->getMaterial()->setReceiveShadows(false);
 
+    //Ogre::FontManager::getSingletonPtr()->load( "BlueHighway", "Popular" );
+/*
     Ogre::TextAreaOverlayElement* pTextArea = static_cast<Ogre::TextAreaOverlayElement*>( overlayManager->createOverlayElement("TextArea", "MyTextArea"));
     
     //pTextArea->setMetricsMode(Ogre::GMM_RELATIVE);
@@ -114,6 +116,7 @@ void MCP::createScene(void)
     pTextArea->setCharHeight(.5);
     //pTextArea->setFontName("BlueHighway");
     pTextArea->setColour(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
+    pTextArea->show();
     /*
     // Create a pause panel
     startMenu = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "startPanel"));
@@ -122,6 +125,7 @@ void MCP::createScene(void)
     startMenu->setDimensions(.5f, .5f);
     startMenu->setMaterialName("BaseWhite");
     startMenu->getMaterial()->setReceiveShadows(false);
+    startMenu->addChild(pTextArea);
 */
     
     startOverlay->add2D( startMenu ); // Add the startMenu to the overlay
@@ -152,7 +156,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         gameStart = true;
     }
 
-
     /********* PAUSE THE GAME *********/
      if (mKeyboard->isKeyDown(OIS::KC_P) && gamePause)
     {
@@ -168,7 +171,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     }
 
     // If the game is either paused or hasn't started, disable movment
-    if(gameStart || !gamePause)
+    if(gameStart && !gamePause)
     {
         // Move into aiming-mode
         // if 'v' is pressed and was not pressed last frame - go to aim mode
@@ -205,7 +208,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Sprint mode - activate by Left Shift
         {
             sprintFactor = 3.0f;
-        }}
+        }
         if (!vKeyDown)  // disable movement while in aim mode
         {
             // Move the player
