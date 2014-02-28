@@ -36,8 +36,9 @@ void MCP::createScene(void)
     // initialize random number generate
     srand(time(0));
 
+    allowMovement = false;
+    gamePause = false;
     gameStart = false;
-    gamePause = true;
 
     /******************** LIGHTS ********************/
 	// Ambient light
@@ -101,11 +102,13 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     static bool mMouseDown = false;     // If a mouse button is depressed
     static Ogre::Real mMove = 3.0f;      // The movement constant
     static bool pressedLastFrame = false;
+    static bool pausePressedLast = false;
     float fx = 0.0f;
     float fy = 0.0f;
     float fz = 0.0f;
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
     bool keyWasPressed = false;
+    
     float sprintFactor = 1.0f;
  
     Player *p = (Player *)game_simulator->getGameObject("Player1");
@@ -113,27 +116,44 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
 
     /********* START THE GAME *********/
-    if (mKeyboard->isKeyDown(OIS::KC_RETURN))
+    if (mKeyboard->isKeyDown(OIS::KC_RETURN) && !gameStart)
     {
         startLabel->hide();
+        mTrayMgr->removeWidgetFromTray(startLabel);
+        gameStart = true;
+        time(&initTime);
     }
 
     /********* PAUSE THE GAME *********/
-     if (mKeyboard->isKeyDown(OIS::KC_P) && gamePause)
+    if (mKeyboard->isKeyDown(OIS::KC_P) && !pausePressedLast)
     {
-        // Unpause the game
-        //pauseMenu->hide();
-        gamePause = false;
+        if (gamePause == true)  //leaving pause
+        {
+            // Unpause the game
+            //pauseMenu->hide();
+            pausePressedLast = true;
+            gamePause = false;
+            pauseLabel->hide();
+            mTrayMgr->removeWidgetFromTray(pauseLabel);
+        }
+        else //entering Pause
+        {
+            pauseLabel->setCaption("GAME PAUSED!");
+            pauseLabel->show();
+            mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
+            pausePressedLast = true;
+            gamePause = true;
+            time(&pauseTime);
+        } 
     }
-    else if (mKeyboard->isKeyDown(OIS::KC_P) && !gamePause)
+    else if (!mKeyboard->isKeyDown(OIS::KC_P))
     {
-        // Pause the game
-        //pauseMenu->show();
-        gamePause = true;
+        pausePressedLast = false;
     }
 
+    /********* GAME MOVEMENT *********/
     // If the game is either paused or hasn't started, disable movment
-    if(gameStart && !gamePause)
+    if(allowMovement  && !gamePause)
     {
         // Move into aiming-mode
         // if 'v' is pressed and was not pressed last frame - go to aim mode
@@ -254,30 +274,44 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
-
-    game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
- 
-    if(!processUnbufferedInput(evt)) 
-        return false;
-
-    if(gamePause)
+    if(!gameStart) // Game not started
     {
-        game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
-        // check collisions
-        game_simulator->setHitFlags();
-
-        modifyScore(game_simulator->tallyScore());
+        startLabel->show();
+        startLabel->setCaption("Press ENTER to begin!");
+        pauseLabel->hide();
+        mTrayMgr->removeWidgetFromTray(pauseLabel);
     }
-    // if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
-    // {
-    //      gameDisk->rotateOffWall();
-    //      gameDisk->updateTransform();
-    // }
-    if (game_simulator->gameStartCheck())
-        gameStart = true;
+    else // Game started
+    {
+        
+        if(!gamePause)
+        {
+            game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
+            game_simulator->setHitFlags(); // check collisions
+            modifyScore(game_simulator->tallyScore());
+            if (game_simulator->allowMovementCheck())
+                allowMovement = true;
+            time_t currTime;
+            time(&currTime);
+            updateTimer(currTime);
+        }
+        else
+        {
+            time_t pcurrTime;
+            time(&pcurrTime);
+            updatePauseTime(pcurrTime);
+        }
+    }
 
+    if(!processUnbufferedInput(evt)) 
+            return false;
     return ret;
 }
+
+// bool MCP::keyPressed(const OIS::KeyboardEvent &evt)
+// {
+
+// }
 
 //-------------------------------------------------------------------------------------
 

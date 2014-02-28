@@ -120,7 +120,7 @@ void BaseApplication::createFrameListener(void)
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mMouse, this);
     // mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
    // mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
-    // mTrayMgr->hideCursor();
+     mTrayMgr->hideCursor();
 
     // create a params panel for displaying sample details
     // Ogre::StringVector items;
@@ -153,15 +153,33 @@ void BaseApplication::createFrameListener(void)
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
     initMinutes = 3;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
-    time(&initTime);
 
     startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
+    Ogre::StringVector instructions;
+    instructions.push_back("Move Forward ");
+    instructions.push_back("Move Backward ");
+    instructions.push_back("Strafe Left ");
+    instructions.push_back("Strafe Right ");
+    instructions.push_back("Jump ");
+    instructions.push_back("Boosters ");
+    instructions.push_back("Enter Aim View ");
+    instructions.push_back("Fire ---- (While In Aim View) ");
+    instructions.push_back("Pause Game ");
+    instructPanel = mTrayMgr->createParamsPanel(OgreBites::TL_RIGHT, "instructPanel", 350, instructions);
+    instructPanel->setParamValue(0, "W");
+    instructPanel->setParamValue(1, "S");
+    instructPanel->setParamValue(2, "A");
+    instructPanel->setParamValue(3, "D");
+    instructPanel->setParamValue(4, "Space Bar");
+    instructPanel->setParamValue(5, "Hold Left Shift");
+    instructPanel->setParamValue(6, "Hold V");
+    instructPanel->setParamValue(7, "Left Mouse Button");
+    instructPanel->setParamValue(8, "P");
 
 
-    // pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 350);
-    // pauseLabel->hide();
-    // pauseLabel->setCaption("PAUSE");
+    pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 155);
 
+    pTimePassed = 0;
     // gameOverLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "GameOver", "", 350);
     // gameOverLabel->hide();
     // gameOverLabel->setCaption("Game Over");
@@ -309,11 +327,6 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
  //            mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
  //        }
  //    }
-    startLabel->show();
-    startLabel->setCaption("Press ENTER to begin!");
-    time_t currTime;
-    time(&currTime);
-    updateTimer(currTime);
 
     return true;
 }
@@ -448,7 +461,7 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 void BaseApplication::updateTimer(time_t currTime)
 {
     double secondsElapsed = difftime(currTime, initTime);
-    int secondsLeft = (initMinutes*60) - secondsElapsed;
+    int secondsLeft = (initMinutes*60) - secondsElapsed + pTimePassed;
 
     int minutes = secondsLeft / 60;
     int seconds = secondsLeft % 60;
@@ -470,6 +483,12 @@ void BaseApplication::updateTimer(time_t currTime)
     
     scorePanel->setParamValue(1, mins + ":" + sec);
 }
+
+void BaseApplication::updatePauseTime(time_t currTime)
+{
+    pTimePassed = difftime(currTime, pauseTime);
+}
+
 
 void BaseApplication::modifyScore(int num)
 {

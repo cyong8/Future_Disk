@@ -34,7 +34,7 @@ class Simulator
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
-		bool gameStart;
+		bool allowMovement;
 		int score;
 
 		// Sounds
@@ -56,7 +56,7 @@ class Simulator
 		void toggleViewChange(Ogre::String name);
 		void setThrowFlag(void);
 		int tallyScore(void);
-		bool gameStartCheck(void);
+		bool allowMovementCheck(void);
 };
 
 #endif // #ifndef __Simulator_h_

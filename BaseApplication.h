@@ -93,6 +93,7 @@ protected:
     //Unattach OIS before window shutdown (very important under Linux)
     virtual void windowClosed(Ogre::RenderWindow* rw);
     void updateTimer(time_t currTime);
+    void updatePauseTime(time_t currTime);
     void modifyScore(int num);
 
     Ogre::Root *mRoot;
@@ -104,11 +105,14 @@ protected:
 
     // OgreBites
     OgreBites::ParamsPanel* scorePanel;       // scoring panel for TronGame
+    OgreBites::ParamsPanel* instructPanel;
     OgreBites::Label* startLabel;
     OgreBites::Label* pauseLabel;
     OgreBites::Label* gameOverLabel;
     int initMinutes;
     time_t initTime;
+    double pTimePassed;
+    time_t pauseTime;
     int score;
     
     OgreBites::SdkTrayManager* mTrayMgr;

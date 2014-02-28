@@ -25,12 +25,13 @@ class MCP : public BaseApplication
 public:
 	Simulator* game_simulator;
 	vector<Wall> wallList;
-	bool gameStart;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
 	bool vKeyDown;
 	int p1score; // Score for the first player
 	bool gamePause;
+	bool allowMovement;
+	bool gameStart;
 
 	MCP(void);
 	virtual ~MCP(void);
@@ -40,6 +41,7 @@ protected:
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
+	// virtual bool keyPressed(const OIS::KeyboardEvent &evt);
 	Ogre::Light* pointLight;
 	Disk* gameDisk;
 };
