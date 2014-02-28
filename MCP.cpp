@@ -11,14 +11,14 @@ MCP::~MCP(void)
 	delete mRoot;
     //Mix_FreeChunk(collisionSound);
     //Mix_FreeMusic(music);
-    SDL_Quit();
+    //SDL_Quit();
 }
 
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
     // Initialize SDL
-    SDL_Init(SDL_INIT_AUDIO);
+    //SDL_Init(SDL_INIT_AUDIO);
 /*
     Mix_Music *music = NULL;
 
@@ -68,24 +68,24 @@ void MCP::createScene(void)
     Ogre::Overlay* overlay = overlayManager.create( "OverlayName" ); // Create an overlay
 
     // Create a panel
-    Ogre::OverlayContainer* CHV = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement("Panel", "PanelName"));
-    CHV->setPosition(0.5f, 0.4f);
-    CHV->setDimensions(0.001f, 0.2f);
-    CHV->setMaterialName("BaseWhite");
-    CHV->getMaterial()->setReceiveShadows(false);
+    Ogre::OverlayContainer* crossHairVert = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement("Panel", "PanelName"));
+    crossHairVert->setPosition(0.5f, 0.4f);
+    crossHairVert->setDimensions(0.001f, 0.2f);
+    crossHairVert->setMaterialName("BaseWhite");
+    crossHairVert->getMaterial()->setReceiveShadows(false);
 
-    overlay->add2D( CHV ); // Add the CHV to the overlay
+    overlay->add2D( crossHairVert ); // Add the crossHairVert to the overlay
 
     Ogre::Overlay* overlay2 = overlayManager.create( "OverlayName2" );
 
     // // Create a panel
-    Ogre::OverlayContainer* CHH = static_cast<Ogre::OverlayContainer*>(overlayManager.createOverlayElement("Panel", "PanelName2"));
-    CHH->setPosition(0.425, 0.5);
-    CHH->setDimensions(0.15, 0.001);
-    CHH->setMaterialName("BaseWhite");
-    CHH->getMaterial()->setReceiveShadows(false);
+    Ogre::OverlayContainer* crossHairHoriz = static_cast<Ogre::OverlayContainer*>(overlayManager.createOverlayElement("Panel", "PanelName2"));
+    crossHairHoriz->setPosition(0.425, 0.5);
+    crossHairHoriz->setDimensions(0.15, 0.001);
+    crossHairHoriz->setMaterialName("BaseWhite");
+    crossHairHoriz->getMaterial()->setReceiveShadows(false);
 
-    overlay2->add2D(CHH);     // Add the CHH to the overlay
+    overlay2->add2D(crossHairHoriz);     // Add the crossHairHoriz to the overlay
 
     overlay->hide();    // Hide the Crosshair till Aim View activated
     overlay2->hide();
