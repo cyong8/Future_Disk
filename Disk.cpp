@@ -1,6 +1,6 @@
 #include "Disk.h"
 #include "Player.h"
-
+// BALL, I MEAN!
 Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer) 
 	: GameObject(nym, mgr, sim)
 {
@@ -8,21 +8,22 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 		This is not implemented since we are in 1-player mode.
 	*/
 	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
-	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);
-
+	//Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);  FOR DISK
+	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.5f, 0.5f);
 	diskDirection = Ogre::Vector3(0.0f, 0.0f, -1.0f);
 	
 	typeName = "Disk";
 
 	double scale = 0.1;
 
-	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh"); // Create Entity; apply mesh
+	Ogre::Entity* ent = mgr->createEntity(nym, "sphere.mesh"); // Create Entity; apply mesh
 	rootNode->attachObject(ent); // Attach disk to a scene node
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
-	rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f);
+	//rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f); FOR DISK
+	rootNode->scale(disk_dimensions.x/200.0f, disk_dimensions.y/200.0f, disk_dimensions.z/200.0f);
 	rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
 	
-	ent->setMaterialName("Examples/Chrome"); // apply a material to the mesh
+	ent->setMaterialName("Examples/BumpyMetal"); // apply a material to the mesh
 
 	shape = new btSphereShape(disk_dimensions.x/2.0f); // Sphere shape similar to project1
 	mass = 0.1f;

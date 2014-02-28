@@ -33,9 +33,10 @@ void Player::attachDisk(Disk* d)
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 
  	// DEBUGGING
- 	playerDisk->getSceneNode()->showBoundingBox(true);
+/* 	playerDisk->getSceneNode()->showBoundingBox(true);
 	this->rootNode->showBoundingBox(true);
  	this->rootNode->setVisible(false, false);
+*/
 }
 void Player::throwDisk()
 {

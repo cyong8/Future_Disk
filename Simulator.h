@@ -9,6 +9,7 @@ using namespace std;
 class GameObject;
 class Player;
 class PlayerCamera;
+class Disk;
 
 class Simulator
 {
@@ -29,10 +30,17 @@ class Simulator
 		Player* p2;
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
+		Disk* gameDisk;
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
+		bool gameStart;
 		int score;
+
+		// Sounds
+		Mix_Chunk *ballToWall = NULL;
+		Mix_Chunk *ballToPlayer = NULL;
+		
 
 	public:
 		Simulator(Ogre::SceneManager* mSceneMgr);
@@ -48,6 +56,7 @@ class Simulator
 		void toggleViewChange(Ogre::String name);
 		void setThrowFlag(void);
 		int tallyScore(void);
+		bool gameStartCheck(void);
 };
 
 #endif // #ifndef __Simulator_h_

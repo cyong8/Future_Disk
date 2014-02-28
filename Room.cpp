@@ -16,16 +16,13 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 /*
 	A method which adds a wall to the room
 */
-
 void Room::addWall(Wall *w)
 {
 	((*this).wallList).push_back(*w);
 }
-
 /* 
 	Adds a number of walls to a room - this is a hack
 */
-
 void Room::addWalls(vector<Wall> wallList, Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
 	double dimension = 10.0f;
@@ -50,8 +47,3 @@ void Room::addWalls(vector<Wall> wallList, Ogre::SceneManager *mSceneMgr, Simula
 	(new Wall("wall8", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(0.0f, 0.0f, 0.0f)))->addToSimulator();
 	*/
 }
-
-/*
-	void returnBounds(void);
-	Returns the outside bounds in the x direction
-*/
