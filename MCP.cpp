@@ -37,6 +37,7 @@ void MCP::createScene(void)
     srand(time(0));
 
     gameStart = false;
+    gamePause = true;
 
     /******************** LIGHTS ********************/
 	// Ambient light
@@ -116,8 +117,27 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         startLabel->hide();
     }
-    if (gameStart == true)
+
+    /********* PAUSE THE GAME *********/
+     if (mKeyboard->isKeyDown(OIS::KC_P) && gamePause)
     {
+        // Unpause the game
+        //pauseMenu->hide();
+        gamePause = false;
+    }
+    else if (mKeyboard->isKeyDown(OIS::KC_P) && !gamePause)
+    {
+        // Pause the game
+        //pauseMenu->show();
+        gamePause = true;
+    }
+
+    // If the game is either paused or hasn't started, disable movment
+    if(gameStart && !gamePause)
+    {
+        // Move into aiming-mode
+        // if 'v' is pressed and was not pressed last frame - go to aim mode
+
         if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
         {
             game_simulator->setThrowFlag();
@@ -126,6 +146,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         mMouseDown = currMouse;
         // Move into aiming-mode
             // if 'v' is pressed and was not pressed last frame - go to aim mode
+
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
         {
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
@@ -133,7 +154,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             pc->toggleThirdPersonView();
             vKeyDown = true;
         }
-            // if 'v' is not pressed and was pressed last frame - exit aim mode
+	// if 'v' is not pressed and was pressed last frame - exit aim mode
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
         {
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
@@ -179,6 +200,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             }
             // if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
             // {
+            //     if (p->getSceneNode()->getPosition().y == game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y)
             //     if ((p->getSceneNode()->getPosition().y - p->getPlayerDimensions().y) == game_simulator->getGameObject("Floor")->getSceneNode()->getPosition().y)
             //     {
             //         fy += mMove; // Jump, Jump
@@ -191,10 +213,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             {
                 p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
             }
-            if (keyWasPressed == false && pressedLastFrame == true)
-            {
-                p->getBody()->setLinearVelocity(velocityVector);
-            }
+            // if (keyWasPressed == false && pressedLastFrame == true)
+            // {
+            //     p->getBody()->setLinearVelocity(velocityVector);
+            // }
         }
     }
     return true;
@@ -238,11 +260,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(!processUnbufferedInput(evt)) 
         return false;
 
-    // check collisions
-    game_simulator->setHitFlags();
+    if(gamePause)
+    {
+        game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+        // check collisions
+        game_simulator->setHitFlags();
 
-    modifyScore(game_simulator->tallyScore());
-
+        modifyScore(game_simulator->tallyScore());
+    }
     // if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
     // {
     //      gameDisk->rotateOffWall();

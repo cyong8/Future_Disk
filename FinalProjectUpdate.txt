@@ -1,0 +1,6 @@
+In implementing the game we accomplished much of what we set out to do. We implemented a camera system which moves from a third person perspective to a first person perspective. We handled collisions which allowed us to let a target that had been hit disappear. 
+
+We didn't get to implement a hexagonal room, or a disk mesh. These will be implemented in our next assignment.
+
+Finally, each member of your team will turn in directly to me (not as part of the team's game package) an evaluation of the performance of your team on this project, your strengths, weaknesses, what you'd do differently if you were starting again, the main things you've learned. The evaluation must include a specific evaluation of your own performance and that of each of your team members, again both strengths and weaknesses. This will be kept confidential and will be taken into consideration in grading. 
+

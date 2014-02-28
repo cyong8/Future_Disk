@@ -1,0 +1,21 @@
+In this game a robot shoots a ball at targets. When a target is hit it disappears and reappears in a new location. You get points based on how many targets you hit - 10 points per target.
+
+------------
+| CONTROLS |
+------------
+MENU:
+start game - Enter/Return
+pause - p
+
+MOVEMENT:
+left - a
+right - d
+forward - w
+backward -s
+hold_left_shift - sprint
+
+VIEW:
+hold_v - enter first person mode
+
+
+
