@@ -9,11 +9,27 @@ MCP::MCP(void)
 MCP::~MCP(void)
 {
 	delete mRoot;
+    //Mix_FreeChunk(collisionSound);
+    //Mix_FreeMusic(music);
+    //SDL_Quit();
 }
 
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    // Initialize SDL
+    //SDL_Init(SDL_INIT_AUDIO);
+/*
+    Mix_Music *music = NULL;
+
+    Mix_Chunk *collisionSound = NULL;
+
+    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
+
+    music = Mix_LoadMUS( "test.wav");
+    collisionSound = Mix_LoadWAV("collide.wav");
+*/
+    /************* SIMULATOR *************/
     game_simulator = new Simulator(mSceneMgr);
     vKeyDown = false;
 
@@ -21,6 +37,7 @@ void MCP::createScene(void)
     srand(time(0));
 
     gameStart = false;
+
     /******************** LIGHTS ********************/
 	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
@@ -51,24 +68,24 @@ void MCP::createScene(void)
     Ogre::Overlay* overlay = overlayManager.create( "OverlayName" ); // Create an overlay
 
     // Create a panel
-    Ogre::OverlayContainer* CHV = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement("Panel", "PanelName"));
-    CHV->setPosition(0.5f, 0.4f);
-    CHV->setDimensions(0.001f, 0.2f);
-    CHV->setMaterialName("BaseWhite");
-    CHV->getMaterial()->setReceiveShadows(false);
+    Ogre::OverlayContainer* crossHairVert = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement("Panel", "PanelName"));
+    crossHairVert->setPosition(0.5f, 0.4f);
+    crossHairVert->setDimensions(0.001f, 0.2f);
+    crossHairVert->setMaterialName("BaseWhite");
+    crossHairVert->getMaterial()->setReceiveShadows(false);
 
-    overlay->add2D( CHV ); // Add the CHV to the overlay
+    overlay->add2D( crossHairVert ); // Add the crossHairVert to the overlay
 
     Ogre::Overlay* overlay2 = overlayManager.create( "OverlayName2" );
 
     // // Create a panel
-    Ogre::OverlayContainer* CHH = static_cast<Ogre::OverlayContainer*>(overlayManager.createOverlayElement("Panel", "PanelName2"));
-    CHH->setPosition(0.425, 0.5);
-    CHH->setDimensions(0.15, 0.001);
-    CHH->setMaterialName("BaseWhite");
-    CHH->getMaterial()->setReceiveShadows(false);
+    Ogre::OverlayContainer* crossHairHoriz = static_cast<Ogre::OverlayContainer*>(overlayManager.createOverlayElement("Panel", "PanelName2"));
+    crossHairHoriz->setPosition(0.425, 0.5);
+    crossHairHoriz->setDimensions(0.15, 0.001);
+    crossHairHoriz->setMaterialName("BaseWhite");
+    crossHairHoriz->getMaterial()->setReceiveShadows(false);
 
-    overlay2->add2D(CHH);     // Add the CHH to the overlay
+    overlay2->add2D(crossHairHoriz);     // Add the crossHairHoriz to the overlay
 
     overlay->hide();    // Hide the Crosshair till Aim View activated
     overlay2->hide();
@@ -95,7 +112,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     if (gameStart == true)
     {
         if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
+        {
             game_simulator->setThrowFlag();
+            p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
+        }
 
         mMouseDown = currMouse;
 
@@ -155,24 +175,24 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 keyWasPressed = true;
                 pressedLastFrame = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
-            {
-                if (p->getSceneNode()->getPosition().y == game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y)
-                {
-                    fy += mMove; // Jump, Jump
-                    velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
-                    keyWasPressed = true;
-                    pressedLastFrame = true;
-                }
-            }
+            // if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
+            // {
+            //     if ((p->getSceneNode()->getPosition().y - p->getPlayerDimensions().y) == game_simulator->getGameObject("Floor")->getSceneNode()->getPosition().y)
+            //     {
+            //         fy += mMove; // Jump, Jump
+            //         velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
+            //         keyWasPressed = true;
+            //         pressedLastFrame = true;
+            //     }
+            // }
             if (keyWasPressed == true)
             {
                 p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
             }
-            if (keyWasPressed == false && pressedLastFrame == true)
-            {
+            //if (keyWasPressed == false && pressedLastFrame == true)
+            //{
                 p->getBody()->setLinearVelocity(velocityVector);
-            }
+            //}
         }
     }
     return true;
@@ -221,13 +241,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     modifyScore(game_simulator->tallyScore());
 
-    if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
-    {
-         gameDisk->rotateOffWall();
-         gameDisk->updateTransform();
-    }
+    // if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
+    // {
+    //      gameDisk->rotateOffWall();
+    //      gameDisk->updateTransform();
+    // }
     if (game_simulator->gameStartCheck())
         gameStart = true;
+
     return ret;
 }
 

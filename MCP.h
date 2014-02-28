@@ -13,8 +13,9 @@
 #include "Room.h"
 #include "Wall.h"
 #include "Target.h"
-
-#include <SDL.h>
+// SDL headers
+#include "SDL.h"
+#include "SDL_mixer.h"
 
 
 class Simulator;
