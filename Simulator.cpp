@@ -75,7 +75,7 @@ void Simulator::addObject (GameObject* o)
 			o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
-			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
+			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y*2, diskDirection.z));
 		}
 	}
 	if(o->typeName == "Target")

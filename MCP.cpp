@@ -167,10 +167,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         {
             p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
         }
-        if (keyWasPressed == false && pressedLastFrame == true)
-        {
-            p->getBody()->setLinearVelocity(velocityVector);
-        }
+        // if (keyWasPressed == false && pressedLastFrame == true)
+        // {
+        //     p->getBody()->setLinearVelocity(velocityVector);
+        // }
     }
     return true;
 }
