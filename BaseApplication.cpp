@@ -25,7 +25,6 @@ BaseApplication::BaseApplication(void)
     mResourcesCfg(Ogre::StringUtil::BLANK),
     mPluginsCfg(Ogre::StringUtil::BLANK),
     mTrayMgr(0),
-//    mCameraMan(0),
     mDetailsPanel(0),
     mCursorWasVisible(false),
     mShutDown(false),
@@ -39,7 +38,6 @@ BaseApplication::BaseApplication(void)
 BaseApplication::~BaseApplication(void)
 {
     if (mTrayMgr) delete mTrayMgr;
-//    if (mCameraMan) delete mCameraMan;
 
     //Remove ourself as a Window listener
     Ogre::WindowEventUtilities::removeWindowEventListener(mWindow, this);
@@ -118,28 +116,7 @@ void BaseApplication::createFrameListener(void)
 
     // create FPS tracker
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mMouse, this);
-    // mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
-   // mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
-     mTrayMgr->hideCursor();
-
-    // create a params panel for displaying sample details
-    // Ogre::StringVector items;
-    // items.push_back("cam.pX");
-    // items.push_back("cam.pY");
-    // items.push_back("cam.pZ");
-    // items.push_back("");
-    // items.push_back("cam.oW");
-    // items.push_back("cam.oX");
-    // items.push_back("cam.oY");
-    // items.push_back("cam.oZ");
-    // items.push_back("");
-    // items.push_back("Filtering");
-    // items.push_back("Poly Mode");
-
-    // mDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_NONE, "DetailsPanel", 200, items);
-    // mDetailsPanel->setParamValue(9, "Bilinear");
-    // mDetailsPanel->setParamValue(10, "Solid");
-    // mDetailsPanel->hide();
+    mTrayMgr->hideCursor();
 
     /************************************************************/
     /*************** create timer and score table ***************/
@@ -312,21 +289,6 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
     mMouse->capture();
 
     mTrayMgr->frameRenderingQueued(evt);
-
- //    if (!mTrayMgr->isDialogVisible())
- //    {
- // //       mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
- //        if (mDetailsPanel->isVisible())   // if details panel is visible, then update its contents
- //        {
- //            mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
- //            mDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(mCamera->getDerivedPosition().y));
- //            mDetailsPanel->setParamValue(2, Ogre::StringConverter::toString(mCamera->getDerivedPosition().z));
- //            mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
- //            mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
- //            mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
- //            mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
- //        }
- //    }
 
     return true;
 }

@@ -16,6 +16,7 @@
 // SDL headers
 #include "SDL.h"
 #include "SDL_mixer.h"
+#include "Music.h"
 
 
 class Simulator;
@@ -27,11 +28,12 @@ public:
 	vector<Wall> wallList;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
-	bool vKeyDown;
 	int p1score; // Score for the first player
+	bool vKeyDown;
 	bool gamePause;
 	bool allowMovement;
 	bool gameStart;
+	bool gameOver;
 
 	MCP(void);
 	virtual ~MCP(void);

@@ -9,26 +9,11 @@ MCP::MCP(void)
 MCP::~MCP(void)
 {
 	delete mRoot;
-    //Mix_FreeChunk(collisionSound);
-    //Mix_FreeMusic(music);
-    //SDL_Quit();
 }
 
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    // Initialize SDL
-    //SDL_Init(SDL_INIT_AUDIO);
-/*
-    Mix_Music *music = NULL;
-
-    Mix_Chunk *collisionSound = NULL;
-
-    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
-
-    music = Mix_LoadMUS( "test.wav");
-    collisionSound = Mix_LoadWAV("collide.wav");
-*/
     /************* SIMULATOR *************/
     game_simulator = new Simulator(mSceneMgr);
     vKeyDown = false;
@@ -39,6 +24,7 @@ void MCP::createScene(void)
     allowMovement = false;
     gamePause = false;
     gameStart = false;
+    gameOver = false;
 
     /******************** LIGHTS ********************/
 	// Ambient light
@@ -120,6 +106,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         startLabel->hide();
         mTrayMgr->removeWidgetFromTray(startLabel);
+        instructPanel->hide();
+        mTrayMgr->removeWidgetFromTray(instructPanel);
         gameStart = true;
         time(&initTime);
     }
@@ -129,8 +117,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         if (gamePause == true)  //leaving pause
         {
-            // Unpause the game
-            //pauseMenu->hide();
             pausePressedLast = true;
             gamePause = false;
             pauseLabel->hide();
@@ -276,10 +262,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     bool ret = BaseApplication::frameRenderingQueued(evt);
     if(!gameStart) // Game not started
     {
+        pauseLabel->hide();
         startLabel->show();
         startLabel->setCaption("Press ENTER to begin!");
-        pauseLabel->hide();
         mTrayMgr->removeWidgetFromTray(pauseLabel);
+    }
+    else if (gameOver)
+    {
+
     }
     else // Game started
     {
@@ -294,6 +284,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time_t currTime;
             time(&currTime);
             updateTimer(currTime);
+            if ()
         }
         else
         {
