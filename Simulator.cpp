@@ -180,6 +180,24 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p1->getSceneNode()->getPosition());
         }
 	}
+
+
+	if (getGameObject("Disk") != NULL) // Rotate the SceneNode to mimic Disk-Wall collisions
+    {
+        // ((Disk*)getGameObject("Disk"))->rotateOffWall();
+        // /((Disk*)getGameObject("Disk"))->updateTransform();
+        Disk* tempDisk = ((Disk*)getGameObject("Disk"));
+        // removeObject("Disk");
+        btVector3 lv = tempDisk->getBody()->getLinearVelocity();
+		Ogre::Vector3 velocityDirection = Ogre::Vector3(lv.x(), lv.y(), lv.z()).normalisedCopy(); //direction of the velocity
+
+		Ogre::Quaternion diskRoll = tempDisk->diskDirection.getRotationTo(velocityDirection);
+		tempDisk->getSceneNode()->_setDerivedOrientation(diskRoll);	
+		tempDisk->diskDirection = velocityDirection;
+		tempDisk->updateTransform();
+		tempDisk->resetRotateOffWall();
+		// tempDisk->addToSimulator();
+    }
 }
 
 void Simulator::setHitFlags(void)
@@ -253,10 +271,10 @@ void Simulator::setHitFlags(void)
 					((Target*)gA)->targetHit();
 					removeObject("Target");
 					// The 47.0f value is the x-width and y-height of the disk
-					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x + (1.0f/47.0f)
-										,getGameObject("leftwall")->getSceneNode()->getPosition().x - (1.0f/47.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (1.0f/47.0f)
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y) - (1.0f/47.0f), 
+					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y) - (2.0f/3.0f), 
 									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 					gA->addToSimulator();
@@ -275,10 +293,10 @@ void Simulator::setHitFlags(void)
 					((Target*)gB)->targetHit();
 					removeObject("Target");
 					// The 47.0f value is the x-width and y-height of the disk
-					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("rightwall")->getSceneNode()->getPosition().x + (1.0f/47.0f)
-										,getGameObject("leftwall")->getSceneNode()->getPosition().x - (1.0f/47.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (1.0f/47.0f)
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (1.0f/47.0f)), 
+					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y) - (2.0f/3.0f), 
 									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 					gB->addToSimulator();

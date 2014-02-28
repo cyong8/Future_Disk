@@ -36,6 +36,12 @@ void Disk::setRotateOffWall()
 {
 	offWallRotation = true;
 }
+
+void Disk::resetRotateOffWall()
+{
+	offWallRotation = false;
+}
+
 void Disk::rotateOffWall()
 {
 	// perform rotation of sceneNode to the angle v
