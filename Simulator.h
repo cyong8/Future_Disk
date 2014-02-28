@@ -38,8 +38,8 @@ class Simulator
 		int score;
 
 		// Sounds
-		Mix_Chunk *ballToWall = NULL;
-		Mix_Chunk *ballToPlayer = NULL;
+		//Mix_Chunk *ballToWall = NULL;
+		//Mix_Chunk *ballToPlayer = NULL;
 		
 
 	public:
