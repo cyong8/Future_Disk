@@ -284,7 +284,7 @@ void Simulator::setHitFlags(void)
 					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y) - (2.0f/3.0f), 
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 					gA->addToSimulator();
@@ -306,7 +306,7 @@ void Simulator::setHitFlags(void)
 					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y) - (2.0f/3.0f), 
+										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
 					gB->addToSimulator();

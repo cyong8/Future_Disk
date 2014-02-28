@@ -92,32 +92,6 @@ void MCP::createScene(void)
     overlay2->hide();
 
     p1Cam->setCHOverlays(overlay, overlay2);
-
-    // /******************** Overlay (Start Menu) ********************/
-    // Ogre::Overlay* startOverlay = overlayManager->create( "startOverlay" ); // Create an overlay
-
-    // // Create a panel
-    // startMenu = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "startPanel"));
-    // startMenu->setMetricsMode(Ogre::GMM_RELATIVE);
-    // startMenu->setPosition(0.2f, 0.2f);
-    // startMenu->setDimensions(.5f, .5f);
-    // startMenu->setMaterialName("BaseBlack");
-    // startMenu->getMaterial()->setReceiveShadows(false);
-
-    // Ogre::TextAreaOverlayElement* pTextArea = static_cast<Ogre::TextAreaOverlayElement*>( overlayManager->createOverlayElement("TextArea", "MyTextArea"));
-    // pTextArea->setMetricsMode(Ogre::GMM_RELATIVE);
-    // pTextArea->setPosition(0,0);
-    // pTextArea->setDimensions(.4,.4);
-    // pTextArea->setCaption("Some text");
-    // pTextArea->setCharHeight(1.0);
-    // pTextArea->setFontName("BlueHighway");
-    // pTextArea->setColour(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
-    
-
-    // startMenu->addChild(pTextArea);
-    
-    // startOverlay->add2D( startMenu ); // Add the startMenu to the overlay
-    // startOverlay->show();
 }
 
 //-------------------------------------------------------------------------------------
@@ -138,9 +112,9 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
 
     /********* START THE GAME *********/
-    if (mKeyboard->isKeyDown(OIS::KC_RETURN) && !gameStart)
+    if (mKeyboard->isKeyDown(OIS::KC_RETURN))
     {
-        startMenu->hide();
+        startLabel->hide();
     }
     if (gameStart == true)
     {

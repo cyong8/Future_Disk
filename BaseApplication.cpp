@@ -118,28 +118,28 @@ void BaseApplication::createFrameListener(void)
 
     // create FPS tracker
     mTrayMgr = new OgreBites::SdkTrayManager("InterfaceName", mWindow, mMouse, this);
-    mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
+    // mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
    // mTrayMgr->showLogo(OgreBites::TL_BOTTOMRIGHT);
-    mTrayMgr->hideCursor();
+    // mTrayMgr->hideCursor();
 
     // create a params panel for displaying sample details
-    Ogre::StringVector items;
-    items.push_back("cam.pX");
-    items.push_back("cam.pY");
-    items.push_back("cam.pZ");
-    items.push_back("");
-    items.push_back("cam.oW");
-    items.push_back("cam.oX");
-    items.push_back("cam.oY");
-    items.push_back("cam.oZ");
-    items.push_back("");
-    items.push_back("Filtering");
-    items.push_back("Poly Mode");
+    // Ogre::StringVector items;
+    // items.push_back("cam.pX");
+    // items.push_back("cam.pY");
+    // items.push_back("cam.pZ");
+    // items.push_back("");
+    // items.push_back("cam.oW");
+    // items.push_back("cam.oX");
+    // items.push_back("cam.oY");
+    // items.push_back("cam.oZ");
+    // items.push_back("");
+    // items.push_back("Filtering");
+    // items.push_back("Poly Mode");
 
-    mDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_NONE, "DetailsPanel", 200, items);
-    mDetailsPanel->setParamValue(9, "Bilinear");
-    mDetailsPanel->setParamValue(10, "Solid");
-    mDetailsPanel->hide();
+    // mDetailsPanel = mTrayMgr->createParamsPanel(OgreBites::TL_NONE, "DetailsPanel", 200, items);
+    // mDetailsPanel->setParamValue(9, "Bilinear");
+    // mDetailsPanel->setParamValue(10, "Solid");
+    // mDetailsPanel->hide();
 
     /************************************************************/
     /*************** create timer and score table ***************/
@@ -154,12 +154,19 @@ void BaseApplication::createFrameListener(void)
     initMinutes = 3;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
     time(&initTime);
+
+    startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
+
+
+    // pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 350);
+    // pauseLabel->hide();
+    // pauseLabel->setCaption("PAUSE");
+
+    // gameOverLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "GameOver", "", 350);
+    // gameOverLabel->hide();
+    // gameOverLabel->setCaption("Game Over");
+    
     mRoot->addFrameListener(this);
-
-    startPanel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "ScorePanel", Ogre::DisplayString("Start!"));
-
-
-
 }
 //-------------------------------------------------------------------------------------
 void BaseApplication::destroyScene(void)
@@ -265,6 +272,7 @@ bool BaseApplication::setup(void)
     // Load resources
     loadResources();
 
+
     // Create the scene
     createScene();
 
@@ -287,21 +295,22 @@ bool BaseApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     mTrayMgr->frameRenderingQueued(evt);
 
-    if (!mTrayMgr->isDialogVisible())
-    {
- //       mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
-        if (mDetailsPanel->isVisible())   // if details panel is visible, then update its contents
-        {
-            mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
-            mDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(mCamera->getDerivedPosition().y));
-            mDetailsPanel->setParamValue(2, Ogre::StringConverter::toString(mCamera->getDerivedPosition().z));
-            mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
-            mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
-            mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
-            mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
-        }
-    }
-
+ //    if (!mTrayMgr->isDialogVisible())
+ //    {
+ // //       mCameraMan->frameRenderingQueued(evt);   // if dialog isn't up, then update the camera
+ //        if (mDetailsPanel->isVisible())   // if details panel is visible, then update its contents
+ //        {
+ //            mDetailsPanel->setParamValue(0, Ogre::StringConverter::toString(mCamera->getDerivedPosition().x));
+ //            mDetailsPanel->setParamValue(1, Ogre::StringConverter::toString(mCamera->getDerivedPosition().y));
+ //            mDetailsPanel->setParamValue(2, Ogre::StringConverter::toString(mCamera->getDerivedPosition().z));
+ //            mDetailsPanel->setParamValue(4, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().w));
+ //            mDetailsPanel->setParamValue(5, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().x));
+ //            mDetailsPanel->setParamValue(6, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().y));
+ //            mDetailsPanel->setParamValue(7, Ogre::StringConverter::toString(mCamera->getDerivedOrientation().z));
+ //        }
+ //    }
+    startLabel->show();
+    startLabel->setCaption("Press ENTER to begin!");
     time_t currTime;
     time(&currTime);
     updateTimer(currTime);
