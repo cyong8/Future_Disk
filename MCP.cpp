@@ -99,6 +99,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     static bool mMouseDown = false;     // If a mouse button is depressed
     static Ogre::Real mMove = 3.0f;      // The movement constant
+    static bool pressedLastFrame = false;
     float fx = 0.0f;
     float fy = 0.0f;
     float fz = 0.0f;
@@ -145,18 +146,21 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             fz -= mMove;
             velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
             keyWasPressed = true;
+            pressedLastFrame = true;
         }
         if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
         {
             fz += mMove;
             velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
             keyWasPressed = true;
+            pressedLastFrame = true;
         }
         if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
         {
             fx -= mMove; // Strafe left
             velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
             keyWasPressed = true;
+            pressedLastFrame = true;
             
         }
         if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
@@ -164,6 +168,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             fx += mMove; // Strafe right
             velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
             keyWasPressed = true;
+            pressedLastFrame = true;
         }
         if (mKeyboard->isKeyDown(OIS::KC_Y))
         {
@@ -177,12 +182,17 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 fy += mMove; // Jump, Jump
                 velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
                 keyWasPressed = true;
+                pressedLastFrame = true;
             }
         }
         if (keyWasPressed == true)
         {
             p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
         }
+        // if (keyWasPressed == false && pressedLastFrame == true)
+        // {
+        //     p->getBody()->setLinearVelocity(velocityVector);
+        // }
     }
     return true;
 }
@@ -226,8 +236,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     // check collisions
     game_simulator->setHitFlags();
+
     modifyScore(game_simulator->tallyScore());
 
+    // if (gameDisk->checkOffWallRotation()) // Rotate the SceneNode to mimic Disk-Wall collisions
+    // {
+    //     gameDisk->rotateOffWall();
+    //     gameDisk->updateTransform();
+    // }
     return ret;
 }
 

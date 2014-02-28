@@ -7,10 +7,14 @@ class Player;
 
 class Disk : public GameObject
 {
+protected:
+	bool offWallRotation;
+	Ogre::Vector3 diskDirection;
 public:
 	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
-	void updateDiskPosition(Ogre::Vector3 v);
-	void updateDiskSNodeOrientation(Ogre::Vector3 v);
+	void setRotateOffWall();
+	void rotateOffWall();
+	bool checkOffWallRotation();
 };
 
 #endif // #ifndef __Disk_h_
