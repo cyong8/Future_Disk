@@ -28,6 +28,8 @@ public:
 	bool vKeyDown;
 	int p1score; // Score for the first player
 
+	Ogre::OverlayContainer* startMenu;
+
 	MCP(void);
 	virtual ~MCP(void);
 
