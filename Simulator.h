@@ -40,6 +40,7 @@ class Simulator
 		// Sounds
 		Mix_Chunk *ballToWall = NULL;
 		Mix_Chunk *ballToPlayer = NULL;
+		
 
 	public:
 		Simulator(Ogre::SceneManager* mSceneMgr);

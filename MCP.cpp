@@ -64,11 +64,12 @@ void MCP::createScene(void)
     pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
 
     /********************** Overlay (Crosshair) **********************/
-    Ogre::OverlayManager& overlayManager = Ogre::OverlayManager::getSingleton();
-    Ogre::Overlay* overlay = overlayManager.create( "OverlayName" ); // Create an overlay
+    Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
+    
+    Ogre::Overlay* overlay = overlayManager->create( "OverlayName" ); // Create an overlay
 
     // Create a panel
-    Ogre::OverlayContainer* crossHairVert = static_cast<Ogre::OverlayContainer*>( overlayManager.createOverlayElement("Panel", "PanelName"));
+    Ogre::OverlayContainer* crossHairVert = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "PanelName"));
     crossHairVert->setPosition(0.5f, 0.4f);
     crossHairVert->setDimensions(0.001f, 0.2f);
     crossHairVert->setMaterialName("BaseWhite");
@@ -76,10 +77,10 @@ void MCP::createScene(void)
 
     overlay->add2D( crossHairVert ); // Add the crossHairVert to the overlay
 
-    Ogre::Overlay* overlay2 = overlayManager.create( "OverlayName2" );
+    Ogre::Overlay* overlay2 = overlayManager->create( "OverlayName2" );
 
-    // // Create a panel
-    Ogre::OverlayContainer* crossHairHoriz = static_cast<Ogre::OverlayContainer*>(overlayManager.createOverlayElement("Panel", "PanelName2"));
+    // Create a panel
+    Ogre::OverlayContainer* crossHairHoriz = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "PanelName2"));
     crossHairHoriz->setPosition(0.425, 0.5);
     crossHairHoriz->setDimensions(0.15, 0.001);
     crossHairHoriz->setMaterialName("BaseWhite");
@@ -92,6 +93,31 @@ void MCP::createScene(void)
 
     p1Cam->setCHOverlays(overlay, overlay2);
 
+    /******************** Overlay (Start Menu) ********************/
+    Ogre::Overlay* startOverlay = overlayManager->create( "startOverlay" ); // Create an overlay
+
+    // Create a panel
+    startMenu = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "startPanel"));
+    startMenu->setMetricsMode(Ogre::GMM_RELATIVE);
+    startMenu->setPosition(0.2f, 0.2f);
+    startMenu->setDimensions(.5f, .5f);
+    startMenu->setMaterialName("BaseBlack");
+    startMenu->getMaterial()->setReceiveShadows(false);
+
+    Ogre::TextAreaOverlayElement* pTextArea = static_cast<Ogre::TextAreaOverlayElement*>( overlayManager->createOverlayElement("TextArea", "MyTextArea"));
+    pTextArea->setMetricsMode(Ogre::GMM_RELATIVE);
+    pTextArea->setPosition(0,0);
+    pTextArea->setDimensions(.4,.4);
+    pTextArea->setCaption("Some text");
+    pTextArea->setCharHeight(1.0);
+    pTextArea->setFontName("BlueHighway");
+    pTextArea->setColour(Ogre::ColourValue(1.0f, 0.0f, 0.0f));
+    
+
+    startMenu->addChild(pTextArea);
+    
+    startOverlay->add2D( startMenu ); // Add the startMenu to the overlay
+    startOverlay->show();
 }
 
 //-------------------------------------------------------------------------------------
@@ -108,6 +134,15 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float sprintFactor = 1.0f;
  
     Player *p = (Player *)game_simulator->getGameObject("Player1");
+    
+    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
+
+    /********* START THE GAME *********/
+    if (mKeyboard->isKeyDown(OIS::KC_RETURN) && !gameStart)
+    {
+        startMenu->hide();
+    }
+
 
     if (gameStart == true)
     {
