@@ -155,6 +155,11 @@ void BaseApplication::createFrameListener(void)
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
     time(&initTime);
     mRoot->addFrameListener(this);
+
+    startPanel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "ScorePanel", Ogre::DisplayString("Start!"));
+
+
+
 }
 //-------------------------------------------------------------------------------------
 void BaseApplication::destroyScene(void)

@@ -101,6 +101,7 @@ protected:
 
     // OgreBites
     OgreBites::ParamsPanel* scorePanel;       // scoring panel for TronGame
+    OgreBites::Label* startPanel;
     int initMinutes;
     time_t initTime;
     int score;
