@@ -16,7 +16,7 @@
 // SDL headers
 #include "SDL.h"
 #include "SDL_mixer.h"
-#include "Music.h"
+//#include "Music.h"
 
 
 class Simulator;
@@ -33,7 +33,7 @@ public:
 	bool gamePause;
 	bool allowMovement;
 	bool gameStart;
-	bool gameOver;
+	//bool gameOver;
 
 	MCP(void);
 	virtual ~MCP(void);
@@ -44,6 +44,7 @@ protected:
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
+	virtual void setGameStart(bool gameStart);
 	Ogre::Light* pointLight;
 	Disk* gameDisk;
 };

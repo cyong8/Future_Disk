@@ -92,9 +92,13 @@ protected:
     virtual void windowResized(Ogre::RenderWindow* rw);
     //Unattach OIS before window shutdown (very important under Linux)
     virtual void windowClosed(Ogre::RenderWindow* rw);
+    
+
     void updateTimer(time_t currTime);
     void updatePauseTime(time_t currTime);
     void modifyScore(int num);
+    void setGameOverFlag(void);
+    bool getGameOverFlag(void);
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
@@ -114,6 +118,7 @@ protected:
     double pTimePassed;
     time_t pauseTime;
     int score;
+    bool gameOver;
     
     OgreBites::SdkTrayManager* mTrayMgr;
  //   OgreBites::SdkCameraMan* mCameraMan;       // basic camera controller
