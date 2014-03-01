@@ -9,6 +9,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 {
 	onFloor = false;
 	gameMusic = music;
+	diskWallHitFlag = false;
 
 	// initialize random number generate
     srand(time(0));
@@ -208,6 +209,7 @@ void Simulator::setHitFlags(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
+	bool localDiskWallHitFlag = false;
 	for (i=0;i<numManifolds;i++)
 	{
 		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
@@ -228,6 +230,7 @@ void Simulator::setHitFlags(void)
 				if (((Player*)gA)->checkHolding() == false)
 				{
 					((Player*)gA)->attachDisk((Disk*)gB);
+					gameMusic->playCollisionSound("Disk", "Player");
 					removeObject("Disk");
 				}
 			}
@@ -243,6 +246,7 @@ void Simulator::setHitFlags(void)
 				if (((Player*)gB)->checkHolding() == false)
 				{
 					((Player*)gB)->attachDisk((Disk*)gA);
+					gameMusic->playCollisionSound("Disk", "Player");
 					removeObject("Disk");
 				}
 			}
@@ -281,6 +285,7 @@ void Simulator::setHitFlags(void)
 				if (((Target*)gA)->isHit() == false)
 				{
 					((Target*)gA)->targetHit();
+					gameMusic->playCollisionSound("Disk", "Target");
 					removeObject("Target");
 					// The 47.0f value is the x-width and y-height of the disk
 					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
@@ -300,6 +305,7 @@ void Simulator::setHitFlags(void)
 				if (((Target*)gB)->isHit() == false)
 				{
 					((Target*)gB)->targetHit();
+					gameMusic->playCollisionSound("Disk", "Target");
 					removeObject("Target");
 					// The 47.0f value is the x-width and y-height of the disk
 					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
@@ -312,8 +318,31 @@ void Simulator::setHitFlags(void)
 				}
 			}
 		}
+		if (!diskWallHitFlag)
+		{
+			if (gA->typeName == "Disk")
+			{
+				if (gB->typeName == "Wall")
+				{
+					gameMusic->playCollisionSound("Disk", "Wall");
+					diskWallHitFlag = true;
+					localDiskWallHitFlag = true;
+				}
+			}
+			if (gB->typeName == "Disk")
+			{
+				if (gA->typeName == "Wall")
+				{
+					gameMusic->playCollisionSound("Disk", "Wall");
+					diskWallHitFlag = true;
+					localDiskWallHitFlag = true;
+				}
+			}
+		}
 		contactManifold->clearManifold();
 	}
+	if (!localDiskWallHitFlag)
+		diskWallHitFlag = false;
 }
 void Simulator::setCamera(PlayerCamera* pcam)
 {

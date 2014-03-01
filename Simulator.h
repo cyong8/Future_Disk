@@ -40,6 +40,7 @@ class Simulator
 		bool throwFlag;
 		bool allowMovement;
 		bool onFloor;
+		bool diskWallHitFlag;
 
 		// Music Object
 		Music* gameMusic;

@@ -1,7 +1,7 @@
 #ifndef __Music_h_
 #define __Music_h_
+//-lSDL_mixer
 
-// SDL headers
 #include "SDL.h"
 #include "SDL_mixer.h"
 #include <stdlib.h>
@@ -20,11 +20,12 @@ public:
 	void playMusic(string state);
 	
 private:
-	Mix_Chunk *pause_StartMusic;
-	Mix_Chunk *gameMusic;
+	Mix_Chunk *startStopScreen;
+	Mix_Chunk *playScreen;
 	Mix_Chunk *diskToWall;
-	Mix_Chunk *diskToPlayer;
 	Mix_Chunk *diskToTarget;
+	Mix_Chunk *catchSound;
+	Mix_Chunk *throwSound;
 
 	int currentChunkChannel;
 	int currentMusicChannel;

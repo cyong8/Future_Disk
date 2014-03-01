@@ -26,7 +26,7 @@ void MCP::createScene(void)
 
     gameMusic = new Music();
     gameMusic->playMusic("Start");
-
+    
     /********************    SIMULATOR   ********************/
     game_simulator = new Simulator(mSceneMgr, gameMusic);
 
@@ -106,6 +106,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     /********* START THE GAME *********/
     if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
     {
+        gameMusic->playMusic("Play");
         startLabel->hide();
         mTrayMgr->removeWidgetFromTray(startLabel);
         instructPanel->hide();
@@ -120,6 +121,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     {
         if (gamePause == true)  //leaving pause
         {
+            gameMusic->playMusic("Play");
             pausePressedLast = true;
             gamePause = false;
             pauseLabel->hide();
@@ -127,6 +129,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         }
         else //entering Pause
         {
+            gameMusic->playMusic("Start");
             pauseLabel->setCaption("GAME PAUSED!");
             pauseLabel->show();
             mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
@@ -148,6 +151,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
         if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
         {
+            gameMusic->playMusic("Throw");
             game_simulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
 
