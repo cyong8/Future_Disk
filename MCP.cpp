@@ -14,19 +14,21 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    /************* SIMULATOR *************/
-    game_simulator = new Simulator(mSceneMgr);
-    vKeyDown = false;
-
-    // initialize random number generate
-    srand(time(0));
-
+    /******************** GAME VARIABLES ********************/
     allowMovement = false;
     gamePause = false;
     gameStart = false;
-    gameOver = false;
+    gameOver = false;    
+    // // initialize random number generate
+    // srand(time(0));
 
-    /******************** LIGHTS ********************/
+
+    /********************    SIMULATOR   ********************/
+    game_simulator = new Simulator(mSceneMgr);
+    vKeyDown = false;
+
+
+    /********************    LIGHTS     ********************/
 	// Ambient light
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -38,70 +40,72 @@ void MCP::createScene(void)
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
     
-    /********************** GAME OBJECTS **********************/
-    /* Add and create GameObjects to be added to the simulator */
-    PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera);
-    game_simulator->setCamera(p1Cam);
-    new Room(mSceneMgr, game_simulator);
-    (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator();
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator();
-    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator();
-    gameDisk = (Disk*)game_simulator->getGameObject("Disk");
+
+    /********************  GAME OBJECTS  ********************/
+    PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera); // Create PlayerCamera
+    game_simulator->setCamera(p1Cam); // Attach camera to game_simulator
+    new Room(mSceneMgr, game_simulator); // Create Room
+    (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); // Create Disk
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
+    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    gameDisk = (Disk*)game_simulator->getGameObject("Disk"); // Attach Disk to game_simulator
 
     // Now that the room is created we can initialize the position of the light to be at the top of it and in the center
     pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
 
-    /********************** Overlay (Crosshair) **********************/
+
+    /********************    OVERLAYS    ********************/
     Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
     
-    Ogre::Overlay* overlay = overlayManager->create( "OverlayName" ); // Create an overlay
+    Ogre::Overlay* crossHairVertOverlay = overlayManager->create( "crossHairVert" ); // Create an overlay for the vertical crosshair
 
-    // Create a panel
-    Ogre::OverlayContainer* crossHairVert = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "PanelName"));
-    crossHairVert->setPosition(0.5f, 0.4f);
-    crossHairVert->setDimensions(0.001f, 0.2f);
-    crossHairVert->setMaterialName("BaseWhite");
-    crossHairVert->getMaterial()->setReceiveShadows(false);
+    // Create an overlay container for the vertical crosshair
+    Ogre::OverlayContainer* crossHairVertContainer = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "VerticalPanel"));
+    crossHairVertContainer->setPosition(0.5f, 0.4f);
+    crossHairVertContainer->setDimensions(0.001f, 0.2f);
+    crossHairVertContainer->setMaterialName("BaseWhite");
+    crossHairVertContainer->getMaterial()->setReceiveShadows(false);
 
-    overlay->add2D( crossHairVert ); // Add the crossHairVert to the overlay
+    crossHairVertOverlay->add2D( crossHairVertContainer ); // Add crossHairVertContainer to the crossHairVertOverlay
 
-    Ogre::Overlay* overlay2 = overlayManager->create( "OverlayName2" );
+    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create( "crossHairHoriz" ); // Create an overlay for the horizontal crosshair
 
-    // Create a panel
-    Ogre::OverlayContainer* crossHairHoriz = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "PanelName2"));
-    crossHairHoriz->setPosition(0.425, 0.5);
-    crossHairHoriz->setDimensions(0.15, 0.001);
-    crossHairHoriz->setMaterialName("BaseWhite");
-    crossHairHoriz->getMaterial()->setReceiveShadows(false);
+    // Create an overlay container for the horizontal crosshair
+    Ogre::OverlayContainer* crossHairHorizContainer = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "HorizontalPanel"));
+    crossHairHorizContainer->setPosition(0.425, 0.5);
+    crossHairHorizContainer->setDimensions(0.15, 0.001);
+    crossHairHorizContainer->setMaterialName("BaseWhite");
+    crossHairHorizContainer->getMaterial()->setReceiveShadows(false);
 
-    overlay2->add2D(crossHairHoriz);     // Add the crossHairHoriz to the overlay
+    crossHairHorizOverlay->add2D(crossHairHorizContainer);     // Add the crossHairHorizContainer to the crossHairHorizOverlay
 
-    overlay->hide();    // Hide the Crosshair till Aim View activated
-    overlay2->hide();
+    crossHairVertOverlay->hide();    // Hide the Crosshair till 
+    crossHairHorizOverlay->hide();   // til Aim View is activated 
 
-    p1Cam->setCHOverlays(overlay, overlay2);
+    p1Cam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay); // WDTD
 }
 
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
-    static bool mMouseDown = false;     // If a mouse button is depressed
-    static Ogre::Real mMove = 3.0f;      // The movement constant
-    static bool pressedLastFrame = false;
-    static bool pausePressedLast = false;
-    float fx = 0.0f;
-    float fy = 0.0f;
-    float fz = 0.0f;
-    bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left);
-    bool keyWasPressed = false;
+    /********************  KEY VARIABLES ********************/    
+    static bool mMouseDown = false;                                    // If a mouse button is depressed
+    static Ogre::Real mMove = 3.0f;                                    // The movement constant
+    static bool pressedLastFrame = false;                              // Was any key pressed last frame
+    static bool pausePressedLast = false;                              // Was pause pressed last frame
+    bool keyWasPressed = false;                                        // Was a key pressed in current frame
+    float fx = 0.0f;                                                   // Force x-component
+    float fy = 0.0f;                                                   // Force y-component
+    float fz = 0.0f;                                                   // Force z- component
+    bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
     
-    float sprintFactor = 1.0f;
+    float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down
  
-    Player *p = (Player *)game_simulator->getGameObject("Player1");
+    Player *p = (Player *)game_simulator->getGameObject("Player1");    // Get the player object from the simulator
     
-    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
+    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
 
-    /********* START THE GAME *********/
+    /******************** START THE GAME ********************/
     if (mKeyboard->isKeyDown(OIS::KC_RETURN) && !gameStart)
     {
         startLabel->hide();
@@ -112,7 +116,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         time(&initTime);
     }
 
-    /********* PAUSE THE GAME *********/
+    /******************** PAUSE THE GAME ********************/
     if (mKeyboard->isKeyDown(OIS::KC_P) && !pausePressedLast)
     {
         if (gamePause == true)  //leaving pause
@@ -137,22 +141,21 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         pausePressedLast = false;
     }
 
-    /********* GAME MOVEMENT *********/
-    // If the game is either paused or hasn't started, disable movment
+    /********************     MOVEMENT   ********************/
+    
+    // Allow the player to move only if allowMovement is true and the game is not paused
     if(allowMovement  && !gamePause)
     {
-        // Move into aiming-mode
-        // if 'v' is pressed and was not pressed last frame - go to aim mode
-
-        if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
+        // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
+        if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown) 
         {
             game_simulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
         }
-        mMouseDown = currMouse;
+        mMouseDown = currMouse; // Set that the mouse WAS pressed
+        
         // Move into aiming-mode
-            // if 'v' is pressed and was not pressed last frame - go to aim mode
-
+        // if 'v' is pressed and was not pressed last frame - go to aim mode
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
         {
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
@@ -284,7 +287,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time_t currTime;
             time(&currTime);
             updateTimer(currTime);
-            if ()
+            //if ()
         }
         else
         {
