@@ -102,7 +102,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f); // Default velocity vector
 
     /********* START THE GAME *********/
-    if (mKeyboard->isKeyDown(OIS::KC_RETURN) && !gameStart)
+    if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
     {
         startLabel->hide();
         mTrayMgr->removeWidgetFromTray(startLabel);
@@ -141,18 +141,15 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     // If the game is either paused or hasn't started, disable movment
     if(allowMovement  && !gamePause)
     {
-        // Move into aiming-mode
-        // if 'v' is pressed and was not pressed last frame - go to aim mode
-
-        if(!mMouseDown && currMouse && p->checkHolding()) //&& vKeyDown)
+        if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown)
         {
             game_simulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
+
         }
         mMouseDown = currMouse;
         // Move into aiming-mode
             // if 'v' is pressed and was not pressed last frame - go to aim mode
-
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
         {
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
@@ -160,7 +157,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             pc->toggleThirdPersonView();
             vKeyDown = true;
         }
-	// if 'v' is not pressed and was pressed last frame - exit aim mode
+	   // if 'v' is not pressed and was pressed last frame - exit aim mode
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
         {
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
@@ -204,25 +201,22 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 keyWasPressed = true;
                 pressedLastFrame = true;
             }
-            // if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
-            // {
-            //     if (p->getSceneNode()->getPosition().y == game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y)
-            //     if ((p->getSceneNode()->getPosition().y - p->getPlayerDimensions().y) == game_simulator->getGameObject("Floor")->getSceneNode()->getPosition().y)
-            //     {
-            //         fy += mMove; // Jump, Jump
-            //         velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
-            //         keyWasPressed = true;
-            //         pressedLastFrame = true;
-            //     }
-            // }
-            if (keyWasPressed == true)
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
             {
-                p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
+                if ((p->getSceneNode()->getPosition().y - p->getPlayerDimensions().y) == game_simulator->getGameObject("Floor")->getSceneNode()->getPosition().y)
+                {
+                    fy += mMove; // Jump, Jump
+                    velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
+                    keyWasPressed = true;
+                    pressedLastFrame = true;
+                }
             }
-            // if (keyWasPressed == false && pressedLastFrame == true)
-            // {
-            //     p->getBody()->setLinearVelocity(velocityVector);
-            // }
+            if (keyWasPressed == true)
+                p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
+            else if (keyWasPressed == false && pressedLastFrame == true)
+                p->getBody()->setLinearVelocity(velocityVector);
+            else 
+                pressedLastFrame = false;
         }
     }
     return true;
@@ -237,19 +231,19 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     if (vKeyDown)
     {   
         // Set bounds are not working
-       // if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
-     //       && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
+        // if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
+        //     && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
-      //  if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
-      //      && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
+        // if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
+        //     && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
     }
     else
     {
-    //   if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
+    //  if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(evt.state.X.rel/10.0f, 0.0f, 0.0f);
-   //     if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
+    //  if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/10.0f, 0.0f);
     }
@@ -284,7 +278,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time_t currTime;
             time(&currTime);
             updateTimer(currTime);
-            if ()
+            if (true/*timer is 0*/)  // Alonso, check me out!
+                ;
         }
         else
         {
@@ -299,10 +294,19 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     return ret;
 }
 
-// bool MCP::keyPressed(const OIS::KeyboardEvent &evt)
-// {
-
-// }
+bool MCP::keyPressed(const OIS::KeyEvent &evt)
+{
+    switch (evt.key)
+    {
+        case OIS::KC_ESCAPE:
+            mShutDown = true;
+            break;
+        case OIS::KC_SYSRQ:
+            mWindow->writeContentsToTimestampedFile("screenshot", ".jpg");
+            break;
+    }
+    return true;
+}
 
 //-------------------------------------------------------------------------------------
 
