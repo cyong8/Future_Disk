@@ -128,7 +128,7 @@ void BaseApplication::createFrameListener(void)
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
     score = 0;
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    initMinutes = 3;
+    initMinutes = 1;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
 
     startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
@@ -157,9 +157,7 @@ void BaseApplication::createFrameListener(void)
     pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 155);
 
     pTimePassed = 0;
-    // gameOverLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "GameOver", "", 350);
-    // gameOverLabel->hide();
-    // gameOverLabel->setCaption("Game Over");
+    gameOverLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "GameOver", "", 350);
     
     mRoot->addFrameListener(this);
 }
@@ -444,6 +442,8 @@ void BaseApplication::updateTimer(time_t currTime)
         sec = "00";
     
     scorePanel->setParamValue(1, mins + ":" + sec);
+    if(minutes <= 0 && seconds <= 0)
+        setGameOverFlag();
 }
 
 void BaseApplication::updatePauseTime(time_t currTime)
@@ -458,4 +458,14 @@ void BaseApplication::modifyScore(int num)
     if(score<=0)
         score = 0;
     scorePanel->setParamValue(0,Ogre::StringConverter::toString(score));
+}
+
+void BaseApplication::setGameOverFlag()
+{
+    gameOver = true;
+}
+
+bool BaseApplication::getGameOverFlag()
+{
+    return gameOver;
 }

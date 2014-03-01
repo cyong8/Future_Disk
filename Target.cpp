@@ -27,7 +27,6 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	ent->setMaterialName("Examples/BlueChrome");
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
-	this->rootNode->showBoundingBox(true);
 }
 
 void Target::targetHit()

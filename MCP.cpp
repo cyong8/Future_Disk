@@ -18,7 +18,7 @@ void MCP::createScene(void)
     allowMovement = false;
     gamePause = false;
     gameStart = false;
-    gameOver = false;    
+    gameOver = true;    
     // // initialize random number generate
     // srand(time(0));
 
@@ -113,6 +113,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         instructPanel->hide();
         mTrayMgr->removeWidgetFromTray(instructPanel);
         gameStart = true;
+        //gameOver = false;
         time(&initTime);
     }
 
@@ -204,7 +205,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
                 pressedLastFrame = true;
-                
             }
             if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
             {
@@ -223,12 +223,17 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                     pressedLastFrame = true;
                 }
             }
-            if (keyWasPressed == true)
+            if(keyWasPressed == true && vKeyDown == true)
+                p->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+            else if (keyWasPressed == true)
                 p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
             else if (keyWasPressed == false && pressedLastFrame == true)
                 p->getBody()->setLinearVelocity(velocityVector);
             else 
+            {
                 pressedLastFrame = false;
+                mMouseDown = false;
+            }
         }
     }
     return true;
@@ -266,16 +271,22 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
-    if(!gameStart) // Game not started
+    if(!gameStart && gameOver) // Game not started
     {
         pauseLabel->hide();
+        gameOverLabel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverLabel);
+        mTrayMgr->removeWidgetFromTray(pauseLabel);
         startLabel->show();
         startLabel->setCaption("Press ENTER to begin!");
-        mTrayMgr->removeWidgetFromTray(pauseLabel);
+        gameOver = false;
     }
     else if (gameOver)
     {
-
+        gameOverLabel->setCaption("GAME OVER!\n Press Enter to Start New Game");
+        gameOverLabel->show();
+        mTrayMgr->moveWidgetToTray(gameOverLabel, OgreBites::TL_CENTER);
+        gameStart = false;
     }
     else // Game started
     {
@@ -290,8 +301,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time_t currTime;
             time(&currTime);
             updateTimer(currTime);
-            if (true/*timer is 0*/)  // Alonso, check me out!
-                ;
+            //if (gameOver)  // Alonso, check me out!
+                //;
         }
         else
         {
@@ -318,6 +329,11 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
             break;
     }
     return true;
+}
+
+void MCP::setGameStart(bool start)
+{
+    gameStart = start;
 }
 
 //-------------------------------------------------------------------------------------
