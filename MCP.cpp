@@ -19,7 +19,7 @@ void MCP::createScene(void)
     /******************** GAME VARIABLES ********************/
     gamePause = false;
     gameStart = false;
-//    gameOver = true;
+    gameOver = false;
     vKeyDown = false;    
     // initialize random number generate
     srand(time(0));
@@ -48,8 +48,12 @@ void MCP::createScene(void)
     game_simulator->setCamera(p1Cam); // Attach camera to game_simulator
     new Room(mSceneMgr, game_simulator); // Create Room
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); // Create Disk
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
-    (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+   
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
+   
+    (new Target("Target1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)game_simulator->getGameObject("Disk"); // Attach Disk to game_simulator
     pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
 
@@ -111,8 +115,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         mTrayMgr->removeWidgetFromTray(startLabel);
         instructPanel->hide();
         mTrayMgr->removeWidgetFromTray(instructPanel);
+        gameOverPanel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverPanel);
         gameStart = true;
-        //gameOver = false;
+        gameOver = false;
+        score = 0;
         time(&initTime);
     }
 
@@ -126,6 +133,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             gamePause = false;
             pauseLabel->hide();
             mTrayMgr->removeWidgetFromTray(pauseLabel);
+            instructPanel->hide();
+            mTrayMgr->removeWidgetFromTray(instructPanel);
         }
         else //entering Pause
         {
@@ -133,6 +142,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             pauseLabel->setCaption("GAME PAUSED!");
             pauseLabel->show();
             mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
+            instructPanel->show();
+            mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
             pausePressedLast = true;
             gamePause = true;
             time(&pauseTime);
@@ -213,13 +224,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             }
             if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
             {
-                if ((p->getSceneNode()->getPosition().y - p->getPlayerDimensions().y) == game_simulator->getGameObject("Floor")->getSceneNode()->getPosition().y)
-                {
                     fy += mMove; // Jump, Jump
                     velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
                     keyWasPressed = true;
                     game_simulator->resetOnFloor();
-                }
             }
             if(keyWasPressed == true && !vKeyDown)
                 p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
@@ -261,14 +269,21 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
-    if(!gameStart) // Game not started
+    if(!gameStart && !gameOver) // Game not started
     {
         pauseLabel->hide();
-        gameOverLabel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverLabel);
         mTrayMgr->removeWidgetFromTray(pauseLabel);
+        gameOverPanel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverPanel);
         startLabel->show();
         startLabel->setCaption("Press ENTER to begin!");
+    }
+    else if(gameOver)
+    {
+        gameOverPanel->show();
+        mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
+        gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
+        gameStart = false;
     }
     else // Game started
     {
@@ -279,7 +294,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             modifyScore(game_simulator->tallyScore());
             time_t currTime;
             time(&currTime);
-            updateTimer(currTime);
+            gameOver = updateTimer(currTime);
             //if (gameOver)  // Alonso, check me out!
                 //;
         }

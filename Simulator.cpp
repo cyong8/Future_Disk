@@ -80,7 +80,7 @@ void Simulator::addObject (GameObject* o)
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
-			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y*2, diskDirection.z));
+			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
 		}
 	}
 	if(o->typeName == "Target")
@@ -286,7 +286,7 @@ void Simulator::setHitFlags(void)
 				{
 					((Target*)gA)->targetHit();
 					gameMusic->playCollisionSound("Disk", "Target");
-					removeObject("Target");
+					removeObject(gA->getGameObjectName());
 					// The 47.0f value is the x-width and y-height of the disk
 					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
@@ -306,7 +306,7 @@ void Simulator::setHitFlags(void)
 				{
 					((Target*)gB)->targetHit();
 					gameMusic->playCollisionSound("Disk", "Target");
-					removeObject("Target");
+					removeObject(gB->getGameObjectName());
 					// The 47.0f value is the x-width and y-height of the disk
 					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
