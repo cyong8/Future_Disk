@@ -137,7 +137,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
-
 	if (player1Cam)
 	{
 		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to

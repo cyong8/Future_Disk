@@ -57,6 +57,7 @@ class Simulator
 		void setThrowFlag(void);
 		int tallyScore(void);
 		bool allowMovementCheck(void);
+		
 };
 
 #endif // #ifndef __Simulator_h_
