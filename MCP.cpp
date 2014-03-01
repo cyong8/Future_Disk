@@ -279,7 +279,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     else // Game started
     {
-        
         if(!gamePause)
         {
             game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 

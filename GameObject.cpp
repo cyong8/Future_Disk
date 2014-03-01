@@ -50,6 +50,11 @@ void GameObject::addToSimulator()
 		rbInfo.m_friction = 0.0f;
 	}
 
+	if(typeName == "Player")
+	{
+		rbInfo.m_friction = 5.0f;
+	}
+
 	body = new btRigidBody(rbInfo);
 	simulator->addObject(this);
 }
