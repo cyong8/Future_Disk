@@ -163,7 +163,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             pc->toggleThirdPersonView();
             vKeyDown = true;
         }
-	// if 'v' is not pressed and was pressed last frame - exit aim mode
+	    
+        // if 'v' is not pressed and was pressed last frame - exit aim mode
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
         {
             PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
@@ -171,11 +172,15 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             pc->toggleThirdPersonView();
             vKeyDown = false;
         }
-        if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Sprint mode - activate by Left Shift
+
+        // Move into Boost mode
+        if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) 
         {
             sprintFactor = 3.0f;
         }
-        if (!vKeyDown)  // disable movement while in aim mode
+        
+        // If the 'V' key is down you shouldn't be able to move
+        if (!vKeyDown)  
         {
             // Move the player
             if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
