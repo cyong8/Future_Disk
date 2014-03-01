@@ -97,8 +97,6 @@ protected:
     void updateTimer(time_t currTime);
     void updatePauseTime(time_t currTime);
     void modifyScore(int num);
-    void setGameOverFlag(void);
-    bool getGameOverFlag(void);
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
@@ -121,7 +119,6 @@ protected:
     bool gameOver;
     
     OgreBites::SdkTrayManager* mTrayMgr;
- //   OgreBites::SdkCameraMan* mCameraMan;       // basic camera controller
     OgreBites::ParamsPanel* mDetailsPanel;     // sample details panel
     bool mCursorWasVisible;                    // was cursor visible before dialog appeared
     bool mShutDown;

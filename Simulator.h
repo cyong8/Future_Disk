@@ -31,16 +31,12 @@ class Simulator
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
 		Disk* gameDisk;
+		int score;
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
 		bool allowMovement;
-		int score;
-
-		// Sounds
-		//Mix_Chunk *ballToWall = NULL;
-		//Mix_Chunk *ballToPlayer = NULL;
-		
+		bool onFloor;
 
 	public:
 		Simulator(Ogre::SceneManager* mSceneMgr);
@@ -57,7 +53,8 @@ class Simulator
 		void setThrowFlag(void);
 		int tallyScore(void);
 		bool allowMovementCheck(void);
-		
+		bool checkOnFloor(void);
+		void resetOnFloor(void);
 };
 
 #endif // #ifndef __Simulator_h_

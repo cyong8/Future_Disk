@@ -400,7 +400,6 @@ void BaseApplication::windowResized(Ogre::RenderWindow* rw)
     ms.width = width;
     ms.height = height;
 }
-
 //Unattach OIS before window shutdown (very important under Linux)
 void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 {
@@ -417,7 +416,6 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
         }
     }
 }
-
 void BaseApplication::updateTimer(time_t currTime)
 {
     double secondsElapsed = difftime(currTime, initTime);
@@ -443,29 +441,16 @@ void BaseApplication::updateTimer(time_t currTime)
     
     scorePanel->setParamValue(1, mins + ":" + sec);
     if(minutes <= 0 && seconds <= 0)
-        setGameOverFlag();
+        ;//
 }
-
 void BaseApplication::updatePauseTime(time_t currTime)
 {
     pTimePassed = difftime(currTime, pauseTime);
 }
-
-
 void BaseApplication::modifyScore(int num)
 {
     score += num;
     if(score<=0)
         score = 0;
     scorePanel->setParamValue(0,Ogre::StringConverter::toString(score));
-}
-
-void BaseApplication::setGameOverFlag()
-{
-    gameOver = true;
-}
-
-bool BaseApplication::getGameOverFlag()
-{
-    return gameOver;
 }

@@ -7,7 +7,7 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr) 
 {
-	allowMovement = false;
+	onFloor = false;
 	// initialize random number generate
     srand(time(0));
 
@@ -228,9 +228,9 @@ void Simulator::setHitFlags(void)
 					removeObject("Disk");
 				}
 			}
-			if (gB->getGameObjectName() == "Floor" && allowMovement == false)
+			if (gB->getGameObjectName() == "Floor" && !onFloor)
 			{
-				allowMovement = true;
+				onFloor = true;
 			}
 		}
 		if (gB->typeName == "Player")
@@ -243,9 +243,9 @@ void Simulator::setHitFlags(void)
 					removeObject("Disk");
 				}
 			}
-			if (gA->getGameObjectName() == "Floor" && allowMovement == false)
+			if (gA->getGameObjectName() == "Floor" && !onFloor)
 			{
-				allowMovement = true;
+				onFloor = true;
 			}
 		}
 		// ********** Rotate Disk *************
@@ -353,8 +353,15 @@ int Simulator::tallyScore(void)
 	score = 0;
 	return tmpScore;
 }
-
 bool Simulator::allowMovementCheck(void)
 {
 	return allowMovement;
+}
+bool Simulator::checkOnFloor()
+{
+	return onFloor;
+}
+void Simulator::resetOnFloor()
+{
+	onFloor = false;
 }

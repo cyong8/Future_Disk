@@ -15,7 +15,6 @@ MCP::~MCP(void)
 void MCP::createScene(void)
 {
     /******************** GAME VARIABLES ********************/
-    allowMovement = false;
     gamePause = false;
     gameStart = false;
     gameOver = true;    
@@ -91,7 +90,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     /********************  KEY VARIABLES ********************/    
     static bool mMouseDown = false;                                    // If a mouse button is depressed
     static Ogre::Real mMove = 3.0f;                                    // The movement constant
-    static bool pressedLastFrame = false;                              // Was any key pressed last frame
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     float fx = 0.0f;                                                   // Force x-component
@@ -144,8 +142,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
     /********************     MOVEMENT   ********************/
     
-    // Allow the player to move only if allowMovement is true and the game is not paused
-    if(allowMovement  && !gamePause)
+    // Allow the player to move only if onFloor is true and the game is not paused
+    if(game_simulator->checkOnFloor()  && !gamePause)
     {
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
         if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
@@ -190,28 +188,24 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 fz -= mMove;
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
-                pressedLastFrame = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
             {
                 fz += mMove;
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
-                pressedLastFrame = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
             {
                 fx -= mMove; // Strafe left
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
-                pressedLastFrame = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
             {
                 fx += mMove; // Strafe right
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
-                pressedLastFrame = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
             {
@@ -220,20 +214,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                     fy += mMove; // Jump, Jump
                     velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
                     keyWasPressed = true;
-                    pressedLastFrame = true;
+                    game_simulator->resetOnFloor();
                 }
             }
             if(keyWasPressed == true && vKeyDown == true)
                 p->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-            else if (keyWasPressed == true)
-                p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
-            else if (keyWasPressed == false && pressedLastFrame == true)
-                p->getBody()->setLinearVelocity(velocityVector);
-            else 
-            {
-                pressedLastFrame = false;
-                mMouseDown = false;
-            }
         }
     }
     return true;
@@ -271,7 +256,7 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
-    if(!gameStart && gameOver) // Game not started
+    if(!gameStart) // Game not started
     {
         pauseLabel->hide();
         gameOverLabel->hide();
@@ -279,14 +264,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mTrayMgr->removeWidgetFromTray(pauseLabel);
         startLabel->show();
         startLabel->setCaption("Press ENTER to begin!");
-        gameOver = false;
-    }
-    else if (gameOver)
-    {
-        gameOverLabel->setCaption("GAME OVER!\n Press Enter to Start New Game");
-        gameOverLabel->show();
-        mTrayMgr->moveWidgetToTray(gameOverLabel, OgreBites::TL_CENTER);
-        gameStart = false;
     }
     else // Game started
     {
@@ -295,8 +272,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
             game_simulator->setHitFlags(); // check collisions
             modifyScore(game_simulator->tallyScore());
-            if (game_simulator->allowMovementCheck())
-                allowMovement = true;
             time_t currTime;
             time(&currTime);
             updateTimer(currTime);
@@ -328,11 +303,6 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
             break;
     }
     return true;
-}
-
-void MCP::setGameStart(bool start)
-{
-    gameStart = start;
 }
 
 //-------------------------------------------------------------------------------------
