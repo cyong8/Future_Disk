@@ -13,13 +13,12 @@
 #include "Room.h"
 #include "Wall.h"
 #include "Target.h"
-// SDL headers
-#include "SDL.h"
-#include "SDL_mixer.h"
-//#include "Music.h"
+
+#include "Music.h"
 
 
 class Simulator;
+class Music;
 
 class MCP : public BaseApplication
 {
@@ -30,10 +29,12 @@ public:
 	Ogre::Real seconds;
 	int p1score; // Score for the first player
 	bool vKeyDown;
-	bool allowMovement;
 	bool gameStart;
 	bool gamePause;
-	//bool gameOver;
+	bool gameOver;
+
+	// MUSIC OBJECT
+	Music* gameMusic;
 
 	MCP(void);
 	virtual ~MCP(void);

@@ -5,9 +5,11 @@
 #include "PlayerCamera.h"
 #include "Disk.h"
 
-Simulator::Simulator(Ogre::SceneManager* mSceneMgr) 
+Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
 	onFloor = false;
+	gameMusic = music;
+
 	// initialize random number generate
     srand(time(0));
 
@@ -37,6 +39,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr)
 */
 Simulator::~Simulator()
 {
+	gameMusic = NULL;
 	delete(collisionConfiguration);
 	delete(overlappingPairCache);
 	delete(solver);
@@ -290,9 +293,6 @@ void Simulator::setHitFlags(void)
 				}
 			}
 		}
-		/*
-			If the second object was a target and the first object was a disk
-		*/
 		if (gB->typeName == "Target")
 		{
 			if (gA->typeName == "Disk")

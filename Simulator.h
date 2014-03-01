@@ -4,12 +4,15 @@
 #include "BaseApplication.h"
 #include <vector>
 #include "Target.h"
+#include "Music.h"
+
 using namespace std;
 
 class GameObject;
 class Player;
 class PlayerCamera;
 class Disk;
+class Music;
 
 class Simulator
 {
@@ -38,8 +41,11 @@ class Simulator
 		bool allowMovement;
 		bool onFloor;
 
+		// Music Object
+		Music* gameMusic;
+
 	public:
-		Simulator(Ogre::SceneManager* mSceneMgr);
+		Simulator(Ogre::SceneManager* mSceneMgr, Music* music);
 		~Simulator();
 		void addObject(GameObject* o);
 		void removeObject(Ogre::String name);

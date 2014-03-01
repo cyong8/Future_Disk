@@ -8,6 +8,8 @@ MCP::MCP(void)
 //-------------------------------------------------------------------------------------
 MCP::~MCP(void)
 {
+    gameMusic->musicDone();
+    gameMusic = NULL;
 	delete mRoot;
 }
 
@@ -17,15 +19,16 @@ void MCP::createScene(void)
     /******************** GAME VARIABLES ********************/
     gamePause = false;
     gameStart = false;
-    gameOver = true;    
-    // // initialize random number generate
-    // srand(time(0));
+//    gameOver = true;
+    vKeyDown = false;    
+    // initialize random number generate
+    srand(time(0));
 
+    gameMusic = new Music();
+    gameMusic->playMusic("Start");
 
     /********************    SIMULATOR   ********************/
-    game_simulator = new Simulator(mSceneMgr);
-    vKeyDown = false;
-
+    game_simulator = new Simulator(mSceneMgr, gameMusic);
 
     /********************    LIGHTS     ********************/
 	// Ambient light
@@ -48,15 +51,12 @@ void MCP::createScene(void)
     (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 2.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
     (new Target("Target", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)game_simulator->getGameObject("Disk"); // Attach Disk to game_simulator
-
-    // Now that the room is created we can initialize the position of the light to be at the top of it and in the center
     pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
-
 
     /********************    OVERLAYS    ********************/
     Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
     
-    Ogre::Overlay* crossHairVertOverlay = overlayManager->create( "crossHairVert" ); // Create an overlay for the vertical crosshair
+    Ogre::Overlay* crossHairVertOverlay = overlayManager->create("crossHairVert"); // Create an overlay for the vertical crosshair
 
     // Create an overlay container for the vertical crosshair
     Ogre::OverlayContainer* crossHairVertContainer = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "VerticalPanel"));
@@ -67,7 +67,7 @@ void MCP::createScene(void)
 
     crossHairVertOverlay->add2D( crossHairVertContainer ); // Add crossHairVertContainer to the crossHairVertOverlay
 
-    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create( "crossHairHoriz" ); // Create an overlay for the horizontal crosshair
+    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create("crossHairHoriz"); // Create an overlay for the horizontal crosshair
 
     // Create an overlay container for the horizontal crosshair
     Ogre::OverlayContainer* crossHairHorizContainer = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "HorizontalPanel"));
@@ -217,8 +217,9 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                     game_simulator->resetOnFloor();
                 }
             }
-            if(keyWasPressed == true && vKeyDown == true)
-                p->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+            if(keyWasPressed == true && !vKeyDown)
+                p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
+
         }
     }
     return true;
@@ -287,7 +288,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
 
     if(!processUnbufferedInput(evt)) 
-            return false;
+        return false;
     return ret;
 }
 
@@ -304,7 +305,6 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
     }
     return true;
 }
-
 //-------------------------------------------------------------------------------------
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
