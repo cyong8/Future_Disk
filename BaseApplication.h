@@ -94,7 +94,7 @@ protected:
     virtual void windowClosed(Ogre::RenderWindow* rw);
     
 
-    void updateTimer(time_t currTime);
+    bool updateTimer(time_t currTime);
     void updatePauseTime(time_t currTime);
     void modifyScore(int num);
 
@@ -110,7 +110,7 @@ protected:
     OgreBites::ParamsPanel* instructPanel;
     OgreBites::Label* startLabel;
     OgreBites::Label* pauseLabel;
-    OgreBites::Label* gameOverLabel;
+    OgreBites::ParamsPanel* gameOverPanel;
     int initMinutes;
     time_t initTime;
     double pTimePassed;
