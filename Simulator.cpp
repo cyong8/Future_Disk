@@ -68,7 +68,7 @@ void Simulator::addObject (GameObject* o)
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
-			o->getBody()->setLinearVelocity(btVector3(8.0f, 8.0f, 4.0f));
+			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 4.0f));
 		}
 		else 
 		{

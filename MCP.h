@@ -43,7 +43,7 @@ protected:
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
-	// virtual bool keyPressed(const OIS::KeyboardEvent &evt);
+	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	Ogre::Light* pointLight;
 	Disk* gameDisk;
 };
