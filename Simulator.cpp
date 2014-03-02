@@ -82,7 +82,7 @@ void Simulator::addObject (GameObject* o)
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
-			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
+			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
 			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 		}
 	}
@@ -336,8 +336,8 @@ void Simulator::setHitFlags(void)
 										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
+									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
+										,getGameObject("backwall")->getSceneNode()->getPosition().z));
 					gA->addToSimulator();
 				}
 			}
@@ -356,8 +356,8 @@ void Simulator::setHitFlags(void)
 										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().z));
+									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
+										,getGameObject("backwall")->getSceneNode()->getPosition().z));
 					gB->addToSimulator();
 				}
 			}

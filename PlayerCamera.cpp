@@ -35,7 +35,7 @@ void PlayerCamera::toggleThirdPersonView()
     {
         overlay->hide();
         overlay2->hide();
-        p->getSceneNode()->setVisible(true, false);
+        p->getSceneNode()->setVisible(true, true);
     }
     else
     {

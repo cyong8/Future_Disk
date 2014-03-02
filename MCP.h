@@ -32,6 +32,7 @@ public:
 	bool gameStart;
 	bool gamePause;
 	bool gameOver;
+	bool jumpFlag;
 
 	// MUSIC OBJECT
 	Music* gameMusic;

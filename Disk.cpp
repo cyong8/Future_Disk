@@ -8,9 +8,9 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 		Sun Particle System from Ogre website:
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=ParticleExampleSun&structure=Cookbook
 	*/
-	Ogre::ParticleSystem* sunParticle = mgr->createParticleSystem("Sun", "Examples/Sun");
-	Ogre::SceneNode* particleNode = rootNode->createChildSceneNode("Particle");
-	particleNode->attachObject(sunParticle);
+	tailParticle = mgr->createParticleSystem("Sun", "Examples/Sun");
+	particleNode = rootNode->createChildSceneNode("Particle");
+	particleNode->attachObject(tailParticle);
 
 	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
 	//Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);  FOR DISK

@@ -21,11 +21,11 @@ void MCP::createScene(void)
     gameStart = false;
     gameOver = false;
     vKeyDown = false;    
+    jumpFlag = false;
     // initialize random number generate
     srand(time(0));
 
     gameMusic = new Music();
-    gameMusic->playMusic("Start");
     
     /********************    SIMULATOR   ********************/
     game_simulator = new Simulator(mSceneMgr, gameMusic);
@@ -49,8 +49,7 @@ void MCP::createScene(void)
     new Room(mSceneMgr, game_simulator); // Create Room
     (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); // Create Disk
    
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 1.0f, 1.0f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
-   
+    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
     (new Target("Target1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target2", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
@@ -229,6 +228,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 fy += jumpMove; // Jump, Jump
                 jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
                 keyWasPressed = true;
+                jumpFlag = true;
                 game_simulator->resetOnFloor();
             }
             if(keyWasPressed == true && !vKeyDown)
@@ -259,10 +259,10 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     {
     //  if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
-            p->getPlayerSightNode()->translate(evt.state.X.rel/*/5.0f*/, 0.0f, 0.0f);
+            p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
     //  if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/*/5.0f*/, 0.0f);
+            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
     }
 }
 
@@ -273,6 +273,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     bool ret = BaseApplication::frameRenderingQueued(evt);
     if(!gameStart && !gameOver) // Game not started
     {
+        gameMusic->playMusic("Start");
         pauseLabel->hide();
         mTrayMgr->removeWidgetFromTray(pauseLabel);
         gameOverPanel->hide();

@@ -10,6 +10,9 @@ class Disk : public GameObject
 protected:
 	bool offWallRotation;
 	btVector3 thrownVelocity;
+	Ogre::ParticleSystem* tailParticle;
+	Ogre::SceneNode* particleNode;
+
 public:
 	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
 	void setRotateOffWall(void);

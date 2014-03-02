@@ -28,8 +28,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 										,sim->getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									   Ogre::Math::RangeRandom(sim->getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									   Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z/2
-										,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z));
+									   Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
+										,sim->getGameObject("backwall")->getSceneNode()->getPosition().z));
 
 	rootNode->pitch(Ogre::Degree(90));
 
