@@ -40,8 +40,9 @@ class Simulator
 		bool throwFlag;
 		bool allowMovement;
 		bool onFloor;
-		bool diskWallHitFlag;
+		bool soundedJump;
 
+		Ogre::String previousWallHit;
 		// Music Object
 		Music* gameMusic;
 

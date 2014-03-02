@@ -94,6 +94,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     /********************  KEY VARIABLES ********************/    
     static bool mMouseDown = false;                                    // If a mouse button is depressed
     static Ogre::Real mMove = 3.0f;                                    // The movement constant
+    static Ogre::Real jumpMove = 8.0f;
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     float fx = 0.0f;                                                   // Force x-component
@@ -106,6 +107,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     Player *p = (Player *)game_simulator->getGameObject("Player1");    // Get the player object from the simulator
     
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
+    btVector3 jumpVector = btVector3(0.0f, 0.0f, 0.0f);
 
     /********* START THE GAME *********/
     if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
@@ -156,7 +158,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
     /********************     MOVEMENT   ********************/
     
-    // Allow the player to move only if onFloor is true and the game is not paused
+    // Allow movement if the player is on the floor and the game is not paused
     if(game_simulator->checkOnFloor()  && !gamePause)
     {
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
@@ -165,7 +167,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             gameMusic->playMusic("Throw");
             game_simulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
-
         }
         mMouseDown = currMouse; // Set that the mouse WAS pressed
         
@@ -224,13 +225,14 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             }
             if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
             {
-                    fy += mMove; // Jump, Jump
-                    velocityVector = velocityVector + btVector3(0.0f, fy, 0.0f);
-                    keyWasPressed = true;
-                    game_simulator->resetOnFloor();
+                gameMusic->playMusic("Jump");
+                fy += jumpMove; // Jump, Jump
+                jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
+                keyWasPressed = true;
+                game_simulator->resetOnFloor();
             }
             if(keyWasPressed == true && !vKeyDown)
-                p->getBody()->setLinearVelocity(velocityVector * sprintFactor);
+                p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector);
 
         }
     }
@@ -257,10 +259,10 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     {
     //  if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
-            p->getPlayerSightNode()->translate(evt.state.X.rel/10.0f, 0.0f, 0.0f);
+            p->getPlayerSightNode()->translate(evt.state.X.rel/*/5.0f*/, 0.0f, 0.0f);
     //  if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
     //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/10.0f, 0.0f);
+            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/*/5.0f*/, 0.0f);
     }
 }
 
@@ -280,6 +282,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     else if(gameOver)
     {
+        gameMusic->playMusic("Start");
         gameOverPanel->show();
         mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
         gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
@@ -295,8 +298,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time_t currTime;
             time(&currTime);
             gameOver = updateTimer(currTime);
-            //if (gameOver)  // Alonso, check me out!
-                //;
         }
         else
         {
@@ -321,6 +322,8 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
         case OIS::KC_SYSRQ:
             mWindow->writeContentsToTimestampedFile("screenshot", ".jpg");
             break;
+        case OIS::KC_M:
+            gameMusic->toggleMute();
     }
     return true;
 }

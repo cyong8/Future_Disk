@@ -613,6 +613,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIB@&t@OBJS
+SDLMIXER_LIBS
+SDLMIXER_CFLAGS
 BULLET_LIBS
 BULLET_CFLAGS
 bullet_LIBS
@@ -2754,6 +2756,7 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 
 
 ac_config_headers="$ac_config_headers config.h"
+
 
 
 ac_ext=cpp
@@ -15340,6 +15343,11 @@ else
 $as_echo "yes" >&6; }
 	
 fi
+
+
+
+SDLMIXER_CFLAGS=`sdl-config --cflags`
+SDLMIXER_LIBS="`sdl-config --libs` -lSDL_mixer"
 
 
 

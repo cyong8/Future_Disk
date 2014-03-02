@@ -17,7 +17,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->attachObject(ent); 	// Attach player to a scene node
 	rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(position); // Set the position of the player
-	ent->setMaterialName("Examples/BumpyMetal");
+	ent->setMaterialName("Examples/Chrome");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
 	mass = 0.5f; // Set mass of player

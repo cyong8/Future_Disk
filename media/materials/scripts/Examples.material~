@@ -30,11 +30,13 @@ material Examples/tdg
 			{
 				texture RustySteel.jpg
 			}
-
+			
 			texture_unit
 			{
 				texture terr_dirt-grass.jpg
-				
+				colour_op_ex add src_texture src_current
+				colour_op_multipass_fallback one one
+				env_map spherical	
 			}
 		}
 	}
@@ -407,6 +409,25 @@ material Examples/Chrome
 	{
 		pass
 		{
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/BlueChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 0.0 1.0
+			diffuse 0.0 0.0 1.0 
+			specular 0.0 0.0 1.0 10.0
+
 			texture_unit
 			{
 				texture Chrome.jpg
@@ -1456,6 +1477,7 @@ material Examples/Rockwall
 			texture_unit
 			{
 				texture rockwall.tga
+				scale .3 .3
 			}
 		}
 	}

@@ -9,7 +9,8 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 {
 	onFloor = false;
 	gameMusic = music;
-	diskWallHitFlag = false;
+	previousWallHit = "NULL";
+	soundedJump = true;
 
 	// initialize random number generate
     srand(time(0));
@@ -73,6 +74,7 @@ void Simulator::addObject (GameObject* o)
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
 			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 4.0f));
+			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 		}
 		else 
 		{
@@ -81,6 +83,7 @@ void Simulator::addObject (GameObject* o)
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1);
 			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x, diskDirection.y, diskDirection.z));
+			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 		}
 	}
 	if(o->typeName == "Target")
@@ -185,6 +188,12 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p1->getSceneNode()->getPosition());
         }
 	}
+	else 
+	{	
+		// Speed disk back up in order to mimic inelasticity
+		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
+	}
 
 
 /*	if (getGameObject("Disk") != NULL) // Rotate the SceneNode to mimic Disk-Wall collisions
@@ -209,7 +218,6 @@ void Simulator::setHitFlags(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
-	bool localDiskWallHitFlag = false;
 	for (i=0;i<numManifolds;i++)
 	{
 		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
@@ -221,6 +229,42 @@ void Simulator::setHitFlags(void)
 
 		GameObject* gA = OMSA->getGameObject();
 		GameObject* gB = OMSB->getGameObject();
+
+		
+		if (gA->typeName == "Disk")
+		{
+			if (gB->typeName == "Wall")
+			{
+				if (previousWallHit == "NULL")
+				{
+					gameMusic->playCollisionSound("Disk", "Wall");
+					previousWallHit = gB->getGameObjectName();
+				}
+				else if (previousWallHit != gB->getGameObjectName())
+				{
+					gameMusic->playCollisionSound("Disk", "Wall");
+					previousWallHit = gB->getGameObjectName();	
+				}
+			}
+		}
+		if (gB->typeName == "Disk")
+		{
+			if (gA->typeName == "Wall")
+			{
+				if (previousWallHit == "NULL")
+				{
+					gameMusic->playCollisionSound("Disk", "Wall");
+					previousWallHit = gA->getGameObjectName();
+				}
+				else if (previousWallHit != gA->getGameObjectName())
+				{
+					gameMusic->playCollisionSound("Disk", "Wall");
+					previousWallHit = gA->getGameObjectName();	
+				}
+			
+			}
+		}
+		
 
 		// ********** Attach Disk *************
 		if (gA->typeName == "Player")
@@ -255,27 +299,27 @@ void Simulator::setHitFlags(void)
 				onFloor = true;
 			}
 		}
-		// ********** Rotate Disk *************
-		// if (gA->typeName == "Disk")
-		// {
-		// 	if (gB->typeName == "Wall")
-		// 	{
-		// 		if (((Disk*)gA)->checkOffWallRotation() == false)
-		// 		{
-		// 			((Disk*)gA)->setRotateOffWall();
-		// 		}
-		// 	}
-		// }
-		// if (gB->typeName == "Disk")
-		// {
-		// 	if (gA->typeName == "Wall")
-		// 	{
-		// 		if (((Disk*)gB)->checkOffWallRotation() == false)
-		// 		{
-		// 			((Disk*)gB)->setRotateOffWall();	
-		// 		}
-		// 	}
-		// }
+													// ********** Rotate Disk *************
+													// if (gA->typeName == "Disk")
+													// {
+													// 	if (gB->typeName == "Wall")
+													// 	{
+													// 		if (((Disk*)gA)->checkOffWallRotation() == false)
+													// 		{
+													// 			((Disk*)gA)->setRotateOffWall();
+													// 		}
+													// 	}
+													// }
+													// if (gB->typeName == "Disk")
+													// {
+													// 	if (gA->typeName == "Wall")
+													// 	{
+													// 		if (((Disk*)gB)->checkOffWallRotation() == false)
+													// 		{
+													// 			((Disk*)gB)->setRotateOffWall();	
+													// 		}
+													// 	}
+													// }
 
 		// ********** Hit Targets *************
 		if (gA->typeName == "Target") 
@@ -318,31 +362,17 @@ void Simulator::setHitFlags(void)
 				}
 			}
 		}
-		if (!diskWallHitFlag)
-		{
-			if (gA->typeName == "Disk")
-			{
-				if (gB->typeName == "Wall")
-				{
-					gameMusic->playCollisionSound("Disk", "Wall");
-					diskWallHitFlag = true;
-					localDiskWallHitFlag = true;
-				}
-			}
-			if (gB->typeName == "Disk")
-			{
-				if (gA->typeName == "Wall")
-				{
-					gameMusic->playCollisionSound("Disk", "Wall");
-					diskWallHitFlag = true;
-					localDiskWallHitFlag = true;
-				}
-			}
-		}
 		contactManifold->clearManifold();
 	}
-	if (!localDiskWallHitFlag)
-		diskWallHitFlag = false;
+	if (!onFloor && !soundedJump)
+	{
+		soundedJump = true;
+	}
+	if(onFloor && soundedJump)
+	{
+		gameMusic->playCollisionSound("Player", "Ground");
+		soundedJump = false;
+	}
 }
 void Simulator::setCamera(PlayerCamera* pcam)
 {

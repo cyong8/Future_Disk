@@ -3,13 +3,19 @@
 // BALL, I MEAN!
 Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer) 
 	: GameObject(nym, mgr, sim)
-{
-	/*  Added a dropToPlayer attribute that will randomly decide who gets to start with the disk
-		This is not implemented since we are in 1-player mode.
+{	
+	/* 
+		Sun Particle System from Ogre website:
+			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=ParticleExampleSun&structure=Cookbook
 	*/
+	Ogre::ParticleSystem* sunParticle = mgr->createParticleSystem("Sun", "Examples/Sun");
+	Ogre::SceneNode* particleNode = rootNode->createChildSceneNode("Particle");
+	particleNode->attachObject(sunParticle);
+
 	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
 	//Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);  FOR DISK
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.5f, 0.5f);
+	thrownVelocity = btVector3(0.0f, 0.0f, 0.0f);
 	diskDirection = Ogre::Vector3(0.0f, 0.0f, -1.0f);
 	
 	typeName = "Disk";
@@ -29,20 +35,14 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	mass = 0.1f;
 	offWallRotation = false;
 }
-bool Disk::checkOffWallRotation()
-{
-	return offWallRotation;
-}
 void Disk::setRotateOffWall()
 {
 	offWallRotation = true;
 }
-
 void Disk::resetRotateOffWall()
 {
 	offWallRotation = false;
 }
-
 void Disk::rotateOffWall()
 {
 	// perform rotation of sceneNode to the angle v
@@ -53,4 +53,16 @@ void Disk::rotateOffWall()
 	rootNode->setOrientation(diskRoll);	
 	diskDirection = velocityDirection;
 	offWallRotation = false;
+}
+bool Disk::checkOffWallRotation()
+{
+	return offWallRotation;
+}
+void Disk::setThrownVelocity(btVector3 v)
+{
+	thrownVelocity = v;
+}
+btVector3 Disk::getThrownVelocity()
+{
+	return thrownVelocity;
 }

@@ -30,9 +30,9 @@ protected:
 public:
 	GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim);
 	btRigidBody* getBody(void);
-	void updateTransform();
-	void addToSimulator();	
-	void removeFromSimulator();
+	void updateTransform(void);
+	void addToSimulator(void);	
+	void removeFromSimulator(void);
 	Ogre::String getGameObjectName(void);
 	Ogre::SceneNode* getSceneNode(void);
 	OgreMotionState* getOgreMotionState(void);

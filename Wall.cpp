@@ -19,8 +19,4 @@ Wall::Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	{
 		rootNode->setVisible(false);
 	}
-	if (nym == "Ceiling")
-	{
-		//ent->getSubEntity(nym)->getMaterial()->setTransparencyCastsShadows(false);
-	}
 }

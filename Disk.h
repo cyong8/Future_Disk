@@ -9,12 +9,15 @@ class Disk : public GameObject
 {
 protected:
 	bool offWallRotation;
+	btVector3 thrownVelocity;
 public:
 	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
-	void setRotateOffWall();
-	void resetRotateOffWall();
-	void rotateOffWall();
-	bool checkOffWallRotation();
+	void setRotateOffWall(void);
+	void resetRotateOffWall(void);
+	void rotateOffWall(void);
+	bool checkOffWallRotation(void);
+	void setThrownVelocity(btVector3 v);
+	btVector3 getThrownVelocity(void);
 	Ogre::Vector3 diskDirection;
 
 };

@@ -128,7 +128,7 @@ void BaseApplication::createFrameListener(void)
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
     score = 0;
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    initMinutes = 1;
+    initMinutes = 2;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
 
     startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
