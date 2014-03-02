@@ -26,6 +26,7 @@ void MCP::createScene(void)
     srand(time(0));
 
     gameMusic = new Music();
+    gameMusic->playMusic("Start");
     
     /********************    SIMULATOR   ********************/
     game_simulator = new Simulator(mSceneMgr, gameMusic);
@@ -111,11 +112,16 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     /********* START THE GAME *********/
     if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
     {
+        Disk* d = (Disk*)game_simulator->getGameObject("Disk");
+        d->particleNode->setVisible(true);
+
         gameMusic->playMusic("Play");
         startLabel->hide();
         mTrayMgr->removeWidgetFromTray(startLabel);
+        objectivePanel->hide();
         instructPanel->hide();
         mTrayMgr->removeWidgetFromTray(instructPanel);
+        mTrayMgr->removeWidgetFromTray(objectivePanel);
         gameOverPanel->hide();
         mTrayMgr->removeWidgetFromTray(gameOverPanel);
         gameStart = true;
@@ -134,8 +140,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             gamePause = false;
             pauseLabel->hide();
             mTrayMgr->removeWidgetFromTray(pauseLabel);
+            objectivePanel->hide();
             instructPanel->hide();
             mTrayMgr->removeWidgetFromTray(instructPanel);
+            mTrayMgr->removeWidgetFromTray(objectivePanel);
         }
         else //entering Pause
         {
@@ -143,8 +151,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             pauseLabel->setCaption("GAME PAUSED!");
             pauseLabel->show();
             mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
+            objectivePanel->show();
             instructPanel->show();
             mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
+            mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_LEFT);
             pausePressedLast = true;
             gamePause = true;
             time(&pauseTime);
@@ -156,7 +166,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     }
 
     /********************     MOVEMENT   ********************/
-    
     // Allow movement if the player is on the floor and the game is not paused
     if(game_simulator->checkOnFloor()  && !gamePause)
     {
@@ -165,7 +174,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         {
             gameMusic->playMusic("Throw");
             game_simulator->setThrowFlag();
-            p->getPlayerDisk()->getSceneNode()->setVisible(true, false);
+            p->getPlayerDisk()->getSceneNode()->setVisible(true, true);
         }
         mMouseDown = currMouse; // Set that the mouse WAS pressed
         
@@ -273,7 +282,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     bool ret = BaseApplication::frameRenderingQueued(evt);
     if(!gameStart && !gameOver) // Game not started
     {
-        gameMusic->playMusic("Start");
         pauseLabel->hide();
         mTrayMgr->removeWidgetFromTray(pauseLabel);
         gameOverPanel->hide();
@@ -283,7 +291,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     else if(gameOver)
     {
-        gameMusic->playMusic("Start");
         gameOverPanel->show();
         mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
         gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
@@ -299,6 +306,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time_t currTime;
             time(&currTime);
             gameOver = updateTimer(currTime);
+            if (gameOver)
+                gameMusic->playMusic("Pause");
         }
         else
         {

@@ -17,6 +17,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.5f, 0.5f);
 	thrownVelocity = btVector3(0.0f, 0.0f, 0.0f);
 	diskDirection = Ogre::Vector3(0.0f, 0.0f, -1.0f);
+	particleNode->setVisible(false);
 	
 	typeName = "Disk";
 

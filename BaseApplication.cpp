@@ -133,6 +133,11 @@ void BaseApplication::createFrameListener(void)
 
     startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
 
+    Ogre::StringVector objectiveDetails;
+    objectiveDetails.push_back("Target Blaster 3000X");
+    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_LEFT, "objectivePanel", 500, objectiveDetails);    
+    objectivePanel->setParamValue(0, "Time Attack! Break the targets!");
+
     Ogre::StringVector instructions;
     instructions.push_back("GAME CONTROLS");
     instructions.push_back("Move Forward ");
@@ -144,6 +149,7 @@ void BaseApplication::createFrameListener(void)
     instructions.push_back("Enter Aim View ");
     instructions.push_back("Shoot ball! (While In Aim View) ");
     instructions.push_back("Pause Game ");
+    instructions.push_back("Toggle Sound ");
     instructPanel = mTrayMgr->createParamsPanel(OgreBites::TL_RIGHT, "instructPanel", 400, instructions);
     instructPanel->setParamValue(0, "");
     instructPanel->setParamValue(1, "W");
@@ -155,6 +161,7 @@ void BaseApplication::createFrameListener(void)
     instructPanel->setParamValue(7, "Hold V");
     instructPanel->setParamValue(8, "Left Mouse Button");
     instructPanel->setParamValue(9, "P");
+    instructPanel->setParamValue(10, "M");
 
 
     pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 155);
