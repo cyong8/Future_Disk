@@ -23,16 +23,16 @@ class Music;
 class MCP : public BaseApplication
 {
 public:
-	Simulator* game_simulator;
+	Simulator* gameSimulator;
 	vector<Wall> wallList;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
-	int p1score; // Score for the first player
 	bool vKeyDown;
 	bool gameStart;
 	bool gamePause;
 	bool gameOver;
 	bool jumpFlag;
+	bool allowJumping;
 
 	// MUSIC OBJECT
 	Music* gameMusic;
@@ -46,6 +46,10 @@ protected:
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
+	void createOverlays(PlayerCamera* playCam);
+	void startGame(void);
+	void togglePause(void);
+
 	Ogre::Light* pointLight;
 	Disk* gameDisk;
 };

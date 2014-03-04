@@ -8,14 +8,18 @@
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
 	onFloor = false;
-	gameMusic = music;
-	previousWallHit = "NULL";
 	soundedJump = true;
+	viewChangeP1 = false;
+	viewChangeP2 = false;
+	throwFlag = false;
+	allowJumping = false;
+	previousWallHit = "NULL";
 
+	gameMusic = music;
+	sceneMgr = mSceneMgr;
 	// initialize random number generate
     srand(time(0));
 
-	sceneMgr = mSceneMgr;
 	//collision configuration contains default setup for memory, collision setup.
 	collisionConfiguration = new btDefaultCollisionConfiguration();
 	//use the default collision dispatcher. For parallel processing you can use a different dispatcher
@@ -30,15 +34,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	//keep track of the shapes, we release memory at exit
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
-
-	viewChangeP1 = false;
-	viewChangeP2 = false;
-	throwFlag = false;
 }
-
-/*
-	Simulator destructor class
-*/
 Simulator::~Simulator()
 {
 	gameMusic = NULL;
@@ -48,9 +44,6 @@ Simulator::~Simulator()
 	delete(dynamicsWorld);
 }
 
-/*
-	Add a GameObject to the simulator
-*/
 void Simulator::addObject (GameObject* o) 
 {
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);	
@@ -145,58 +138,26 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
-	{
-		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
-		{
-			toggleViewChange("Player1"); // want to set toggle flag back since you are now either entering or leaving Aim View
-			if(player1Cam->isInAimMode()) // Go into Aim view
-			{
-				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			}
-			else // Return from Aim view
-			{
-				player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			}
-		}
-		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
-		{
-			if (player1Cam->isInAimMode())
-			{
-				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			}
-			else
-				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-		}
-	}
+		updatePlayerCamera(player1Cam, elapseTime);
+	// if (player2Cam)
+	// {
+	// 	updatePlayerCamera(player2Cam, elapseTime);
+	// }
 	if (p1->checkHolding())
-	{
-        if (throwFlag) // Impart throw velocity along SightNode direction
-        {	
-        	Ogre::Vector3 toParentPosition = p1->getPlayerDisk()->getSceneNode()->_getDerivedPosition();
-        	p1->setHolding();
-			// rotate disk node here
-			p1->getSceneNode()->removeChild(p1->getPlayerDisk()->getSceneNode()); // detach disk from parent
-			sceneMgr->getRootSceneNode()->addChild(p1->getPlayerDisk()->getSceneNode()); // attach disk to world (root)
-			p1->getPlayerDisk()->getSceneNode()->setPosition(toParentPosition); 
-        	p1->getPlayerDisk()->addToSimulator(); // Add the Disk back into the Simulator 
-			throwFlag = false;
-        }
-        else // Move to front of player
-        {
-        	float newDiskZ = -p1->getPlayerDimensions().z;
-
-			p1->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p1->getSceneNode()->getPosition());
-        }
-	}
-	else 
+        performThrow(p1);
+	// else if (p2->checkHolding())
+	// {
+ //        performThrow(p2);
+	// }
+	else
 	{	
 		// Speed disk back up in order to mimic inelasticity
 		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
 	}
 
-
-/*	if (getGameObject("Disk") != NULL) // Rotate the SceneNode to mimic Disk-Wall collisions
+/*	updateDiskOrientation();
+	if (getGameObject("Disk") != NULL) // Rotate the SceneNode to mimic Disk-Wall collisions
     {
         // ((Disk*)getGameObject("Disk"))->rotateOffWall();
         // /((Disk*)getGameObject("Disk"))->updateTransform();
@@ -230,144 +191,30 @@ void Simulator::setHitFlags(void)
 		GameObject* gA = OMSA->getGameObject();
 		GameObject* gB = OMSB->getGameObject();
 
-		
 		if (gA->typeName == "Disk")
+			handleDiskCollisions(gA, gB);
+		else if (gB->typeName == "Disk")
+			handleDiskCollisions(gB, gA);
+		else if (gA->typeName == "Player")
 		{
-			if (gB->typeName == "Wall")
-			{
-				if (previousWallHit == "NULL")
-				{
-					gameMusic->playCollisionSound("Disk", "Wall");
-					previousWallHit = gB->getGameObjectName();
-				}
-				else if (previousWallHit != gB->getGameObjectName())
-				{
-					gameMusic->playCollisionSound("Disk", "Wall");
-					previousWallHit = gB->getGameObjectName();	
-				}
-			}
-		}
-		if (gB->typeName == "Disk")
-		{
-			if (gA->typeName == "Wall")
-			{
-				if (previousWallHit == "NULL")
-				{
-					gameMusic->playCollisionSound("Disk", "Wall");
-					previousWallHit = gA->getGameObjectName();
-				}
-				else if (previousWallHit != gA->getGameObjectName())
-				{
-					gameMusic->playCollisionSound("Disk", "Wall");
-					previousWallHit = gA->getGameObjectName();	
-				}
-			
-			}
-		}
-		
-
-		// ********** Attach Disk *************
-		if (gA->typeName == "Player")
-		{
-			if (gB->typeName == "Disk")
-			{
-				if (((Player*)gA)->checkHolding() == false)
-				{
-					((Player*)gA)->attachDisk((Disk*)gB);
-					gameMusic->playCollisionSound("Disk", "Player");
-					removeObject("Disk");
-				}
-			}
 			if (gB->getGameObjectName() == "Floor" && !onFloor)
 			{
 				onFloor = true;
+				allowJumping = true;
 			}
 		}
-		if (gB->typeName == "Player")
+		else if (gB->typeName == "Player")
 		{
-			if (gA->typeName == "Disk")
-			{
-				if (((Player*)gB)->checkHolding() == false)
-				{
-					((Player*)gB)->attachDisk((Disk*)gA);
-					gameMusic->playCollisionSound("Disk", "Player");
-					removeObject("Disk");
-				}
-			}
 			if (gA->getGameObjectName() == "Floor" && !onFloor)
 			{
 				onFloor = true;
-			}
-		}
-													// ********** Rotate Disk *************
-													// if (gA->typeName == "Disk")
-													// {
-													// 	if (gB->typeName == "Wall")
-													// 	{
-													// 		if (((Disk*)gA)->checkOffWallRotation() == false)
-													// 		{
-													// 			((Disk*)gA)->setRotateOffWall();
-													// 		}
-													// 	}
-													// }
-													// if (gB->typeName == "Disk")
-													// {
-													// 	if (gA->typeName == "Wall")
-													// 	{
-													// 		if (((Disk*)gB)->checkOffWallRotation() == false)
-													// 		{
-													// 			((Disk*)gB)->setRotateOffWall();	
-													// 		}
-													// 	}
-													// }
-
-		// ********** Hit Targets *************
-		if (gA->typeName == "Target") 
-		{
-			if (gB->typeName == "Disk") // and other object was disk
-			{
-				if (((Target*)gA)->isHit() == false)
-				{
-					((Target*)gA)->targetHit();
-					gameMusic->playCollisionSound("Disk", "Target");
-					removeObject(gA->getGameObjectName());
-					// The 47.0f value is the x-width and y-height of the disk
-					gA->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										,getGameObject("backwall")->getSceneNode()->getPosition().z));
-					gA->addToSimulator();
-				}
-			}
-		}
-		if (gB->typeName == "Target")
-		{
-			if (gA->typeName == "Disk")
-			{
-				if (((Target*)gB)->isHit() == false)
-				{
-					((Target*)gB)->targetHit();
-					gameMusic->playCollisionSound("Disk", "Target");
-					removeObject(gB->getGameObjectName());
-					// The 47.0f value is the x-width and y-height of the disk
-					gB->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-										,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										,getGameObject("backwall")->getSceneNode()->getPosition().z));
-					gB->addToSimulator();
-				}
+				allowJumping = true;
 			}
 		}
 		contactManifold->clearManifold();
 	}
 	if (!onFloor && !soundedJump)
-	{
 		soundedJump = true;
-	}
 	if(onFloor && soundedJump)
 	{
 		gameMusic->playCollisionSound("Player", "Ground");
@@ -376,9 +223,9 @@ void Simulator::setHitFlags(void)
 }
 void Simulator::setCamera(PlayerCamera* pcam)
 {
-	if (Ogre::StringUtil::match(pcam->name, "P1_cam", true))
+	if (Ogre::StringUtil::match(pcam->name, "P1Cam", true))
 		this->player1Cam = pcam;
-	if (Ogre::StringUtil::match(pcam->name, "P2_cam", true))
+	if (Ogre::StringUtil::match(pcam->name, "P2Cam", true))
 		this->player2Cam = pcam;
 }
 void Simulator::setPlayer(Player* p)
@@ -390,9 +237,9 @@ void Simulator::setPlayer(Player* p)
 }
 PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
 {
-	if (Ogre::StringUtil::match(name, "P1_cam", true))
+	if (Ogre::StringUtil::match(name, "P1Cam", true))
 		return this->player1Cam;
-	if (Ogre::StringUtil::match(name, "P2_cam", true))
+	if (Ogre::StringUtil::match(name, "P2Cam", true))
 		return this->player2Cam;
 }
 void Simulator::toggleViewChange(Ogre::String name)
@@ -406,15 +253,30 @@ void Simulator::setThrowFlag()
 {
 	throwFlag = !throwFlag;
 }
+void Simulator::performThrow(Player* p)
+{
+	if (throwFlag) // Impart throw velocity along SightNode direction
+    {	
+    	Ogre::Vector3 toParentPosition = p->getPlayerDisk()->getSceneNode()->_getDerivedPosition();
+    	p->setHolding();
+		// rotate disk node here
+		p->getSceneNode()->removeChild(p->getPlayerDisk()->getSceneNode()); // detach disk from parent
+		sceneMgr->getRootSceneNode()->addChild(p->getPlayerDisk()->getSceneNode()); // attach disk to world (root)
+		p->getPlayerDisk()->getSceneNode()->setPosition(toParentPosition); 
+    	p->getPlayerDisk()->addToSimulator(); // Add the Disk back into the Simulator 
+		throwFlag = false;
+    }
+    else // Update position relative to the Player
+    {
+    	float newDiskZ = -p->getPlayerDimensions().z;
+		p->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p->getSceneNode()->getPosition());
+    }
+}
 int Simulator::tallyScore(void)
 {
 	int tmpScore = score;
 	score = 0;
 	return tmpScore;
-}
-bool Simulator::allowMovementCheck(void)
-{
-	return allowMovement;
 }
 bool Simulator::checkOnFloor()
 {
@@ -423,4 +285,99 @@ bool Simulator::checkOnFloor()
 void Simulator::resetOnFloor()
 {
 	onFloor = false;
+}
+bool Simulator::isAllowedToJump(void)
+{
+	return allowJumping;
+}
+void Simulator::disallowJump(void)
+{
+	allowJumping = false;
+}
+void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
+{
+	// Wall
+	if (o->typeName == "Wall")
+	{
+		if (previousWallHit == "NULL")
+		{
+			previousWallHit = o->getGameObjectName();
+			gameMusic->playCollisionSound("Disk", "Wall");
+		}
+		else if (previousWallHit != o->getGameObjectName())
+		{
+			previousWallHit = o->getGameObjectName();	
+			gameMusic->playCollisionSound("Disk", "Wall");
+		}
+	}
+	// Player
+	else if (o->typeName == "Player")
+	{
+		if (((Player*)o)->checkHolding() == false)
+		{
+			((Player*)o)->attachDisk((Disk*)disk);
+			removeObject("Disk"); // Remove Disk from Simulator
+			gameMusic->playCollisionSound("Disk", "Player");
+		}
+	}
+	// Target
+	else if (o->typeName == "Target")
+	{
+		if (((Target*)o)->isHit() == false)
+		{
+			((Target*)o)->targetHit();
+			removeObject(o->getGameObjectName());
+			// The 47.0f value is the x-width and y-height of the disk
+			o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+								,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+							   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+								,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+							   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
+								,getGameObject("backwall")->getSceneNode()->getPosition().z));
+			o->addToSimulator();
+			gameMusic->playCollisionSound("Disk", "Target");
+		}
+	}
+}
+void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime)
+{
+	if (cam->name == "P1Cam")
+	{
+		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
+		{
+			toggleViewChange(p1->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
+
+			if(player1Cam->isInAimMode()) // Go into Aim view
+				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+			else // Return from Aim view
+				player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+		}
+		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+		{
+			if (player1Cam->isInAimMode())
+				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+			else
+				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+		}
+	}
+	if (cam->name == "P2Cam")
+	{
+		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
+		{
+			toggleViewChange(p2->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
+
+			if(player1Cam->isInAimMode()) // Go into Aim view
+				player1Cam->initializePosition(((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
+			else // Return from Aim view
+				player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p2->getSceneNode()->getPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
+		}
+		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+		{
+			if (player1Cam->isInAimMode())
+				player1Cam->update(elapseTime, ((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
+			else
+				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p2->getSceneNode()->getPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
+		}
+	}
+
 }

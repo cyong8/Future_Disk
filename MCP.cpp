@@ -16,48 +16,48 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    /******************** GAME VARIABLES ********************/
+    // Initialize random number generate
+    srand(time(0));
+
+    /******************** GAME STATE FLAGS ********************/
     gamePause = false;
     gameStart = false;
     gameOver = false;
     vKeyDown = false;    
-    jumpFlag = false;
-    // initialize random number generate
-    srand(time(0));
-
-    gameMusic = new Music();
+    
+    gameMusic = new Music();    // Initialize Music
     gameMusic->playMusic("Start");
     
-    /********************    SIMULATOR   ********************/
-    game_simulator = new Simulator(mSceneMgr, gameMusic);
+    gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
+
+    /********************  OBJECT CREATION/ASSIGNMENT  ********************/
+    PlayerCamera* p1Cam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
+    gameSimulator->setCamera(p1Cam); 
+    new Room(mSceneMgr, gameSimulator); 
+    (new Disk("Disk", mSceneMgr, gameSimulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); 
+    (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
+    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
 
     /********************    LIGHTS     ********************/
-	// Ambient light
-    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
-
-    // Point light
-    pointLight = mSceneMgr->createLight("pointLight");
+    
+    pointLight = mSceneMgr->createLight("pointLight");  // Point light
     pointLight->setType(Ogre::Light::LT_POINT);
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-    
+    pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
 
-    /********************  GAME OBJECTS  ********************/
-    PlayerCamera* p1Cam = new PlayerCamera("P1_cam", mSceneMgr, mCamera); // Create PlayerCamera
-    game_simulator->setCamera(p1Cam); // Attach camera to game_simulator
-    new Room(mSceneMgr, game_simulator); // Create Room
-    (new Disk("Disk", mSceneMgr, game_simulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); // Create Disk
-   
-    (new Player("Player1", mSceneMgr, game_simulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
-    (new Target("Target1", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target2", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target3", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    gameDisk = (Disk*)game_simulator->getGameObject("Disk"); // Attach Disk to game_simulator
-    pointLight->setPosition(Ogre::Vector3(0.0f, game_simulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+    createOverlays(p1Cam);
+}
 
-    /********************    OVERLAYS    ********************/
+void MCP::createOverlays(PlayerCamera* playCam)
+{
+    /********************    MENUS    ********************/
     Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
     
     Ogre::Overlay* crossHairVertOverlay = overlayManager->create("crossHairVert"); // Create an overlay for the vertical crosshair
@@ -85,7 +85,7 @@ void MCP::createScene(void)
     crossHairVertOverlay->hide();    // Hide the Crosshair till 
     crossHairHorizOverlay->hide();   // til Aim View is activated 
 
-    p1Cam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay); // WDTD
+    playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay); // WDTD
 }
 
 //-------------------------------------------------------------------------------------
@@ -97,83 +97,41 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     static Ogre::Real jumpMove = 8.0f;
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
+    bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
+
+    Player *p = (Player *)gameSimulator->getGameObject("Player1");    // Get the player object from the simulator
+
     float fx = 0.0f;                                                   // Force x-component
     float fy = 0.0f;                                                   // Force y-component
     float fz = 0.0f;                                                   // Force z- component
-    bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
+    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
     
     float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down
- 
-    Player *p = (Player *)game_simulator->getGameObject("Player1");    // Get the player object from the simulator
-    
-    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
     btVector3 jumpVector = btVector3(0.0f, 0.0f, 0.0f);
-
+    
     /********* START THE GAME *********/
     if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
-    {
-        Disk* d = (Disk*)game_simulator->getGameObject("Disk");
-        d->particleNode->setVisible(true);
-
-        gameMusic->playMusic("Play");
-        startLabel->hide();
-        mTrayMgr->removeWidgetFromTray(startLabel);
-        objectivePanel->hide();
-        instructPanel->hide();
-        mTrayMgr->removeWidgetFromTray(instructPanel);
-        mTrayMgr->removeWidgetFromTray(objectivePanel);
-        gameOverPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverPanel);
-        gameStart = true;
-        gameOver = false;
-        score = 0;
-        time(&initTime);
-    }
+        startGame();
 
     /******************** PAUSE THE GAME ********************/
     if (mKeyboard->isKeyDown(OIS::KC_P) && !pausePressedLast)
     {
-        if (gamePause == true)  //leaving pause
-        {
-            gameMusic->playMusic("Play");
-            pausePressedLast = true;
-            gamePause = false;
-            pauseLabel->hide();
-            mTrayMgr->removeWidgetFromTray(pauseLabel);
-            objectivePanel->hide();
-            instructPanel->hide();
-            mTrayMgr->removeWidgetFromTray(instructPanel);
-            mTrayMgr->removeWidgetFromTray(objectivePanel);
-        }
-        else //entering Pause
-        {
-            gameMusic->playMusic("Start");
-            pauseLabel->setCaption("GAME PAUSED!");
-            pauseLabel->show();
-            mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
-            objectivePanel->show();
-            instructPanel->show();
-            mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
-            mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_LEFT);
-            pausePressedLast = true;
-            gamePause = true;
-            time(&pauseTime);
-        } 
+        togglePause();
+        pausePressedLast = true;
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_P))
-    {
         pausePressedLast = false;
-    }
+    
 
     /********************     MOVEMENT   ********************/
     // Allow movement if the player is on the floor and the game is not paused
-    if(game_simulator->checkOnFloor()  && !gamePause)
+    if(!gamePause)
     {
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
         if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
         {
             gameMusic->playMusic("Throw");
-            game_simulator->setThrowFlag();
+            gameSimulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, true);
         }
         mMouseDown = currMouse; // Set that the mouse WAS pressed
@@ -182,8 +140,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         // if 'v' is pressed and was not pressed last frame - go to aim mode
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
         {
-            PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
-            game_simulator->toggleViewChange("Player1");
+            PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
+            gameSimulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
             vKeyDown = true;
         }
@@ -191,8 +149,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         // if 'v' is not pressed and was pressed last frame - exit aim mode
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
         {
-            PlayerCamera* pc = game_simulator->getPlayerCamera("P1_cam");
-            game_simulator->toggleViewChange("Player1");
+            PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
+            gameSimulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
             vKeyDown = false;
         }
@@ -231,18 +189,17 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE)) // Don't this Spacebar make my people wanna jump
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && gameSimulator->isAllowedToJump()) // Don't this Spacebar make my people wanna jump
             {
                 gameMusic->playMusic("Jump");
                 fy += jumpMove; // Jump, Jump
                 jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
                 keyWasPressed = true;
-                jumpFlag = true;
-                game_simulator->resetOnFloor();
+                gameSimulator->resetOnFloor();
+                gameSimulator->disallowJump();
             }
-            if(keyWasPressed == true && !vKeyDown)
+            if(keyWasPressed == true && !vKeyDown) // Jump being reset to 0 after pressed
                 p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector);
-
         }
     }
     return true;
@@ -250,27 +207,19 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
-    Player* p = (Player*)game_simulator->getGameObject("Player1");
-    PlayerCamera* pcam = game_simulator->getPlayerCamera("P1_cam");
+    Player* p = (Player*)gameSimulator->getGameObject("Player1");
+    PlayerCamera* pcam = gameSimulator->getPlayerCamera("P1Cam");
 
     // if 'v' is pressed and was pressed last frame - still in aim mode
+    // Need to add translation bounds
     if (vKeyDown)
     {   
-        // Set bounds are not working
-        // if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
-        //     && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
-        // if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
-        //     && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
     }
     else
     {
-    //  if ((Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) > Ogre::Degree(-85) 
-    //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getRoll()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
-    //  if (((Ogre::Degree)pcam->getPCamSceneNode()->getOrientation().getPitch()) > Ogre::Degree(-85) 
-    //        && (Ogre::Degree)(pcam->getPCamSceneNode()->getOrientation().getPitch()) < Ogre::Degree(85))
             p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
     }
 }
@@ -300,9 +249,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(!gamePause)
         {
-            game_simulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
-            game_simulator->setHitFlags(); // check collisions
-            modifyScore(game_simulator->tallyScore());
+            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
+            gameSimulator->setHitFlags(); // check collisions
+            modifyScore(gameSimulator->tallyScore());
             time_t currTime;
             time(&currTime);
             gameOver = updateTimer(currTime);
@@ -336,6 +285,51 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
             gameMusic->toggleMute();
     }
     return true;
+}
+void MCP::startGame()
+{
+    Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
+    d->particleNode->setVisible(true);
+    gameMusic->playMusic("Play");
+    startLabel->hide();
+    mTrayMgr->removeWidgetFromTray(startLabel);
+    objectivePanel->hide();
+    instructPanel->hide();
+    mTrayMgr->removeWidgetFromTray(instructPanel);
+    mTrayMgr->removeWidgetFromTray(objectivePanel);
+    gameOverPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameStart = true;
+    gameOver = false;
+    score = 0;
+    time(&initTime);
+}
+void MCP::togglePause()
+{
+    if (gamePause == true)  //leaving pause
+    {
+        gameMusic->playMusic("Play");
+        gamePause = false;
+        pauseLabel->hide();
+        mTrayMgr->removeWidgetFromTray(pauseLabel);
+        objectivePanel->hide();
+        instructPanel->hide();
+        mTrayMgr->removeWidgetFromTray(instructPanel);
+        mTrayMgr->removeWidgetFromTray(objectivePanel);
+    }
+    else //entering Pause
+    {
+        gameMusic->playMusic("Start");
+        pauseLabel->setCaption("GAME PAUSED!");
+        pauseLabel->show();
+        mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
+        objectivePanel->show();
+        instructPanel->show();
+        mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
+        mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_LEFT);
+        gamePause = true;
+        time(&pauseTime);
+    } 
 }
 //-------------------------------------------------------------------------------------
 

@@ -38,12 +38,12 @@ class Simulator
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
-		bool allowMovement;
 		bool onFloor;
+		bool allowJumping;
 		bool soundedJump;
 
 		Ogre::String previousWallHit;
-		// Music Object
+
 		Music* gameMusic;
 
 	public:
@@ -59,10 +59,14 @@ class Simulator
 		PlayerCamera* getPlayerCamera(Ogre::String name);
 		void toggleViewChange(Ogre::String name);
 		void setThrowFlag(void);
+		void performThrow(Player* p);
 		int tallyScore(void);
-		bool allowMovementCheck(void);
 		bool checkOnFloor(void);
 		void resetOnFloor(void);
+		bool isAllowedToJump(void);
+		void disallowJump(void);
+		void handleDiskCollisions(GameObject* disk, GameObject* o);
+		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 };
 
 #endif // #ifndef __Simulator_h_
