@@ -800,6 +800,7 @@ material "2 - Default"
 
 			texture_unit
 			{
+				scale .3 .3
 				texture MtlPlat2.jpg
 			}
 		}
