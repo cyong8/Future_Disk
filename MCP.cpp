@@ -96,6 +96,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     static Ogre::Real mMove = 3.0f;                                    // The movement constant
     static Ogre::Real jumpMove = 8.0f;
     static bool pausePressedLast = false;                              // Was pause pressed last frame
+    static bool jumpLast = false;
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
 
@@ -189,7 +190,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && gameSimulator->isAllowedToJump()) // Don't this Spacebar make my people wanna jump
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && gameSimulator->isAllowedToJump() && !jumpLast) // Don't this Spacebar make my people wanna jump
             {
                 gameMusic->playMusic("Jump");
                 fy += jumpMove; // Jump, Jump
@@ -197,9 +198,12 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 keyWasPressed = true;
                 gameSimulator->resetOnFloor();
                 gameSimulator->disallowJump();
+                jumpLast = true;
             }
-            if(keyWasPressed == true && !vKeyDown) // Jump being reset to 0 after pressed
-                p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector);
+            if(!mKeyboard->isKeyDown(OIS::KC_SPACE))
+                jumpLast = false;
+            if(keyWasPressed == true && !vKeyDown)
+                p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
         }
     }
     return true;
