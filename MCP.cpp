@@ -218,21 +218,21 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 
     // if 'v' is pressed and was pressed last frame - still in aim mode
     // Need to add translation bounds
-    if (vKeyDown)
+    /*if (vKeyDown)
     {   
         mCamNode->yaw(Ogre::Degree(-mRotate * arg.state.X.rel), Ogre::Node::TS_WORLD);
         mCamNode->pitch(Ogre::Degree(-mRotate * arg.state.Y.rel), Ogre::Node::TS_LOCAL);
+    }*/
+    if (vKeyDown)
+    {   
+             p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
+             p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
     }
-    // if (vKeyDown)
-    // {   
-    //         p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
-    //         p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
-    // }
-    // else
-    // {
-    //         p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
-    //         p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
-    // }
+    else
+    {
+             p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
+             p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
+    }
 }
 
 
