@@ -204,8 +204,8 @@ void Simulator::parseCollisions(void)
 					p1->jumping = false;
 					groundCheck = true;
 				}
-				// if (((Player*)gA)->getGroundY() == 0.0f)
-				// 	((Player*)gA)->setGroundY(gA->getSceneNode()->getPosition().y);
+				if (((Player*)gA)->getGroundY() == 0.0f)
+				 	((Player*)gA)->setGroundY(gA->getSceneNode()->getPosition().y);
 			}
 		}
 		else if (gB->typeName == "Player")
@@ -217,8 +217,8 @@ void Simulator::parseCollisions(void)
 					p1->jumping = false;
 					groundCheck = true;
 				}
-				// if (((Player*)gB)->getGroundY() == 0.0f)
-				// 	((Player*)gB)->setGroundY(gB->getSceneNode()->getPosition().y);
+				if (((Player*)gB)->getGroundY() == 0.0f)
+				 	((Player*)gB)->setGroundY(gB->getSceneNode()->getPosition().y);
 			}
 		}
 		contactManifold->clearManifold();
@@ -228,8 +228,6 @@ void Simulator::parseCollisions(void)
 		gameMusic->playCollisionSound("Player", "Ground");
 		soundedJump = false;
 	}
-	// else if (!groundCheck)
-	// 	p1->jumping=true;
 }
 
 void Simulator::setCamera(PlayerCamera* pcam)

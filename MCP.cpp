@@ -191,7 +191,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 keyWasPressed = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast &&
-                    (p->getSceneNode()->getPosition().y != p->getGroundY())) // !p->jumping && 
+                    (p->getSceneNode()->getPosition().y >= p->getGroundY())) 
             {
                 gameMusic->playMusic("Jump");
                 fy += jumpMove; 
@@ -199,7 +199,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 keyWasPressed = true;
                 gameSimulator->soundedJump = true;
                 spacePressedLast = true;
-                p1->jumping = true;
+                p->jumping = true;
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
                 spacePressedLast = false;
@@ -220,14 +220,19 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     // Need to add translation bounds
     if (vKeyDown)
     {   
-            p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
+        mCamNode->yaw(Ogre::Degree(-mRotate * arg.state.X.rel), Ogre::Node::TS_WORLD);
+        mCamNode->pitch(Ogre::Degree(-mRotate * arg.state.Y.rel), Ogre::Node::TS_LOCAL);
     }
-    else
-    {
-            p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
-    }
+    // if (vKeyDown)
+    // {   
+    //         p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
+    //         p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
+    // }
+    // else
+    // {
+    //         p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
+    //         p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
+    // }
 }
 
 
