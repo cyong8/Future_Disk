@@ -21,7 +21,7 @@ public:
 	Disk* getPlayerDisk(void); // Get the disk that the player is holding
 	void setGroundY(float y);
 	float getGroundY(void);
-	bool jumping;
+	bool canJump;
 	
 protected:
 	bool isHolding;		

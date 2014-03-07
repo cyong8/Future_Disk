@@ -197,11 +197,10 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gB, gA);
 		else if (gA->typeName == "Player")
 		{
-			if (gB->getGameObjectName() == "Floor" && !groundCheck)
+			if (gB->getGameObjectName() == "Floor")
 			{	
-				if (p1->jumping && !groundCheck)
+				if (!groundCheck)
 				{
-					p1->jumping = false;
 					groundCheck = true;
 				}
 				if (((Player*)gA)->getGroundY() == 0.0f)
@@ -212,9 +211,8 @@ void Simulator::parseCollisions(void)
 		{
 			if (gA->getGameObjectName() == "Floor")
 			{
-				if (p1->jumping && !groundCheck)
+				if (!groundCheck)
 				{
-					p1->jumping = false;
 					groundCheck = true;
 				}
 				if (((Player*)gB)->getGroundY() == 0.0f)

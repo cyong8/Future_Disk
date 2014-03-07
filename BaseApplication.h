@@ -97,6 +97,7 @@ protected:
     bool updateTimer(time_t currTime);
     void updatePauseTime(time_t currTime);
     void modifyScore(int num);
+    Ogre::Real mRotate;
 
     Ogre::Root *mRoot;
     Ogre::Camera* mCamera;
