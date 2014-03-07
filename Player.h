@@ -19,6 +19,9 @@ public:
 	Ogre::SceneNode* getPlayerCameraNode(void); // Get the camera node attached to the player
 	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
 	Disk* getPlayerDisk(void); // Get the disk that the player is holding
+	void setGroundY(float y);
+	float getGroundY(void);
+	bool jumping;
 	
 protected:
 	bool isHolding;		
@@ -26,6 +29,7 @@ protected:
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
+	float groundY;
 };
 
 #endif // #ifndef __Player_h_

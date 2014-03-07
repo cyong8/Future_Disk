@@ -38,9 +38,6 @@ class Simulator
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
-		bool onFloor;
-		bool allowJumping;
-		bool soundedJump;
 
 		Ogre::String previousWallHit;
 
@@ -52,7 +49,7 @@ class Simulator
 		void addObject(GameObject* o);
 		void removeObject(Ogre::String name);
 		void stepSimulation(const Ogre::Real elapsedTime, int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
-		void setHitFlags(void);
+		void parseCollisions(void);
 		void setCamera(PlayerCamera* pcam);
 		void setPlayer(Player* p);
 		GameObject* getGameObject(Ogre::String name);
@@ -63,10 +60,11 @@ class Simulator
 		int tallyScore(void);
 		bool checkOnFloor(void);
 		void resetOnFloor(void);
-		bool isAllowedToJump(void);
-		void disallowJump(void);
+		// bool isAllowedToJump(void);
+		// void toggleAllowJump(void);
 		void handleDiskCollisions(GameObject* disk, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
+		bool soundedJump;
 };
 
 #endif // #ifndef __Simulator_h_

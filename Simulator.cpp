@@ -7,12 +7,10 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
-	onFloor = false;
 	soundedJump = true;
 	viewChangeP1 = false;
 	viewChangeP2 = false;
 	throwFlag = false;
-	allowJumping = false;
 	previousWallHit = "NULL";
 
 	gameMusic = music;
@@ -29,7 +27,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
 	
-	dynamicsWorld->setGravity(btVector3(0,-9.8, 0));
+	dynamicsWorld->setGravity(btVector3(0.0f,-9.8f, 0.0f));
 	dynamicsWorld->debugDrawWorld();
 	//keep track of the shapes, we release memory at exit
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
@@ -175,10 +173,12 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
     }*/
 }
 
-void Simulator::setHitFlags(void)
+void Simulator::parseCollisions(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
+	int groundCheck = false; //checking floor taking care of multiple collisions
+
 	for (i=0;i<numManifolds;i++)
 	{
 		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
@@ -197,30 +197,41 @@ void Simulator::setHitFlags(void)
 			handleDiskCollisions(gB, gA);
 		else if (gA->typeName == "Player")
 		{
-			if (gB->getGameObjectName() == "Floor" && !onFloor)
-			{
-				onFloor = true;
-				allowJumping = true;
+			if (gB->getGameObjectName() == "Floor" && !groundCheck)
+			{	
+				if (p1->jumping && !groundCheck)
+				{
+					p1->jumping = false;
+					groundCheck = true;
+				}
+				// if (((Player*)gA)->getGroundY() == 0.0f)
+				// 	((Player*)gA)->setGroundY(gA->getSceneNode()->getPosition().y);
 			}
 		}
 		else if (gB->typeName == "Player")
 		{
-			if (gA->getGameObjectName() == "Floor" && !onFloor)
+			if (gA->getGameObjectName() == "Floor")
 			{
-				onFloor = true;
-				allowJumping = true;
+				if (p1->jumping && !groundCheck)
+				{
+					p1->jumping = false;
+					groundCheck = true;
+				}
+				// if (((Player*)gB)->getGroundY() == 0.0f)
+				// 	((Player*)gB)->setGroundY(gB->getSceneNode()->getPosition().y);
 			}
 		}
 		contactManifold->clearManifold();
 	}
-	if (!onFloor && !soundedJump)
-		soundedJump = true;
-	if(onFloor && soundedJump)
+	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
 	{
 		gameMusic->playCollisionSound("Player", "Ground");
 		soundedJump = false;
 	}
+	// else if (!groundCheck)
+	// 	p1->jumping=true;
 }
+
 void Simulator::setCamera(PlayerCamera* pcam)
 {
 	if (Ogre::StringUtil::match(pcam->name, "P1Cam", true))
@@ -277,22 +288,6 @@ int Simulator::tallyScore(void)
 	int tmpScore = score;
 	score = 0;
 	return tmpScore;
-}
-bool Simulator::checkOnFloor()
-{
-	return onFloor;
-}
-void Simulator::resetOnFloor()
-{
-	onFloor = false;
-}
-bool Simulator::isAllowedToJump(void)
-{
-	return allowJumping;
-}
-void Simulator::disallowJump(void)
-{
-	allowJumping = false;
 }
 void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
@@ -379,5 +374,4 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p2->getSceneNode()->getPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
-
 }

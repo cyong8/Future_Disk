@@ -96,7 +96,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     static Ogre::Real mMove = 3.0f;                                    // The movement constant
     static Ogre::Real jumpMove = 8.0f;
     static bool pausePressedLast = false;                              // Was pause pressed last frame
-    static bool jumpLast = false;
+    static bool spacePressedLast = false;
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
 
@@ -190,19 +190,21 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && gameSimulator->isAllowedToJump() && !jumpLast) // Don't this Spacebar make my people wanna jump
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast &&
+                    (p->getSceneNode()->getPosition().y != p->getGroundY())) // !p->jumping && 
             {
                 gameMusic->playMusic("Jump");
-                fy += jumpMove; // Jump, Jump
+                fy += jumpMove; 
                 jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
                 keyWasPressed = true;
-                gameSimulator->resetOnFloor();
-                gameSimulator->disallowJump();
-                jumpLast = true;
+                gameSimulator->soundedJump = true;
+                spacePressedLast = true;
+                p1->jumping = true;
             }
-            if(!mKeyboard->isKeyDown(OIS::KC_SPACE))
-                jumpLast = false;
-            if(keyWasPressed == true && !vKeyDown)
+            if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
+                spacePressedLast = false;
+
+            if(keyWasPressed == true)
                 p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
         }
     }
@@ -233,6 +235,11 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
+    
+    if(!processUnbufferedInput(evt)) 
+        return false;
+
+
     if(!gameStart && !gameOver) // Game not started
     {
         pauseLabel->hide();
@@ -254,7 +261,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         if(!gamePause)
         {
             gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
-            gameSimulator->setHitFlags(); // check collisions
+            gameSimulator->parseCollisions(); // check collisions
             modifyScore(gameSimulator->tallyScore());
             time_t currTime;
             time(&currTime);
@@ -270,8 +277,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-    if(!processUnbufferedInput(evt)) 
-        return false;
+    
     return ret;
 }
 

@@ -10,8 +10,10 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	this->dimensions = dimensions;
 	typeName = "Player";
+	groundY = 0.0f;
 
 	isHolding = false; // Is the player holding the disk?
+	jumping = true;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
@@ -64,4 +66,12 @@ Ogre::SceneNode* Player::getPlayerCameraNode()
 Ogre::Vector3 Player::getPlayerDimensions()
 {
 	return dimensions;
+}
+float Player::getGroundY()
+{
+	return groundY;
+}
+void Player::setGroundY(float y)
+{
+	groundY = y;
 }
