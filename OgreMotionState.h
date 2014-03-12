@@ -53,7 +53,6 @@ public:
 		// Bullet -> Ogre
 		mVisibleobj->setPosition(pos.x(), pos.y(), pos.z());
 	}
-
 };
 
 #endif // #ifndef __OgreMotionState_h_

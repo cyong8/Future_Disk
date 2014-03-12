@@ -11,6 +11,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	viewChangeP1 = false;
 	viewChangeP2 = false;
 	throwFlag = false;
+	gameStart = false;
 	previousWallHit = "NULL";
 
 	gameMusic = music;
@@ -53,7 +54,7 @@ void Simulator::addObject (GameObject* o)
 	{
 		setPlayer((Player*)o);
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
-		player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), ((Player*)o)->getPlayerSightNode()->getPosition());
+		player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
 		player1Cam->setPlayer((Player*)o);
 	}
 	if(o->typeName == "Disk")
@@ -63,7 +64,7 @@ void Simulator::addObject (GameObject* o)
 			gameDisk = (Disk*)o;
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-			o->getBody()->setRestitution(1);
+			o->getBody()->setRestitution(1.0f);
 			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 4.0f));
 			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 		}
@@ -72,7 +73,7 @@ void Simulator::addObject (GameObject* o)
 			Ogre::Vector3 diskDirection = p1->getPlayerSightNode()->getPosition().normalisedCopy();
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-			o->getBody()->setRestitution(1);
+			o->getBody()->setRestitution(1.0f);
 			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
 			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 		}
@@ -88,7 +89,7 @@ void Simulator::addObject (GameObject* o)
 	}
 	if(o->typeName == "Wall")
 	{
-		o->getBody()->setRestitution(.8);
+		o->getBody()->setRestitution(0.8f);
 	}
 }
 
@@ -130,8 +131,16 @@ void Simulator::removeObject(Ogre::String name)
 // original stepSimulation is in btDiscreteDynamicsWorld
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
-	//do we need to update positions in simulator for dynamic objects?
+	Ogre::Vector3 sightPosBeforeSim1;
+	Ogre::Vector3 sightPosBeforeSim2;
+	if (p1)
+		// keep track of sight node position to reapply it after simulator is stepped 
+		sightPosBeforeSim1 = p1->getPlayerSightNode()->getPosition(); 
+	
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
+
+	if (p1)
+		p1->getPlayerSightNode()->setPosition(sightPosBeforeSim1);
 
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
@@ -153,24 +162,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
 	}
-
-/*	updateDiskOrientation();
-	if (getGameObject("Disk") != NULL) // Rotate the SceneNode to mimic Disk-Wall collisions
-    {
-        // ((Disk*)getGameObject("Disk"))->rotateOffWall();
-        // /((Disk*)getGameObject("Disk"))->updateTransform();
-        Disk* tempDisk = ((Disk*)getGameObject("Disk"));
-        // removeObject("Disk");
-        btVector3 lv = tempDisk->getBody()->getLinearVelocity();
-		Ogre::Vector3 velocityDirection = Ogre::Vector3(lv.x(), lv.y(), lv.z()).normalisedCopy(); //direction of the velocity
-
-		Ogre::Quaternion diskRoll = tempDisk->diskDirection.getRotationTo(velocityDirection);
-		tempDisk->getSceneNode()->_setDerivedOrientation(diskRoll);	
-		tempDisk->diskDirection = velocityDirection;
-		tempDisk->updateTransform();
-		tempDisk->resetRotateOffWall();
-		// tempDisk->addToSimulator();
-    }*/
 }
 
 void Simulator::parseCollisions(void)
@@ -202,6 +193,7 @@ void Simulator::parseCollisions(void)
 				if (!groundCheck)
 				{
 					groundCheck = true;
+					gameStart = true;
 				}
 				if (((Player*)gA)->getGroundY() == 0.0f)
 				 	((Player*)gA)->setGroundY(gA->getSceneNode()->getPosition().y);
@@ -214,6 +206,7 @@ void Simulator::parseCollisions(void)
 				if (!groundCheck)
 				{
 					groundCheck = true;
+					gameStart = true;
 				}
 				if (((Player*)gB)->getGroundY() == 0.0f)
 				 	((Player*)gB)->setGroundY(gB->getSceneNode()->getPosition().y);
@@ -340,15 +333,17 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 
 			if(player1Cam->isInAimMode()) // Go into Aim view
 				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+			
+
 			else // Return from Aim view
-				player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->initializePosition(p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 		}
 		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
 		{
 			if (player1Cam->isInAimMode())
 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 			else
-				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p1->getSceneNode()->getPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());			
 		}
 	}
 	if (cam->name == "P2Cam")
@@ -360,14 +355,18 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 			if(player1Cam->isInAimMode()) // Go into Aim view
 				player1Cam->initializePosition(((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 			else // Return from Aim view
-				player1Cam->initializePosition(Ogre::Vector3(0.0f, 1.2f, 12.5f) + p2->getSceneNode()->getPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->initializePosition(p2->getPlayerCameraNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 		}
 		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
 		{
 			if (player1Cam->isInAimMode())
 				player1Cam->update(elapseTime, ((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 			else
-				player1Cam->update(elapseTime, Ogre::Vector3(0.0f, 1.2f, 12.5f) + p2->getSceneNode()->getPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
+				player1Cam->update(elapseTime,p2->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
+}
+bool Simulator::checkGameStart()
+{
+	return gameStart;
 }

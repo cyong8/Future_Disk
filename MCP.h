@@ -24,7 +24,7 @@ class MCP : public BaseApplication
 {
 public:
 	Simulator* gameSimulator;
-	vector<Wall> wallList;
+	vector<Wall*> wallList;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
 	bool vKeyDown;

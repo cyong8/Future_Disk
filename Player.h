@@ -15,10 +15,11 @@ public:
 	void throwDisk(void); // Throw the disk in a particular direction
 	void attachDisk(Disk* d); // Attach the disk to the player
 
+	Disk* getPlayerDisk(void); // Get the disk that the player is holding
 	Ogre::SceneNode* getPlayerSightNode(void); // Get the scene node where the player is looking
 	Ogre::SceneNode* getPlayerCameraNode(void); // Get the camera node attached to the player
 	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
-	Disk* getPlayerDisk(void); // Get the disk that the player is holding
+	
 	void setGroundY(float y);
 	float getGroundY(void);
 	bool canJump;

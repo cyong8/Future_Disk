@@ -16,6 +16,8 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    mRotate = 0.1f;
+    
     // Initialize random number generate
     srand(time(0));
 
@@ -109,10 +111,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     
     float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down
     btVector3 jumpVector = btVector3(0.0f, 0.0f, 0.0f);
-    
+
     /********* START THE GAME *********/
-    if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
-        startGame();
+    // if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
+    //     startGame();
 
     /******************** PAUSE THE GAME ********************/
     if (mKeyboard->isKeyDown(OIS::KC_P) && !pausePressedLast)
@@ -126,7 +128,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
     /********************     MOVEMENT   ********************/
     // Allow movement if the player is on the floor and the game is not paused
-    if(!gamePause)
+    if(!gamePause && gameSimulator->checkGameStart())
     {
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
         if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
@@ -212,26 +214,44 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
+    if (!gameStart)
+    {
+        return false;
+    }
+    
     Player* p = (Player*)gameSimulator->getGameObject("Player1");
-    PlayerCamera* pcam = gameSimulator->getPlayerCamera("P1Cam");
+    Ogre::SceneNode* pSceneNode = p->getSceneNode();
+    Ogre::SceneNode* pSightNode = p->getPlayerSightNode();
+    Ogre::SceneNode* pCamNode = p->getPlayerCameraNode();
+    Ogre::Vector3 sightHeight;
+    btRigidBody* pBody = p->getBody();
+    btTransform transform = pBody->getCenterOfMassTransform();
+    btQuaternion rotationQ;
 
-    // if 'v' is pressed and was pressed last frame - still in aim mode
-    // Need to add translation bounds
-    // if (vKeyDown)
-    // {   
-    //     mCamNode->yaw(Ogre::Degree(-mRotate * arg.state.X.rel), Ogre::Node::TS_WORLD);
-    //     mCamNode->pitch(Ogre::Degree(-mRotate * arg.state.Y.rel), Ogre::Node::TS_LOCAL);
-    // }
+    /* rotation working, but camera not following */
     if (vKeyDown)
     {   
-            p->getPlayerSightNode()->translate(evt.state.X.rel/25.0f, 0.0f, 0.0f);
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/25.0f, 0.0f);
+        pSceneNode->yaw(Ogre::Degree((-mRotate/2) * evt.state.X.rel), Ogre::Node::TS_WORLD);
+        rotationQ = btQuaternion(pSceneNode->getOrientation().getYaw().valueRadians(), 0, 0);
+        transform.setRotation(rotationQ);
+        pBody->setCenterOfMassTransform(transform);
+
+        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel/10.0f, 0.0f);
     }
     else
     {
-            p->getPlayerSightNode()->translate(evt.state.X.rel/5.0f, 0.0f, 0.0f);
-            p->getPlayerSightNode()->translate(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
+        pSceneNode->yaw(Ogre::Degree(-mRotate * evt.state.X.rel), Ogre::Node::TS_WORLD);
+        rotationQ = btQuaternion(pSceneNode->getOrientation().getYaw().valueRadians(), 0, 0);
+        transform.setRotation(rotationQ);
+        pBody->setCenterOfMassTransform(transform);
+
+        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
     }
+    // p->getPlayerCameraNode()->setPosition(p->getPlayerCameraNode()->getPosition() + Ogre::Vector3(0.0f, 0.0f, 12.5f));
+    pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
+    pCamNode->setPosition(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z);
+
+    return true;
 }
 
 
@@ -240,9 +260,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
     
-    if(!processUnbufferedInput(evt)) 
+    if (mShutDown)
         return false;
-
 
     if(!gameStart && !gameOver) // Game not started
     {
@@ -264,6 +283,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(!gamePause)
         {
+            if(!processUnbufferedInput(evt)) 
+                return false;
+            
             gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
             gameSimulator->parseCollisions(); // check collisions
             modifyScore(gameSimulator->tallyScore());
@@ -280,7 +302,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             updatePauseTime(pcurrTime);
         }
     }
-
     
     return ret;
 }
@@ -297,6 +318,15 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
             break;
         case OIS::KC_M:
             gameMusic->toggleMute();
+            break;
+        case OIS::KC_RETURN:
+            if (!gameStart)
+                startGame();
+            break;
+        case OIS::KC_NUMPADENTER:
+            if (!gameStart)
+                startGame();
+            break;
     }
     return true;
 }
