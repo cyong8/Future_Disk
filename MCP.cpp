@@ -38,9 +38,9 @@ void MCP::createScene(void)
     new Room(mSceneMgr, gameSimulator); 
     (new Disk("Disk", mSceneMgr, gameSimulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
-    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    // (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    // (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    // (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
 
     /********************    LIGHTS     ********************/
@@ -52,8 +52,8 @@ void MCP::createScene(void)
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-    pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
-
+    //pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+    pointLight->setPosition(Ogre::Vector3(0.0f, 6.0f, 0.0f));
     createOverlays(p1Cam);
 }
 
@@ -167,7 +167,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
         {
-            // Move the player
+             // Move the player
             if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
             {
                 fz -= mMove;
@@ -206,7 +206,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 spacePressedLast = false;
 
             if(keyWasPressed == true)
+            {
+                // Ogre::Vector3 localVelocity = p->getSceneNode()->convertLocalToWorldPosition(Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ()));
+                // p->getBody()->setLinearVelocity((btVector3(localVelocity.x, localVelocity.y, localVelocity.z) * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
                 p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
+            }
         }
     }
     return true;

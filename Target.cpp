@@ -24,12 +24,12 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/47.0f, dimensions.y/442.0f, dimensions.z/47.0f);
 	
 	//rootNode->setPosition(position);
-	rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-										,sim->getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+	rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+										,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									   Ogre::Math::RangeRandom(sim->getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 									   Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										,sim->getGameObject("backwall")->getSceneNode()->getPosition().z));
+										,sim->getGameObject("BackWall")->getSceneNode()->getPosition().z));
 
 	rootNode->pitch(Ogre::Degree(90));
 

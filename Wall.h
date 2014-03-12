@@ -6,7 +6,7 @@
 class Wall : public GameObject
 {
 public:
-	Wall(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Plane op, Ogre::Vector3 norm);
+	Wall(Ogre::String nym, Ogre::String planeNym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 norm, Ogre::Real dimension);
 };
 
 #endif // #ifndef __Wall_h_

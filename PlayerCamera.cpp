@@ -27,9 +27,8 @@ void PlayerCamera::toggleThirdPersonView()
 {
     inAimMode = !inAimMode;    
  
-    /* will have to multiply by player viewing direction when 360 movement implemented */ 
-    p->getPlayerSightNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -400.0f)); 
-    mTargetNode->setPosition(p->getPlayerSightNode()->getPosition());
+    //p->getPlayerSightNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -400.0f)); // reset camera to face in front of player
+    //mTargetNode->setPosition(p->getPlayerSightNode()->getPosition());
     if (!inAimMode) // Restore SightNode to default position when the player leaves Aim View
     {
         overlay->hide();

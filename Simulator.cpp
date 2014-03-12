@@ -312,12 +312,12 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			((Target*)o)->targetHit();
 			removeObject(o->getGameObjectName());
 			// The 47.0f value is the x-width and y-height of the disk
-			o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("leftwall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-								,getGameObject("rightwall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+			o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+								,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 							   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
-								,getGameObject("backwall")->getSceneNode()->getPosition().z));
+								,getGameObject("BackWall")->getSceneNode()->getPosition().z));
 			o->addToSimulator();
 			gameMusic->playCollisionSound("Disk", "Target");
 		}
