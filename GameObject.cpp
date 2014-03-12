@@ -39,7 +39,7 @@ void GameObject::addToSimulator()
 	motionState->setGameObject(this);
 	updateTransform();
 
-	if(mass != 0.0f || typeName != "Disk" || typeName == "Wall") 
+	if(mass != 0.0f || typeName != "Disk") 
 		shape->calculateLocalInertia(mass, inertia);
 
 
