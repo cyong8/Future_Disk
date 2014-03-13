@@ -71,6 +71,7 @@ void Simulator::addObject (GameObject* o)
 		else 
 		{
 			Ogre::Vector3 diskDirection = p1->getPlayerSightNode()->getPosition().normalisedCopy();
+			diskDirection = p1->getSceneNode()->getOrientation() * diskDirection;
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1.0f);
@@ -146,19 +147,10 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
 		updatePlayerCamera(player1Cam, elapseTime);
-	// if (player2Cam)
-	// {
-	// 	updatePlayerCamera(player2Cam, elapseTime);
-	// }
 	if (p1->checkHolding())
         performThrow(p1);
-	// else if (p2->checkHolding())
-	// {
- //        performThrow(p2);
-	// }
-	else
+	else	// Speed disk back up in order to mimic inelasticity
 	{	
-		// Speed disk back up in order to mimic inelasticity
 		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
 	}
@@ -186,33 +178,20 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gA, gB);
 		else if (gB->typeName == "Disk")
 			handleDiskCollisions(gB, gA);
-		else if (gA->typeName == "Player")
+		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor"))
 		{
-			if (gB->getGameObjectName() == "Floor")
-			{	
-				if (!groundCheck)
-				{
-					groundCheck = true;
-					gameStart = true;
-				}
-			}
+			if (!groundCheck)
+				groundCheck = true;
 		}
-		else if (gB->typeName == "Player")
-		{
-			if (gA->getGameObjectName() == "Floor")
-			{
-				if (!groundCheck)
-				{
-					groundCheck = true;
-					gameStart = true;
-				}
-			}
-		}
+
 		contactManifold->clearManifold();
 	}
 	if (!groundCheck)
-	{
 		soundedJump = true;
+	if (groundCheck && !gameStart)
+	{
+		p1->setGroundY(p1->getSceneNode()->getPosition().y);
+		gameStart = true;
 	}
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
 	{
@@ -255,7 +234,7 @@ void Simulator::setThrowFlag()
 }
 void Simulator::performThrow(Player* p)
 {
-	if (throwFlag) // Impart throw velocity along SightNode direction
+	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
     	Ogre::Vector3 toParentPosition = p->getPlayerDisk()->getSceneNode()->_getDerivedPosition();
     	p->setHolding();
@@ -268,8 +247,10 @@ void Simulator::performThrow(Player* p)
     }
     else // Update position relative to the Player
     {
+    	Ogre::Vector3 dpos;
     	float newDiskZ = -p->getPlayerDimensions().z;
-		p->getPlayerDisk()->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0.0f, 0.0f, newDiskZ) + p->getSceneNode()->getPosition());
+    	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
+		p->getPlayerDisk()->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
     }
 }
 int Simulator::tallyScore(void)

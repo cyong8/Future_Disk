@@ -21,7 +21,7 @@ public:
 	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
 	
 	void setGroundY(float y);
-	float getGroundY(void);
+	Ogre::Real getGroundY(void);
 	bool groundConstantSet;
 	
 protected:
@@ -30,7 +30,7 @@ protected:
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
-	float groundY;
+	Ogre::Real groundY;
 };
 
 #endif // #ifndef __Player_h_

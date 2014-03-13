@@ -6,7 +6,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 {
 	this->dimensions = dimensions;
 	typeName = "Player";
-	groundY = 0.0f;
+	groundY = -99999.0f;
 
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
@@ -51,9 +51,6 @@ void Player::attachDisk(Disk* d)
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
-
- 	// DEBUGGING
- 	// playerDisk->getSceneNode()->showBoundingBox(true);
 }
 void Player::setHolding()
 {
@@ -82,7 +79,7 @@ Ogre::Vector3 Player::getPlayerDimensions()
 {
 	return dimensions;
 }
-void Player::setGroundY(float y)
+void Player::setGroundY(Ogre::Real y)
 {
 	groundY = y;
 	groundConstantSet = true;           	

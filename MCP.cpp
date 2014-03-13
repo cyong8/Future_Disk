@@ -42,7 +42,7 @@ void MCP::createScene(void)
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
-
+    
     /********************    LIGHTS     ********************/
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -118,10 +118,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     // Allow movement if the player is on the floor and the game is not paused
     if(!gamePause && gameSimulator->checkGameStart())
     {
-        if (!(p->groundConstantSet))
-        {
-            p->setGroundY(p->getSceneNode()->getPosition().y);
-        }
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
         if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
         {
@@ -131,31 +127,24 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         }
         mMouseDown = currMouse; // Set that the mouse WAS pressed
         
-        // Move into aiming-mode
-        // if 'v' is pressed and was not pressed last frame - go to aim mode
-        if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown)
+        if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown) // if 'v' is pressed and was not pressed last frame - go to aim mode
         {
             PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
             gameSimulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
             vKeyDown = true;
         }
-	    
-        // if 'v' is not pressed and was pressed last frame - exit aim mode
-        if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown)
+        if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown) // if 'v' is not pressed and was pressed last frame - exit aim mode
         {
             PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
             gameSimulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
             vKeyDown = false;
         }
-
-        // Move into Boost mode
-        if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) 
+        if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Move into Boost mode
         {
             sprintFactor = 3.0f;
         }
-        
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
         {
@@ -184,20 +173,20 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            // Not storing groundY correctly so I hacked it; Can fix later
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast && (p->getSceneNode()->getPosition().y <= -11.845f)) 
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && p->groundConstantSet && !spacePressedLast) 
             {
-                if (timeSinceLastJump > 0.5f)
+                if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast && (p->getSceneNode()->getPosition().y <= p->getGroundY())) 
+                {
                     gameMusic->playMusic("Jump");
-                fy += jumpMove; 
-                jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
-                keyWasPressed = true;
-                spacePressedLast = true;
-                timeSinceLastJump = 0.0f;
+                    fy += jumpMove; 
+                    jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
+                    keyWasPressed = true;
+                    gameSimulator->soundedJump = true;
+                    spacePressedLast = true;
+                }
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
                 spacePressedLast = false;
-
             if(keyWasPressed == true)
             {   // Rotate the velocity vector by the orientation of the player
                 Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
