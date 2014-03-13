@@ -27,7 +27,7 @@ Music::Music()
     }
     else
     {
-        Mix_VolumeChunk(startStopScreen, 40);   // Volume ranges from 0 to 128
+        Mix_VolumeChunk(startStopScreen, 60);   // Volume ranges from 0 to 128
     }
     playScreen = Mix_LoadWAV("music/playScreen.wav");   // http://www.freesound.org/people/Erokia/sounds/163971/
     if (playScreen == NULL)
@@ -36,7 +36,7 @@ Music::Music()
     }
     else
     {
-        Mix_VolumeChunk(playScreen, 40);
+        Mix_VolumeChunk(playScreen, 60);
     }
     throwSound = Mix_LoadWAV("music/throwDisk.wav"); // http://www.freesound.org/people/djgriffin/sounds/21998/
     if (throwSound == NULL)
@@ -45,7 +45,7 @@ Music::Music()
     }
     else
     {
-        Mix_VolumeChunk(throwSound, 50);
+        Mix_VolumeChunk(throwSound, 70);
     }
     playerJump = Mix_LoadWAV("music/jumpSound.wav"); // http://www.freesound.org/people/soundnimja/sounds/173326/
     if (playerJump == NULL)
@@ -55,7 +55,7 @@ Music::Music()
     else
     {
         // Set Volume
-        Mix_VolumeChunk(playerJump, 50);
+        Mix_VolumeChunk(playerJump, 70);
     }
 
         /**************** COLLISION SOUNDS ****************/
@@ -66,7 +66,7 @@ Music::Music()
     }
     else
     {
-        Mix_VolumeChunk(diskToWall, 50);
+        Mix_VolumeChunk(diskToWall, 70);
     }
     
 	diskToTarget = Mix_LoadWAV("music/TargetHit.wav"); // http://www.freesound.org/people/fins/sounds/171671/
@@ -77,7 +77,7 @@ Music::Music()
     else
     {
         // Set Volume
-        Mix_VolumeChunk(diskToTarget, 50);
+        Mix_VolumeChunk(diskToTarget, 70);
     }
     catchSound = Mix_LoadWAV("music/catchDisk.wav");     // http://www.freesound.org/people/grunz/sounds/109663/
     if (catchSound == NULL)
@@ -87,7 +87,7 @@ Music::Music()
     else
     {
         // Set Volume
-        Mix_VolumeChunk(catchSound, 50);
+        Mix_VolumeChunk(catchSound, 70);
     } 
     playerLand = Mix_LoadWAV("music/playerLand.wav"); //http://www.freesound.org/people/odeean/sounds/139476/
     if (playerLand == NULL)
@@ -97,7 +97,7 @@ Music::Music()
     else
     {
         // Set Volume
-        Mix_VolumeChunk(playerLand, 50);
+        Mix_VolumeChunk(playerLand, 70);
     }
 
     // Initialise sound channels

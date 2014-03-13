@@ -15,6 +15,7 @@
 #include "Target.h"
 
 #include "Music.h"
+#include "SDL_net.h"
 
 
 class Simulator;

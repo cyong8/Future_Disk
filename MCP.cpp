@@ -38,9 +38,9 @@ void MCP::createScene(void)
     new Room(mSceneMgr, gameSimulator); 
     (new Disk("Disk", mSceneMgr, gameSimulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 1.0f)))->addToSimulator(); // Create Player 1
-    // (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    // (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    // (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
 
     /********************    LIGHTS     ********************/
@@ -52,8 +52,8 @@ void MCP::createScene(void)
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-    //pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
-    pointLight->setPosition(Ogre::Vector3(0.0f, 6.0f, 0.0f));
+    pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+    
     createOverlays(p1Cam);
 }
 
@@ -99,6 +99,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     static Ogre::Real jumpMove = 8.0f;
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     static bool spacePressedLast = false;
+    static Ogre::Real timeSinceLastJump = 0.0f;
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
 
@@ -111,25 +112,16 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     
     float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down
     btVector3 jumpVector = btVector3(0.0f, 0.0f, 0.0f);
-
-    /********* START THE GAME *********/
-    // if ((mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && !gameStart)
-    //     startGame();
-
-    /******************** PAUSE THE GAME ********************/
-    if (mKeyboard->isKeyDown(OIS::KC_P) && !pausePressedLast)
-    {
-        togglePause();
-        pausePressedLast = true;
-    }
-    else if (!mKeyboard->isKeyDown(OIS::KC_P))
-        pausePressedLast = false;
-    
+    timeSinceLastJump += evt.timeSinceLastFrame;
 
     /********************     MOVEMENT   ********************/
     // Allow movement if the player is on the floor and the game is not paused
     if(!gamePause && gameSimulator->checkGameStart())
     {
+        if (!(p->groundConstantSet))
+        {
+            p->setGroundY(p->getSceneNode()->getPosition().y);
+        }
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
         if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
         {
@@ -192,24 +184,27 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast && p->canJump &&
-                    (p->getSceneNode()->getPosition().y <= p->getGroundY())) 
+            // Not storing groundY correctly so I hacked it; Can fix later
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast && (p->getSceneNode()->getPosition().y <= -11.845f)) 
             {
-                gameMusic->playMusic("Jump");
+                if (timeSinceLastJump > 0.5f)
+                    gameMusic->playMusic("Jump");
                 fy += jumpMove; 
                 jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
                 keyWasPressed = true;
-                gameSimulator->soundedJump = true;
                 spacePressedLast = true;
+                timeSinceLastJump = 0.0f;
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
                 spacePressedLast = false;
 
             if(keyWasPressed == true)
-            {
-                // Ogre::Vector3 localVelocity = p->getSceneNode()->convertLocalToWorldPosition(Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ()));
-                // p->getBody()->setLinearVelocity((btVector3(localVelocity.x, localVelocity.y, localVelocity.z) * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
-                p->getBody()->setLinearVelocity((velocityVector * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
+            {   // Rotate the velocity vector by the orientation of the player
+                Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
+                trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
+                btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
+
+                p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
             }
         }
     }
@@ -218,11 +213,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
-    if (!gameStart)
-    {
+    if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
-    }
-    
     Player* p = (Player*)gameSimulator->getGameObject("Player1");
     Ogre::SceneNode* pSceneNode = p->getSceneNode();
     Ogre::SceneNode* pSightNode = p->getPlayerSightNode();
@@ -240,7 +232,7 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
         transform.setRotation(rotationQ);
         pBody->setCenterOfMassTransform(transform);
 
-        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel/10.0f, 0.0f);
+        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
     }
     else
     {
@@ -249,7 +241,7 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
         transform.setRotation(rotationQ);
         pBody->setCenterOfMassTransform(transform);
 
-        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel/5.0f, 0.0f);
+        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
     }
     // p->getPlayerCameraNode()->setPosition(p->getPlayerCameraNode()->getPosition() + Ogre::Vector3(0.0f, 0.0f, 12.5f));
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
@@ -330,6 +322,9 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
         case OIS::KC_NUMPADENTER:
             if (!gameStart)
                 startGame();
+            break;
+        case OIS::KC_P:
+            togglePause();
             break;
     }
     return true;

@@ -22,7 +22,7 @@ public:
 	
 	void setGroundY(float y);
 	float getGroundY(void);
-	bool canJump;
+	bool groundConstantSet;
 	
 protected:
 	bool isHolding;		

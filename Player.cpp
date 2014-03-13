@@ -9,7 +9,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	groundY = 0.0f;
 
 	isHolding = false; // Is the player holding the disk?
-	canJump = false;
+	groundConstantSet = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
@@ -24,8 +24,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
 	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
 
- 	// DEBUGGING
-	Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
+ 	// DEBUGGING 
+/*	Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
 	pCamNode->attachObject(camEnt);
 	pCamNode->scale(dimensions.x/5.0, dimensions.y/5.0, dimensions.z/5.0);
 	pCamNode->setVisible(true, false);
@@ -40,7 +40,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	sightEnt->setMaterialName("Examples/Chrome");
 
 
-	this->rootNode->showBoundingBox(true);
+	this->rootNode->showBoundingBox(true);*/
 }
 
 void Player::attachDisk(Disk* d)
@@ -84,8 +84,8 @@ Ogre::Vector3 Player::getPlayerDimensions()
 }
 void Player::setGroundY(float y)
 {
-	canJump = true;
 	groundY = y;
+	groundConstantSet = true;           	
 }
 float Player::getGroundY()
 {

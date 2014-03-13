@@ -7,7 +7,7 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
-	soundedJump = true;
+	soundedJump = false;
 	viewChangeP1 = false;
 	viewChangeP2 = false;
 	throwFlag = false;
@@ -195,8 +195,6 @@ void Simulator::parseCollisions(void)
 					groundCheck = true;
 					gameStart = true;
 				}
-				if (((Player*)gA)->getGroundY() == 0.0f)
-				 	((Player*)gA)->setGroundY(gA->getSceneNode()->getPosition().y);
 			}
 		}
 		else if (gB->typeName == "Player")
@@ -208,15 +206,17 @@ void Simulator::parseCollisions(void)
 					groundCheck = true;
 					gameStart = true;
 				}
-				if (((Player*)gB)->getGroundY() == 0.0f)
-				 	((Player*)gB)->setGroundY(gB->getSceneNode()->getPosition().y);
 			}
 		}
 		contactManifold->clearManifold();
 	}
+	if (!groundCheck)
+	{
+		soundedJump = true;
+	}
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
 	{
-		gameMusic->playCollisionSound("Player", "Ground");
+		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
 		soundedJump = false;
 	}
 }
@@ -317,7 +317,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 							   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
-								,getGameObject("BackWall")->getSceneNode()->getPosition().z));
+								,getGameObject("FarWall")->getSceneNode()->getPosition().z));
 			o->addToSimulator();
 			gameMusic->playCollisionSound("Disk", "Target");
 		}
