@@ -617,6 +617,8 @@ CEGUI_OGRE_LIBS
 CEGUI_OGRE_CFLAGS
 CEGUI_LIBS
 CEGUI_CFLAGS
+SDLNET_LIBS
+SDLNET_CFLAGS
 SDLMIXER_LIBS
 SDLMIXER_CFLAGS
 BULLET_LIBS
@@ -15359,6 +15361,11 @@ fi
 
 SDLMIXER_CFLAGS=`sdl-config --cflags`
 SDLMIXER_LIBS="`sdl-config --libs` -lSDL_mixer"
+
+
+
+SDLNET_CFLAGS=`sdl-config --cflags`
+SDLNET_LIBS="`sdl-config --libs` -lSDL_net"
 
 
 

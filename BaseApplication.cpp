@@ -121,7 +121,7 @@ void BaseApplication::createFrameListener(void)
     initMinutes = 2;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
 
-    startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
+    //startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
 
     Ogre::StringVector objectiveDetails;
     objectiveDetails.push_back("Target Blaster 3000X");
@@ -138,7 +138,7 @@ void BaseApplication::createFrameListener(void)
     instructions.push_back("Boosters ");
     instructions.push_back("Enter Aim View ");
     instructions.push_back("Shoot ball! (While In Aim View) ");
-    instructions.push_back("Pause Game ");
+    instructions.push_back("Pause/Unpause Game ");
     instructions.push_back("Toggle Sound ");
     instructPanel = mTrayMgr->createParamsPanel(OgreBites::TL_RIGHT, "instructPanel", 400, instructions);
     instructPanel->setParamValue(0, "");

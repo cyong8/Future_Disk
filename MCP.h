@@ -14,6 +14,9 @@
 #include "Wall.h"
 #include "Target.h"
 
+#include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
 #include "Music.h"
 #include "SDL_net.h"
 
@@ -37,6 +40,8 @@ public:
 
 	// MUSIC OBJECT
 	Music* gameMusic;
+	
+	CEGUI::OgreRenderer* mRenderer;
 
 	MCP(void);
 	virtual ~MCP(void);
@@ -46,10 +51,14 @@ protected:
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
+	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);
+	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
+	virtual bool keyReleased(const OIS::KeyEvent &arg);
 	void createOverlays(PlayerCamera* playCam);
-	void startGame(void);
+	bool startGame(const CEGUI::EventArgs &e);
 	void togglePause(void);
+	bool quit(const CEGUI::EventArgs &e);
 
 	Ogre::Light* pointLight;
 	Disk* gameDisk;
