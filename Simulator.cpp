@@ -12,6 +12,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	viewChangeP2 = false;
 	throwFlag = false;
 	gameStart = false;
+	player1CanCatch = true;
 	previousWallHit = "NULL";
 
 	gameMusic = music;
@@ -161,6 +162,7 @@ void Simulator::parseCollisions(void)
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
 	int groundCheck = false; //checking floor taking care of multiple collisions
+	Player* colP;
 
 	for (i=0;i<numManifolds;i++)
 	{
@@ -188,11 +190,11 @@ void Simulator::parseCollisions(void)
 	}
 	if (!groundCheck)
 		soundedJump = true;
+	else
+		p1->groundConstantSet = false;
 	if (groundCheck && !gameStart)
-	{
-		p1->setGroundY(p1->getSceneNode()->getPosition().y);
 		gameStart = true;
-	}
+
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
 	{
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
@@ -241,9 +243,11 @@ void Simulator::performThrow(Player* p)
 		// rotate disk node here
 		p->getSceneNode()->removeChild(p->getPlayerDisk()->getSceneNode()); // detach disk from parent
 		sceneMgr->getRootSceneNode()->addChild(p->getPlayerDisk()->getSceneNode()); // attach disk to world (root)
-		p->getPlayerDisk()->getSceneNode()->setPosition(toParentPosition); 
+		p->getPlayerDisk()->getSceneNode()->setPosition(toParentPosition); // retain the same global position
     	p->getPlayerDisk()->addToSimulator(); // Add the Disk back into the Simulator 
 		throwFlag = false;
+		// trying to fix player immediately catching disk after throw
+		player1CanCatch = false; 
     }
     else // Update position relative to the Player
     {
@@ -274,11 +278,13 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
+		if (!player1CanCatch)
+			player1CanCatch = true;
 	}
 	// Player
 	else if (o->typeName == "Player")
 	{
-		if (((Player*)o)->checkHolding() == false)
+		if (((Player*)o)->checkHolding() == false && player1CanCatch)
 		{
 			((Player*)o)->attachDisk((Disk*)disk);
 			removeObject("Disk"); // Remove Disk from Simulator
@@ -303,6 +309,10 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			gameMusic->playCollisionSound("Disk", "Target");
 		}
 	}
+}
+void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
+{
+
 }
 void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime)
 {

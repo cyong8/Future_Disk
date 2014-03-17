@@ -22,8 +22,10 @@ public:
 	
 	void setGroundY(float y);
 	Ogre::Real getGroundY(void);
+	bool performJump(void);
 	bool groundConstantSet;
-	
+	Ogre::Real jumpFactor;
+
 protected:
 	bool isHolding;		
 	Disk* playerDisk;
@@ -31,6 +33,7 @@ protected:
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
 	Ogre::Real groundY;
+	Ogre::Real prevGroundY;
 };
 
 #endif // #ifndef __Player_h_

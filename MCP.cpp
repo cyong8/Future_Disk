@@ -96,7 +96,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     /********************  KEY VARIABLES ********************/    
     static bool mMouseDown = false;                                    // If a mouse button is depressed
     static Ogre::Real mMove = 3.0f;                                    // The movement constant
-    static Ogre::Real jumpMove = 8.0f;
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     static bool spacePressedLast = false;
     static Ogre::Real timeSinceLastJump = 0.0f;
@@ -106,12 +105,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     Player *p = (Player *)gameSimulator->getGameObject("Player1");    // Get the player object from the simulator
 
     float fx = 0.0f;                                                   // Force x-component
-    float fy = 0.0f;                                                   // Force y-component
     float fz = 0.0f;                                                   // Force z- component
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
     
     float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down
-    btVector3 jumpVector = btVector3(0.0f, 0.0f, 0.0f);
     timeSinceLastJump += evt.timeSinceLastFrame;
 
     /********************     MOVEMENT   ********************/
@@ -173,16 +170,13 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && p->groundConstantSet && !spacePressedLast) 
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !p->groundConstantSet && !spacePressedLast) 
             {
-                if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast && (p->getSceneNode()->getPosition().y <= p->getGroundY())) 
+                if(p->performJump())
                 {
                     gameMusic->playMusic("Jump");
-                    fy += jumpMove; 
-                    jumpVector = jumpVector + btVector3(0.0f, fy, 0.0f);
-                    keyWasPressed = true;
-                    gameSimulator->soundedJump = true;
                     spacePressedLast = true;
+                    gameSimulator->soundedJump = true;
                 }
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
@@ -193,7 +187,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
                 btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
 
-                p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + jumpVector + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
+                p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
             }
         }
     }

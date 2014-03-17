@@ -7,6 +7,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	this->dimensions = dimensions;
 	typeName = "Player";
 	groundY = -99999.0f;
+	prevGroundY = -99999.0f;
+	jumpFactor = 8.0f;
 
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
@@ -87,4 +89,16 @@ void Player::setGroundY(Ogre::Real y)
 float Player::getGroundY()
 {
 	return groundY;
+}
+bool Player::performJump()
+{
+	if (groundConstantSet == false)
+		groundY = rootNode->getPosition().y;
+	if (!(rootNode->getPosition().y > groundY))
+	{	
+		body->setLinearVelocity(body->getLinearVelocity() + btVector3(0.0f, jumpFactor, 0.0f));
+	    groundConstantSet = true;
+	    return true;
+	}
+	return false;
 }

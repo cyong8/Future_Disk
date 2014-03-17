@@ -46,7 +46,7 @@ public:
 	virtual void setWorldTransform(const btTransform& worldTrans)
 	{
 		if(NULL == mVisibleobj)
-			return; // 
+			return;
 		btQuaternion rot = worldTrans.getRotation();
 		mVisibleobj->setOrientation(rot.w(), rot.x(), rot.y(), rot.z());
 		btVector3 pos = worldTrans.getOrigin();

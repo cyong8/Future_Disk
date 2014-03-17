@@ -42,7 +42,6 @@ void GameObject::addToSimulator()
 	if(mass != 0.0f || typeName != "Disk") 
 		shape->calculateLocalInertia(mass, inertia);
 
-
 	btRigidBody::btRigidBodyConstructionInfo rbInfo(mass, motionState, shape, inertia);
 	
 	if(typeName == "Disk")

@@ -2,8 +2,8 @@
 
 Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
-	Ogre::Real width = 20.0f;
-	Ogre::Real height = 60.0f;
+	Ogre::Real width = 35.0f;
+	Ogre::Real height = 70.0f;
 	Ogre::Vector3 position;
 	Ogre::Plane plane;
 	plane.d = 0;
@@ -40,6 +40,7 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 
 	(new Wall("RightWall", "RightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_X, position, Ogre::Vector3(0.01f, width, height)))->addToSimulator();
 	
+// Front and Back Divisions
 	/* Plane for FarWall */
 	plane.normal = Ogre::Vector3::UNIT_Z;
 	position = Ogre::Vector3(0.0f, 0.0f, -height/2);
@@ -55,37 +56,37 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 	width, width, 20, 20, true, 1, width/4, width/4, Ogre::Vector3::UNIT_Y);
 
 	(new Wall("NearWall", "NearWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Z, position, Ogre::Vector3(width, width, 0.01f)))->addToSimulator();
-
-/*	// Plane for FarLeftWall 
+/*
+	// Plane for FarLeftWall 
 	plane.normal = Ogre::Vector3(-1.0f, 0.0f, 1.0f);
 	position = ;
-	Ogre::MeshManager::getSingleton().createPlane("FarLeftWall", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	Ogre::MeshManager::getSingleton().createPlane("FarLeftWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	dimension/2, dimension, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
-	(new Wall("FarLeftWall", mSceneMgr, game_simulator, plane, Ogre::Vector3(-1.0f, 0.0f, 1.0f), dimension));//->addToSimulator();
-	
+	(new Wall("FarLeftWall", "FarLeftWall_Plane", mSceneMgr, game_simulator, plane, Ogre::Vector3(-1.0f, 0.0f, 1.0f), dimension))->addToSimulator();
+
 	// Plane for FarRightWall 
 	plane.normal = Ogre::Vector3(1.0f, 0.0f, 1.0f);
 	position = ;
-	Ogre::MeshManager::getSingleton().createPlane("FarRightWall", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	Ogre::MeshManager::getSingleton().createPlane("FarRightWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	dimension/2, dimension, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
-	(new Wall("FarRightWall", mSceneMgr, game_simulator, plane, Ogre::Vector3(1.0f, 0.0f, 1.0f), dimension));//->addToSimulator();
+	(new Wall("FarRightWall", "FarRightWall_Plane", mSceneMgr, game_simulator, plane, Ogre::Vector3(1.0f, 0.0f, 1.0f), dimension))->addToSimulator();
 	
 	// Plane for NearLeftWall 
 	plane.normal = Ogre::Vector3(1.0f, 0.0f, -1.0f);
 	position = ;
-	Ogre::MeshManager::getSingleton().createPlane("NearLeftWall", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	Ogre::MeshManager::getSingleton().createPlane("NearLeftWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	dimension/2, dimension, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
-	(new Wall("NearLeftWall", mSceneMgr, game_simulator, plane, Ogre::Vector3(1.0f, 0.0f, -1.0f), dimension));//->addToSimulator();
+	(new Wall("NearLeftWall", "NearLeftWall_Plane", mSceneMgr, game_simulator, plane, Ogre::Vector3(1.0f, 0.0f, -1.0f), dimension))->addToSimulator();
 	
 	// Plane for NearRightWall 
 	plane.normal = Ogre::Vector3(-1.0f, 0.0f, -1.0f);
 	position = ;
-	Ogre::MeshManager::getSingleton().createPlane("NearRightWall", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	Ogre::MeshManager::getSingleton().createPlane("NearRightWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	dimension/2, dimension, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
-	(new Wall("NearRightWall", mSceneMgr, game_simulator, plane, Ogre::Vector3(-1.0f, 0.0f, -1.0f), dimension));//->addToSimulator();
+	(new Wall("NearRightWall", "NearRightWall_Plane", mSceneMgr, game_simulator, plane, Ogre::Vector3(-1.0f, 0.0f, -1.0f), dimension))->addToSimulator();
 */
 }
