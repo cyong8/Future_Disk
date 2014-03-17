@@ -1,6 +1,25 @@
 #include "MCP.h"
 
 //-------------------------------------------------------------------------------------
+CEGUI::MouseButton convertButton(OIS::MouseButtonID buttonID)
+{
+    switch (buttonID)
+    {
+        case OIS::MB_Left:
+            return CEGUI::LeftButton;
+        
+        case OIS::MB_Right:
+            return CEGUI::RightButton;
+            
+        case OIS::MB_Middle:
+            return CEGUI::MiddleButton;
+            
+        default:
+            return CEGUI::LeftButton;
+    }
+}
+
+//-------------------------------------------------------------------------------------
 MCP::MCP(void)
 {
 }
@@ -16,6 +35,39 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
+    
+    CEGUI::Imageset::setDefaultResourceGroup("Imagesets");
+    CEGUI::Font::setDefaultResourceGroup("Fonts");
+    CEGUI::Scheme::setDefaultResourceGroup("Schemes");
+    CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
+    CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
+    
+    CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
+    CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
+    CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(0,0));
+    
+    CEGUI::MouseCursor::getSingleton().show();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+    CEGUI::Window *start = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/StartGameButton");
+    start->setText("Start Game");
+    start->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    start->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.5, 0)));
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(start);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    start->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
+    
     mRotate = 0.1f;
     
     // Initialize random number generate
@@ -196,6 +248,13 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
+	CEGUI::System &sys = CEGUI::System::getSingleton();
+  	sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
+  	// Scroll wheel.
+  	if (evt.state.Z.rel){
+    	sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
+  	}
+  	
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
     Player* p = (Player*)gameSimulator->getGameObject("Player1");
@@ -233,6 +292,18 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     return true;
 }
 
+//-------------------------------------------------------------------------------------
+bool MCP::mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
+{
+    CEGUI::System::getSingleton().injectMouseButtonDown(convertButton(id));
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::mouseReleased(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
+{
+    CEGUI::System::getSingleton().injectMouseButtonUp(convertButton(id));
+    return true;
+}
 
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -248,8 +319,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mTrayMgr->removeWidgetFromTray(pauseLabel);
         gameOverPanel->hide();
         mTrayMgr->removeWidgetFromTray(gameOverPanel);
-        startLabel->show();
-        startLabel->setCaption("Press ENTER to begin!");
+        /*startLabel->show();
+        startLabel->setCaption("Press ENTER to begin!");*/               
     }
     else if(gameOver)
     {
@@ -287,6 +358,10 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
 bool MCP::keyPressed(const OIS::KeyEvent &evt)
 {
+	CEGUI::System &sys = CEGUI::System::getSingleton();
+    sys.injectKeyDown(evt.key);
+    sys.injectChar(evt.text);
+    
     switch (evt.key)
     {
         case OIS::KC_ESCAPE:
@@ -298,27 +373,38 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
         case OIS::KC_M:
             gameMusic->toggleMute();
             break;
-        case OIS::KC_RETURN:
+        /*case OIS::KC_RETURN:
             if (!gameStart)
                 startGame();
             break;
         case OIS::KC_NUMPADENTER:
             if (!gameStart)
                 startGame();
-            break;
+            break;*/
         case OIS::KC_P:
             togglePause();
             break;
     }
     return true;
 }
-void MCP::startGame()
+//-------------------------------------------------------------------------------------
+bool MCP::keyReleased(const OIS::KeyEvent &evt)
 {
+    CEGUI::System::getSingleton().injectKeyUp(evt.key);
+    return true;
+}
+
+bool MCP::startGame(const CEGUI::EventArgs &e)
+{
+	CEGUI::MouseCursor::getSingleton().hide();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+    
     Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
     d->particleNode->setVisible(true);
     gameMusic->playMusic("Play");
-    startLabel->hide();
-    mTrayMgr->removeWidgetFromTray(startLabel);
+    //startLabel->hide();
+    //mTrayMgr->removeWidgetFromTray(startLabel);
     objectivePanel->hide();
     instructPanel->hide();
     mTrayMgr->removeWidgetFromTray(instructPanel);
@@ -329,11 +415,17 @@ void MCP::startGame()
     gameOver = false;
     score = 0;
     time(&initTime);
+    
+    return true;
 }
 void MCP::togglePause()
 {
     if (gamePause == true)  //leaving pause
     {
+    	CEGUI::MouseCursor::getSingleton().hide();
+    	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    	wmgr.destroyAllWindows();
+    	
         gameMusic->playMusic("Play");
         gamePause = false;
         pauseLabel->hide();
@@ -345,6 +437,20 @@ void MCP::togglePause()
     }
     else //entering Pause
     {
+    	CEGUI::MouseCursor::getSingleton().show();
+    	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    	CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
+    	
+    	CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/Pause/QuitButton");
+    	quit->setText("Quit Game");
+    	quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    	
+    	sheet->addChildWindow(quit);
+    	
+    	CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    	quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    	
         gameMusic->playMusic("Start");
         pauseLabel->setCaption("GAME PAUSED!");
         pauseLabel->show();
@@ -356,6 +462,11 @@ void MCP::togglePause()
         gamePause = true;
         time(&pauseTime);
     } 
+}
+bool MCP::quit(const CEGUI::EventArgs &e)
+{
+    mShutDown = true;
+    return true;
 }
 //-------------------------------------------------------------------------------------
 
