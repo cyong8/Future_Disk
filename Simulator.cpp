@@ -143,7 +143,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 	if (p1)
 		p1->getPlayerSightNode()->setPosition(sightPosBeforeSim1);
-
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
