@@ -65,7 +65,6 @@ void Network::readPacket(UDPpacket* p)
 		packets, we just have to make sure that the buffer is greater than the largest packet we will send
 		- Must close a packet after you are done using it; SDLNet_FreePacket(p);
 	*/
-	
 }
 int Network::getServerChannel()
 {
