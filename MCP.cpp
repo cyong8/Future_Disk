@@ -154,7 +154,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     /********************  KEY VARIABLES ********************/    
     static bool mMouseDown = false;                                    // If a mouse button is depressed
-    static Ogre::Real mMove = 3.0f;                                    // The movement constant
+    static Ogre::Real mMove = 5.0f;                                    // The movement constant
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     static bool spacePressedLast = false;
     static Ogre::Real timeSinceLastJump = 0.0f;
@@ -199,7 +199,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         }
         if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Move into Boost mode
         {
-            sprintFactor = 3.0f;
+            sprintFactor = 5.0f;
         }
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
@@ -331,9 +331,13 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     else if(gameOver)
     {
+
         gameOverPanel->show();
         mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
         gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
+        if (gameStart)
+            gameOverScreen();
+
         gameStart = false;
     }
     else // Game started
@@ -500,6 +504,28 @@ void MCP::togglePause()
         gamePause = true;
         time(&pauseTime);
     } 
+}
+void MCP::gameOverScreen() {
+    CEGUI::MouseCursor::getSingleton().show();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver/Sheet");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/RestartGameButton");
+    restart->setText("Restart Game");
+    restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(restart);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
 }
 bool MCP::quit(const CEGUI::EventArgs &e)
 {

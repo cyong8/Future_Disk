@@ -1,7 +1,6 @@
 #ifndef __MCP_h_
 #define __MCP_h_
 
-#include <stdlib.h>
 #include "BaseApplication.h"
 
 #include "Simulator.h"
@@ -18,7 +17,7 @@
 #include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
 
 #include "Music.h"
-#include "SDL_net.h"
+#include "Network.h"
 
 
 class Simulator;
@@ -59,6 +58,7 @@ protected:
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
 	bool startGame(const CEGUI::EventArgs &e);
 	void togglePause(void);
+	void gameOverScreen(void);
 	bool quit(const CEGUI::EventArgs &e);
 
 	Ogre::Light* pointLight;
