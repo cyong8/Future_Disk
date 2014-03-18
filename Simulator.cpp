@@ -7,6 +7,7 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
+	score = 0;
 	soundedJump = false;
 	viewChangeP1 = false;
 	viewChangeP2 = false;

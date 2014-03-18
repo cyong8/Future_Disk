@@ -160,7 +160,7 @@ void BaseApplication::createFrameListener(void)
 
     Ogre::StringVector gOverText;
 
-    gOverText.push_back("GAME OVER! Press ENTER to begin a new game!");
+    gOverText.push_back("GAME OVER!");
     gOverText.push_back("Your Score ");
     gameOverPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOver", 400, gOverText);
     gameOverPanel->setParamValue(0, "");

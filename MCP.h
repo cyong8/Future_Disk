@@ -57,6 +57,7 @@ protected:
 	void createOverlays(PlayerCamera* playCam);
 	bool startGame(const CEGUI::EventArgs &e);
 	void togglePause(void);
+	void gameOverScreen(void);
 	bool quit(const CEGUI::EventArgs &e);
 
 	Ogre::Light* pointLight;

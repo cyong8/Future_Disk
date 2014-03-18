@@ -324,9 +324,13 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     else if(gameOver)
     {
+
         gameOverPanel->show();
         mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
         gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
+        if (gameStart)
+            gameOverScreen();
+
         gameStart = false;
     }
     else // Game started
@@ -462,6 +466,28 @@ void MCP::togglePause()
         gamePause = true;
         time(&pauseTime);
     } 
+}
+void MCP::gameOverScreen() {
+    CEGUI::MouseCursor::getSingleton().show();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver/Sheet");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/RestartGameButton");
+    restart->setText("Restart Game");
+    restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(restart);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
 }
 bool MCP::quit(const CEGUI::EventArgs &e)
 {
