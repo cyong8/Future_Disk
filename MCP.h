@@ -18,7 +18,7 @@
 #include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
 
 #include "Music.h"
-#include "SDL_net.h"
+#include "Network.h"
 
 
 class Simulator;
