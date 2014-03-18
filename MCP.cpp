@@ -107,7 +107,6 @@ void MCP::createScene(void)
     pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
     
     createOverlays(p1Cam);
-    enumPlayer play_enum = eP1;
 }
 
 void MCP::createOverlays(PlayerCamera* playCam)

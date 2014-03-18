@@ -2,9 +2,11 @@
 #define __Network_h_
 
 #include "SDL_net.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-enum enumGameObject{Player, Disk, Wall, Target};
-enum enumKeyboard{W, A, S, D};
+enum enumGameObject{};
+enum enumKeyboard{};
 
 
 class Network
@@ -12,11 +14,18 @@ class Network
 public:
 	Network();
 	~Network();
+	bool waitForPacket(void);
+	void readPacket(UDPpacket* p);
+	int getServerChannel(void);
+	int getPlayerChannel(void);
+	UDPsocket getServerSocket(void);
+	UDPsocket getPlayerSocket(void);
 
+private:
 	UDPsocket serverSocket;
 	UDPsocket playerSocket;
-
-
+	int serverChannel;
+	int playerChannel;
 };
 
 struct Packet

@@ -1,7 +1,6 @@
 #ifndef __MCP_h_
 #define __MCP_h_
 
-#include <stdlib.h>
 #include "BaseApplication.h"
 
 #include "Simulator.h"
