@@ -56,6 +56,7 @@ protected:
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
 	void createOverlays(PlayerCamera* playCam);
+	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
 	bool startGame(const CEGUI::EventArgs &e);
 	void togglePause(void);
 	bool quit(const CEGUI::EventArgs &e);
