@@ -23,11 +23,12 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 
 	double scale = 0.1;
 
-	Ogre::Entity* ent = mgr->createEntity(nym, "sphere.mesh"); // Create Entity; apply mesh
+	//BALL: Ogre::Entity* ent = mgr->createEntity(nym, "sphere.mesh"); // Create Entity; apply mesh
+	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
 	rootNode->attachObject(ent); // Attach disk to a scene node
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
-	//rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f); FOR DISK
-	rootNode->scale(disk_dimensions.x/200.0f, disk_dimensions.y/200.0f, disk_dimensions.z/200.0f);
+	rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f); //FOR DISK
+	//rootNode->scale(disk_dimensions.x/200.0f, disk_dimensions.y/200.0f, disk_dimensions.z/200.0f);
 	rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
 	
 	ent->setMaterialName("Examples/BumpyMetal"); // apply a material to the mesh

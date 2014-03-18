@@ -72,12 +72,28 @@ void Simulator::addObject (GameObject* o)
 		}
 		else 
 		{
+			/* Set the disk direction vector to be the same as the player's sight node vector */
 			Ogre::Vector3 diskDirection = p1->getPlayerSightNode()->getPosition().normalisedCopy();
+			
+			/* The new disk direction is along player's orientation */
 			diskDirection = p1->getSceneNode()->getOrientation() * diskDirection;
+			
+			Ogre::Vector3 sightNodePosition = p1->getPlayerSightNode()->getPosition();
+			Ogre::Vector3 playerPosition = p1->getSceneNode()->getPosition();
+
+			Ogre::Radian angleOfNewPitch = playerPosition.angleBetween(sightNodePosition);
+			o->getSceneNode()->pitch(angleOfNewPitch);
+					
+			btQuaternion diskOrientation = btQuaternion(0, o->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
+			btTransform transform = o->getBody()->getCenterOfMassTransform();
+	        transform.setRotation(diskOrientation);
+			o->getBody()->setCenterOfMassTransform(transform);
+
 			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 			o->getBody()->setRestitution(1.0f);
 			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
+
 			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 		}
 	}
