@@ -432,8 +432,8 @@ bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    //host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::SERVER STUFF, this));
-    //join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::CLIENT STUFF, this));
+    host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, this));
+    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, this));
 }
 
 bool MCP::startGame(const CEGUI::EventArgs &e)
@@ -459,6 +459,14 @@ bool MCP::startGame(const CEGUI::EventArgs &e)
     time(&initTime);
     
     return true;
+}
+bool MCP::hostGame(const CEGUI::EventArgs &e)
+{
+    
+}
+bool MCP::joinGame(const CEGUI::EventArgs &e)
+{
+    
 }
 void MCP::togglePause()
 {
