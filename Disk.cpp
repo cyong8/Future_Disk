@@ -14,7 +14,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 
 	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
 	//Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);  FOR DISK
-	Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.5f, 0.5f);
+	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);
 	thrownVelocity = btVector3(0.0f, 0.0f, 0.0f);
 	diskDirection = Ogre::Vector3(0.0f, 0.0f, -1.0f);
 	particleNode->setVisible(false);
@@ -37,34 +37,20 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	mass = 0.1f;
 	offWallRotation = false;
 }
-void Disk::setRotateOffWall()
-{
-	offWallRotation = true;
-}
-void Disk::resetRotateOffWall()
-{
-	offWallRotation = false;
-}
-void Disk::rotateOffWall()
-{
-	// perform rotation of sceneNode to the angle v
-	btVector3 lv = body->getLinearVelocity();
-	Ogre::Vector3 velocityDirection = Ogre::Vector3(lv.x(), lv.y(), lv.z()).normalisedCopy(); //direction of the velocity
-
-	Ogre::Quaternion diskRoll = diskDirection.getRotationTo(velocityDirection);
-	rootNode->setOrientation(diskRoll);	
-	diskDirection = velocityDirection;
-	offWallRotation = false;
-}
-bool Disk::checkOffWallRotation()
-{
-	return offWallRotation;
-}
 void Disk::setThrownVelocity(btVector3 v)
 {
 	thrownVelocity = v;
+	oldVelocity = v;
 }
 btVector3 Disk::getThrownVelocity()
 {
 	return thrownVelocity;
+}
+void Disk::setOldVelocity(btVector3 v)
+{
+	oldVelocity = v;
+}
+btVector3 Disk::getOldVelocity()
+{
+	return oldVelocity;
 }

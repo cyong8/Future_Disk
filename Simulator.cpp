@@ -61,41 +61,12 @@ void Simulator::addObject (GameObject* o)
 	}
 	if(o->typeName == "Disk")
 	{
-		if (!o->checkReAddFlag())
-		{
-			gameDisk = (Disk*)o;
-			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
-			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-			o->getBody()->setRestitution(1.0f);
-			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 4.0f));
-			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
-		}
-		else 
-		{
-			/* Set the disk direction vector to be the same as the player's sight node vector */
-			Ogre::Vector3 diskDirection = p1->getPlayerSightNode()->getPosition().normalisedCopy();
-			
-			/* The new disk direction is along player's orientation */
-			diskDirection = p1->getSceneNode()->getOrientation() * diskDirection;
-			
-			Ogre::Vector3 sightNodePosition = p1->getPlayerSightNode()->getPosition();
-			Ogre::Vector3 playerPosition = p1->getSceneNode()->getPosition();
-
-			Ogre::Radian angleOfNewPitch = playerPosition.angleBetween(sightNodePosition);
-			o->getSceneNode()->pitch(angleOfNewPitch);
-					
-			btQuaternion diskOrientation = btQuaternion(0, o->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
-			btTransform transform = o->getBody()->getCenterOfMassTransform();
-	        transform.setRotation(diskOrientation);
-			o->getBody()->setCenterOfMassTransform(transform);
-
-			//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
-			o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-			o->getBody()->setRestitution(1.0f);
-			o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
-
-			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
-		}
+		gameDisk = (Disk*)o;
+		//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+		o->getBody()->setRestitution(1.0f);
+		o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 4.0f));
+		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 	}
 	if(o->typeName == "Target")
 	{
@@ -170,6 +141,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	{	
 		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
+		
 	}
 }
 
@@ -252,15 +224,44 @@ void Simulator::setThrowFlag()
 }
 void Simulator::performThrow(Player* p)
 {
+   	Disk *d = p->getPlayerDisk();	
+   	btQuaternion diskOrientation;
+ 	btTransform transform;
+
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
-    	Ogre::Vector3 toParentPosition = p->getPlayerDisk()->getSceneNode()->_getDerivedPosition();
+    	Ogre::Vector3 toParentPosition = d->getSceneNode()->_getDerivedPosition();
+    	transform = d->getBody()->getCenterOfMassTransform();
     	p->setHolding();
 		// rotate disk node here
-		p->getSceneNode()->removeChild(p->getPlayerDisk()->getSceneNode()); // detach disk from parent
-		sceneMgr->getRootSceneNode()->addChild(p->getPlayerDisk()->getSceneNode()); // attach disk to world (root)
-		p->getPlayerDisk()->getSceneNode()->setPosition(toParentPosition); // retain the same global position
-    	p->getPlayerDisk()->addToSimulator(); // Add the Disk back into the Simulator 
+
+		/* Set the disk direction vector to be the same as the player's sight node vector */
+		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
+		
+		/* The new disk direction is along player's orientation */
+		diskDirection = p->getSceneNode()->getOrientation() * diskDirection;
+		
+		Ogre::Vector3 sightNodePosition = Ogre::Vector3(p->getPlayerSightNode()->getPosition().x, p->getPlayerSightNode()->getPosition().y, 0);
+		Ogre::Vector3 playerPosition = Ogre::Vector3(p->getSceneNode()->getPosition().x, p->getSceneNode()->getPosition().y, 0);
+
+		Ogre::Radian angleOfNewPitch = playerPosition.angleBetween(sightNodePosition);
+		d->getSceneNode()->pitch(-angleOfNewPitch);
+				
+		diskOrientation = btQuaternion(0, d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
+        transform.setRotation(diskOrientation);
+		d->getBody()->setCenterOfMassTransform(transform);
+
+		//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		d->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+		d->getBody()->setRestitution(1.0f);
+		d->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
+
+		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
+
+		p->getSceneNode()->removeChild(d->getSceneNode()); // detach disk from parent
+		sceneMgr->getRootSceneNode()->addChild(d->getSceneNode()); // attach disk to world (root)
+		d->getSceneNode()->setPosition(toParentPosition); // retain the same global position
+
 		throwFlag = false;
 		// trying to fix player immediately catching disk after throw
 		player1CanCatch = false; 
@@ -270,7 +271,12 @@ void Simulator::performThrow(Player* p)
     	Ogre::Vector3 dpos;
     	float newDiskZ = -p->getPlayerDimensions().z;
     	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
-		p->getPlayerDisk()->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
+		d->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
+
+		Ogre::Vector3 dpos_derived = d->getSceneNode()->_getDerivedPosition();
+		diskOrientation = btQuaternion(0, 0, 0);
+		transform = btTransform(diskOrientation, btVector3(dpos_derived.x, dpos_derived.y, dpos_derived.z));
+		d->getBody()->setCenterOfMassTransform(transform);
     }
 }
 int Simulator::tallyScore(void)
@@ -286,11 +292,13 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (previousWallHit == "NULL")
 		{
+			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
 			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
+			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
@@ -303,7 +311,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		if (((Player*)o)->checkHolding() == false && player1CanCatch)
 		{
 			((Player*)o)->attachDisk((Disk*)disk);
-			removeObject("Disk"); // Remove Disk from Simulator
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
 	}
@@ -326,6 +333,34 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		}
 	}
 }
+
+void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity)
+{
+	if(currVelocity != d->getOldVelocity())
+	{
+		Ogre::Vector3 currRoll = Ogre::Vector3(currVelocity.getX(), currVelocity.getY(), 0);
+		Ogre::Vector3 oldRoll = Ogre::Vector3(d->getOldVelocity().getX(), d->getOldVelocity().getY(), 0);
+		Ogre::Vector3 currPitch = Ogre::Vector3(0, currVelocity.getY(), currVelocity.getZ());
+		Ogre::Vector3 oldPitch = Ogre::Vector3(0, d->getOldVelocity().getY(), d->getOldVelocity().getZ());
+
+		btTransform trans = d->getBody()->getCenterOfMassTransform();
+		btQuaternion quat;
+
+		//adjust pitch 
+		Ogre::Radian angleOfNewPitch = currPitch.angleBetween(oldPitch);
+		angleOfNewPitch = -(Ogre::Degree(180.0f).valueRadians() - angleOfNewPitch * 2.0f);
+		d->getSceneNode()->pitch(angleOfNewPitch);
+		//adjust roll
+		Ogre::Radian angleOfNewRoll = currRoll.angleBetween(oldRoll);
+		d->getSceneNode()->roll(-(Ogre::Degree(180.0f).valueRadians() - angleOfNewRoll * 2.0f));
+
+		quat = btQuaternion(d->getSceneNode()->getOrientation().getRoll().valueRadians(), d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
+        trans.setRotation(quat);
+		d->getBody()->setCenterOfMassTransform(trans);
+		d->setOldVelocity(currVelocity);
+	}
+}
+
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
 {
 

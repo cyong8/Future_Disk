@@ -63,6 +63,7 @@ class Simulator
 		bool checkOnFloor(void);
 		void resetOnFloor(void);
 		void handleDiskCollisions(GameObject* disk, GameObject* o);
+		void adjustDiskOrientation(Disk *d, btVector3 currVelocity);
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
