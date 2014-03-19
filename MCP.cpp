@@ -462,11 +462,11 @@ bool MCP::startGame(const CEGUI::EventArgs &e)
 }
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
-    
+    return true;
 }
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
-    
+    return true;
 }
 void MCP::togglePause()
 {
