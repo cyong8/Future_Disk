@@ -4,18 +4,27 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
 	Ogre::Real width = 30.0f;
 	Ogre::Real height = 60.0f;
+	Ogre::Real floorLength = 35.0f;
 	Ogre::Real heightScalingFactor = 3.0f/4.0f;
 	Ogre::Vector3 position;
 	Ogre::Plane plane;
 	plane.d = 0;
 
-	/* Plane for Floor */
+	/* Plane for Floor 1 */
 	plane.normal = Ogre::Vector3::UNIT_Y;
-	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, 0.0f);
+	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, -height/2.0f - width/3.0f + floorLength/2.0f);
 	Ogre::MeshManager::getSingleton().createPlane("Floor_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
-	width, height + width, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Z);
+	width, floorLength, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Z);
 
-	(new Wall("Floor", "Floor_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, height + width)))->addToSimulator();
+	(new Wall("Floor", "Floor_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength)))->addToSimulator();
+	
+	/* Plane for Floor 2 */
+	plane.normal = Ogre::Vector3::UNIT_Y;
+	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, height/2.0f + width/3.0f - floorLength/2.0f);
+	Ogre::MeshManager::getSingleton().createPlane("Floor2_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	width, floorLength, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Z);
+
+	(new Wall("Floor2", "Floor2_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength)))->addToSimulator();
 
 	/* Plane for Ceiling */
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Y;
