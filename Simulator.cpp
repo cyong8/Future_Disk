@@ -336,27 +336,40 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 
 void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity)
 {
-	if(currVelocity != d->getOldVelocity())
+	int change = 0;
+	btTransform trans = d->getBody()->getCenterOfMassTransform();
+	btQuaternion quat;
+	
+	if(currVelocity.getX() != d->getOldVelocity().getX())
 	{
 		Ogre::Vector3 currRoll = Ogre::Vector3(currVelocity.getX(), currVelocity.getY(), 0);
 		Ogre::Vector3 oldRoll = Ogre::Vector3(d->getOldVelocity().getX(), d->getOldVelocity().getY(), 0);
+		
+		//adjust roll
+		Ogre::Radian angleOfNewRoll = currRoll.angleBetween(oldRoll);
+		angleOfNewRoll = (Ogre::Math::PI - (angleOfNewRoll + angleOfNewRoll).valueRadians());
+		d->getSceneNode()->roll(angleOfNewRoll);
+
+		change = 1;
+	}
+	if(currVelocity.getY() != d->getOldVelocity().getY())
+	{
 		Ogre::Vector3 currPitch = Ogre::Vector3(0, currVelocity.getY(), currVelocity.getZ());
 		Ogre::Vector3 oldPitch = Ogre::Vector3(0, d->getOldVelocity().getY(), d->getOldVelocity().getZ());
 
-		btTransform trans = d->getBody()->getCenterOfMassTransform();
-		btQuaternion quat;
-
 		//adjust pitch 
 		Ogre::Radian angleOfNewPitch = currPitch.angleBetween(oldPitch);
-		angleOfNewPitch = -(Ogre::Degree(180.0f).valueRadians() - angleOfNewPitch * 2.0f);
+		angleOfNewPitch = (Ogre::Math::PI - (angleOfNewPitch + angleOfNewPitch).valueRadians());
 		d->getSceneNode()->pitch(angleOfNewPitch);
-		//adjust roll
-		Ogre::Radian angleOfNewRoll = currRoll.angleBetween(oldRoll);
-		d->getSceneNode()->roll(-(Ogre::Degree(180.0f).valueRadians() - angleOfNewRoll * 2.0f));
 
+		change = 1;
+	}
+	if (change == 1)
+	{
 		quat = btQuaternion(d->getSceneNode()->getOrientation().getRoll().valueRadians(), d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
-        trans.setRotation(quat);
+	    trans.setRotation(quat);
 		d->getBody()->setCenterOfMassTransform(trans);
+
 		d->setOldVelocity(currVelocity);
 	}
 }
