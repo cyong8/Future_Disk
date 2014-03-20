@@ -70,10 +70,10 @@ void Simulator::addObject (GameObject* o)
 	}
 	if(o->typeName == "Target")
 	{
-		if (o->checkReAddFlag()){
+		if (o->checkReAddFlag())
+		{
 			((Target*)o)->resetHit();
 			score = 10;
-
 		}
 		targetList.push_back((Target*)o);
 	}
@@ -341,7 +341,8 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Floor", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Floor", true) 
+    	|| Ogre::StringUtil::match(wallName, "Floor2", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);

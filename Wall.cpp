@@ -22,8 +22,7 @@ Wall::Wall(Ogre::String nym, Ogre::String planeNym, Ogre::SceneManager *mgr, Sim
 	{
 		rootNode->yaw(Ogre::Degree(-45));
 	}
-
-
+	
 	mass = 0.0f;
 	shape = new btBoxShape(btVector3(dimensions.x/2.0f, dimensions.y/2.0f, dimensions.z/2.0f));
 }
