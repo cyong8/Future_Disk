@@ -57,6 +57,8 @@ protected:
 	void createOverlays(PlayerCamera* playCam);
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
 	bool startGame(const CEGUI::EventArgs &e);
+	bool hostGame(const CEGUI::EventArgs &e);
+	bool joinGame(const CEGUI::EventArgs &e);
 	void togglePause(void);
 	void gameOverScreen(void);
 	bool quit(const CEGUI::EventArgs &e);
