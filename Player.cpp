@@ -40,9 +40,9 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	pSightNode->setVisible(true, false);
 	pSightNode->showBoundingBox(true);
 	sightEnt->setMaterialName("Examples/Chrome");
-
-
-	this->rootNode->showBoundingBox(true);*/
+	*/
+	rootNode->setVisible(false, false);
+	this->rootNode->showBoundingBox(true);
 }
 
 void Player::attachDisk(Disk* d)

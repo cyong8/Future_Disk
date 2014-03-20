@@ -28,7 +28,6 @@ class Simulator
 		vector<GameObject*> objList;
 		vector<Target*> targetList;
 
-		// Attributes to update PlayerCamera
 		Player* p1;
 		Player* p2;
 		PlayerCamera* player1Cam;
@@ -40,9 +39,8 @@ class Simulator
 		bool throwFlag;
 		bool gameStart;
 		bool player1CanCatch;
-
 		Ogre::String previousWallHit;
-
+		
 		Music* gameMusic;
 
 	public:
@@ -63,7 +61,7 @@ class Simulator
 		bool checkOnFloor(void);
 		void resetOnFloor(void);
 		void handleDiskCollisions(GameObject* disk, GameObject* o);
-		void adjustDiskOrientation(Disk *d, btVector3 currVelocity);
+		void adjustDiskOrientation(Disk *d, btVector3 currVelocity, Ogre::String wallName);
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);

@@ -141,7 +141,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	{	
 		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
-		
+		if (gameDisk->needsOrientationUpdate)
+			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 	}
 }
 
@@ -225,13 +226,12 @@ void Simulator::setThrowFlag()
 void Simulator::performThrow(Player* p)
 {
    	Disk *d = p->getPlayerDisk();	
-   	btQuaternion diskOrientation;
+  	btQuaternion diskOrientation;
  	btTransform transform;
 
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
     	Ogre::Vector3 toParentPosition = d->getSceneNode()->_getDerivedPosition();
-    	transform = d->getBody()->getCenterOfMassTransform();
     	p->setHolding();
 		// rotate disk node here
 
@@ -240,18 +240,7 @@ void Simulator::performThrow(Player* p)
 		
 		/* The new disk direction is along player's orientation */
 		diskDirection = p->getSceneNode()->getOrientation() * diskDirection;
-		
-		Ogre::Vector3 sightNodePosition = Ogre::Vector3(p->getPlayerSightNode()->getPosition().x, p->getPlayerSightNode()->getPosition().y, 0);
-		Ogre::Vector3 playerPosition = Ogre::Vector3(p->getSceneNode()->getPosition().x, p->getSceneNode()->getPosition().y, 0);
 
-		Ogre::Radian angleOfNewPitch = playerPosition.angleBetween(sightNodePosition);
-		d->getSceneNode()->pitch(-angleOfNewPitch);
-				
-		diskOrientation = btQuaternion(0, d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
-        transform.setRotation(diskOrientation);
-		d->getBody()->setCenterOfMassTransform(transform);
-
-		//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		d->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		d->getBody()->setRestitution(1.0f);
 		d->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
@@ -263,7 +252,6 @@ void Simulator::performThrow(Player* p)
 		d->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
-		// trying to fix player immediately catching disk after throw
 		player1CanCatch = false; 
     }
     else // Update position relative to the Player
@@ -292,13 +280,15 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (previousWallHit == "NULL")
 		{
-			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
@@ -334,44 +324,31 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	}
 }
 
-void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity)
+void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::String wallName)
 {
-	int change = 0;
+	if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
+		return;
+
+	int changePitch = 0;
+	int changeRoll = 0;
 	btTransform trans = d->getBody()->getCenterOfMassTransform();
 	btQuaternion quat;
-	
-	if(currVelocity.getX() != d->getOldVelocity().getX())
-	{
-		Ogre::Vector3 currRoll = Ogre::Vector3(currVelocity.getX(), currVelocity.getY(), 0);
-		Ogre::Vector3 oldRoll = Ogre::Vector3(d->getOldVelocity().getX(), d->getOldVelocity().getY(), 0);
-		
-		//adjust roll
-		Ogre::Radian angleOfNewRoll = currRoll.angleBetween(oldRoll);
-		angleOfNewRoll = (Ogre::Math::PI - (angleOfNewRoll + angleOfNewRoll).valueRadians());
-		d->getSceneNode()->roll(angleOfNewRoll);
 
-		change = 1;
-	}
-	if(currVelocity.getY() != d->getOldVelocity().getY())
-	{
-		Ogre::Vector3 currPitch = Ogre::Vector3(0, currVelocity.getY(), currVelocity.getZ());
-		Ogre::Vector3 oldPitch = Ogre::Vector3(0, d->getOldVelocity().getY(), d->getOldVelocity().getZ());
+	if (Ogre::StringUtil::match(wallName, "FarLeftWall", true) || Ogre::StringUtil::match(wallName, "FarRightWall", true) 
+				|| Ogre::StringUtil::match(wallName, "NearRightWall", true) || Ogre::StringUtil::match(wallName, "NearLeftWall", true))	
+		quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), -d->getSceneNode()->getOrientation().getRoll().valueRadians());
+    if (Ogre::StringUtil::match(wallName, "LeftWall", true) || Ogre::StringUtil::match(wallName, "RightWall", true))	
+    	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
+    if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
+    	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Floor", true))
+    	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
-		//adjust pitch 
-		Ogre::Radian angleOfNewPitch = currPitch.angleBetween(oldPitch);
-		angleOfNewPitch = (Ogre::Math::PI - (angleOfNewPitch + angleOfNewPitch).valueRadians());
-		d->getSceneNode()->pitch(angleOfNewPitch);
+    trans.setRotation(quat);
 
-		change = 1;
-	}
-	if (change == 1)
-	{
-		quat = btQuaternion(d->getSceneNode()->getOrientation().getRoll().valueRadians(), d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0);
-	    trans.setRotation(quat);
-		d->getBody()->setCenterOfMassTransform(trans);
-
-		d->setOldVelocity(currVelocity);
-	}
+	d->getBody()->setCenterOfMassTransform(trans);
+	d->setOldVelocity(currVelocity);
+	d->needsOrientationUpdate = false;
 }
 
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)

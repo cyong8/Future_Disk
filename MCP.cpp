@@ -35,45 +35,7 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
-    
-    CEGUI::Imageset::setDefaultResourceGroup("Imagesets");
-    CEGUI::Font::setDefaultResourceGroup("Fonts");
-    CEGUI::Scheme::setDefaultResourceGroup("Schemes");
-    CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
-    CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
-    
-    CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
-    CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
-    CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(0,0));
-    
-    CEGUI::MouseCursor::getSingleton().show();
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
-    
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-        
-    CEGUI::Window *singlePlayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/SinglePlayerStartButton");
-    singlePlayerStart->setText("Single Player");
-    singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
-    
-    CEGUI::Window *multiplayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/MultiplayerStartButton");
-    multiplayerStart->setText("Multiplayer");
-    multiplayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    multiplayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
-    
-    sheet->addChildWindow(quit);
-    sheet->addChildWindow(singlePlayerStart);
-    sheet->addChildWindow(multiplayerStart);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
-    multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::createMultiplayerMenu, this));
+    createGUI();
     
     mRotate = 0.1f;
     
@@ -404,7 +366,7 @@ bool MCP::keyReleased(const OIS::KeyEvent &evt)
     CEGUI::System::getSingleton().injectKeyUp(evt.key);
     return true;
 }
-
+//-------------------------------------------------------------------------------------
 bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
 {
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
@@ -435,7 +397,7 @@ bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
     //host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::SERVER STUFF, this));
     //join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::CLIENT STUFF, this));
 }
-
+//-------------------------------------------------------------------------------------
 bool MCP::startGame(const CEGUI::EventArgs &e)
 {
 	CEGUI::MouseCursor::getSingleton().hide();
@@ -460,6 +422,7 @@ bool MCP::startGame(const CEGUI::EventArgs &e)
     
     return true;
 }
+//-------------------------------------------------------------------------------------
 void MCP::togglePause()
 {
     if (gamePause == true)  //leaving pause
@@ -505,6 +468,7 @@ void MCP::togglePause()
         time(&pauseTime);
     } 
 }
+//-------------------------------------------------------------------------------------
 void MCP::gameOverScreen() {
     CEGUI::MouseCursor::getSingleton().show();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
@@ -527,10 +491,54 @@ void MCP::gameOverScreen() {
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
     restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
 }
+//-------------------------------------------------------------------------------------
 bool MCP::quit(const CEGUI::EventArgs &e)
 {
     mShutDown = true;
     return true;
+}
+//-------------------------------------------------------------------------------------
+void MCP::createGUI()
+{
+    mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
+    
+    CEGUI::Imageset::setDefaultResourceGroup("Imagesets");
+    CEGUI::Font::setDefaultResourceGroup("Fonts");
+    CEGUI::Scheme::setDefaultResourceGroup("Schemes");
+    CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
+    CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
+    
+    CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
+    CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
+    CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(0,0));
+    
+    CEGUI::MouseCursor::getSingleton().show();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+    CEGUI::Window *singlePlayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/SinglePlayerStartButton");
+    singlePlayerStart->setText("Single Player");
+    singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
+    
+    CEGUI::Window *multiplayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/MultiplayerStartButton");
+    multiplayerStart->setText("Multiplayer");
+    multiplayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    multiplayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(singlePlayerStart);
+    sheet->addChildWindow(multiplayerStart);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
+    multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::createMultiplayerMenu, this));
 }
 //-------------------------------------------------------------------------------------
 

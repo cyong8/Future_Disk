@@ -60,6 +60,7 @@ protected:
 	void togglePause(void);
 	void gameOverScreen(void);
 	bool quit(const CEGUI::EventArgs &e);
+	void createGUI(void);
 
 	Ogre::Light* pointLight;
 	Disk* gameDisk;

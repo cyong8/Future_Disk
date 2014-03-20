@@ -8,6 +8,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 		Sun Particle System from Ogre website:
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=ParticleExampleSun&structure=Cookbook
 	*/
+	needsOrientationUpdate = false;
 	tailParticle = mgr->createParticleSystem("Sun", "Examples/Sun");
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle);
@@ -41,6 +42,18 @@ void Disk::setThrownVelocity(btVector3 v)
 {
 	thrownVelocity = v;
 	oldVelocity = v;
+
+	btTransform dTrans = body->getCenterOfMassTransform();
+	Ogre::Vector3 dPos = Ogre::Vector3(rootNode->getPosition().x, rootNode->getPosition().y, 0.0f);
+	Ogre::Vector3 vPos = Ogre::Vector3(v.getX(), v.getY(), 0.0f);
+   	btQuaternion diskOrientation;
+
+	Ogre::Radian angleOfNewRoll = dPos.angleBetween(vPos);
+	rootNode->roll(-angleOfNewRoll);
+
+	diskOrientation = btQuaternion(0.0f, 0.0f, rootNode->getOrientation().getRoll().valueRadians());
+	dTrans.setRotation(diskOrientation);
+	body->setCenterOfMassTransform(dTrans);
 }
 btVector3 Disk::getThrownVelocity()
 {

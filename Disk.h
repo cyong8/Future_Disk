@@ -21,6 +21,7 @@ public:
 	Ogre::Vector3 diskDirection;
 	Ogre::ParticleSystem* tailParticle;
 	Ogre::SceneNode* particleNode;
+	bool needsOrientationUpdate;
 };
 
 #endif // #ifndef __Disk_h_
