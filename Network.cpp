@@ -25,6 +25,7 @@ Network::Network(int sc_identifier)
 	initializeConnection();
 	/* Close TCP Sockets now that UDP connection has been established */
 }
+//-------------------------------------------------------------------------------------
 void Network::initializeConnection()
 {
 	if (server)
@@ -110,6 +111,7 @@ void Network::initializeConnection()
 
 	}
 }
+//-------------------------------------------------------------------------------------
 bool Network::waitForPacket()
 {
 	UDPpacket* p;
@@ -131,6 +133,7 @@ bool Network::waitForPacket()
 		}		
 	}
 }
+//-------------------------------------------------------------------------------------
 void Network::readPacket(UDPpacket* p)
 {
 	/* Packet Notes:
@@ -139,14 +142,17 @@ void Network::readPacket(UDPpacket* p)
 		- Must close a packet after you are done using it; SDLNet_FreePacket(p);
 	*/
 }
+//-------------------------------------------------------------------------------------
 int Network::getUDPPortNumber()
 {
 	return UDP_portNum;
 }
+//-------------------------------------------------------------------------------------
 UDPsocket Network::getServerSocket()
 {
 	return serverSocket;
 }
+//-------------------------------------------------------------------------------------
 UDPsocket Network::getPlayerSocket()
 {
 	return playerSocket;

@@ -395,7 +395,6 @@ bool BaseApplication::mouseMoved(const OIS::MouseEvent &evt){}
 bool BaseApplication::mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id){}
 bool BaseApplication::mouseReleased(const OIS::MouseEvent &evt, OIS::MouseButtonID id){}
 
-
 //Adjust mouse clipping area
 void BaseApplication::windowResized(Ogre::RenderWindow* rw)
 {

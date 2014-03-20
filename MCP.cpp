@@ -18,12 +18,10 @@ CEGUI::MouseButton convertButton(OIS::MouseButtonID buttonID)
             return CEGUI::LeftButton;
     }
 }
-
 //-------------------------------------------------------------------------------------
 MCP::MCP(void)
 {
 }
-
 //-------------------------------------------------------------------------------------
 MCP::~MCP(void)
 {
@@ -31,38 +29,47 @@ MCP::~MCP(void)
     gameMusic = NULL;
 	delete mRoot;
 }
-
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    createGUI();
-    
-    mRotate = 0.1f;
-    
-    // Initialize random number generate
     srand(time(0));
 
+    hostPlayer = NULL;
+    clientPlayer = NULL;
+
+    gameMusic = new Music();    // Initialize Music
+    gameMusic->playMusic("Start");
+
+    gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
+    
+    createGUI();
+    
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
     gameStart = false;
     gameOver = false;
     vKeyDown = false;    
-    
-    gameMusic = new Music();    // Initialize Music
-    gameMusic->playMusic("Start");
-    
-    gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
+    mRotate = 0.1f;
 
-    /********************  OBJECT CREATION/ASSIGNMENT  ********************/
-    PlayerCamera* p1Cam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
-    gameSimulator->setCamera(p1Cam); 
-    new Room(mSceneMgr, gameSimulator); 
+    /* Create room and store player bounds */
+    gameRoom = new Room(mSceneMgr, gameSimulator);
+
+    createTargetModeScene();
+    //createMultiplayerModeScene();
+}
+//-------------------------------------------------------------------------------------
+void MCP::createTargetModeScene()
+{
+    /********************  OBJECT CREATION  ********************/
+    PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
+    gameSimulator->setCamera(pCam); 
     (new Disk("Disk", mSceneMgr, gameSimulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); 
-    (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, -15.0f)))->addToSimulator(); // Create Player 1
+    (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
+    hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     
     /********************    LIGHTS     ********************/
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
@@ -75,42 +82,13 @@ void MCP::createScene(void)
     pointLight->setVisible(true);
     pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
     
-    createOverlays(p1Cam);
+    createOverlays(pCam);
 }
-
-void MCP::createOverlays(PlayerCamera* playCam)
+//-------------------------------------------------------------------------------------
+void MCP::createMultiplayerModeScene()
 {
-    /********************    MENUS    ********************/
-    Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
     
-    Ogre::Overlay* crossHairVertOverlay = overlayManager->create("crossHairVert"); // Create an overlay for the vertical crosshair
-
-    // Create an overlay container for the vertical crosshair
-    Ogre::OverlayContainer* crossHairVertContainer = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "VerticalPanel"));
-    crossHairVertContainer->setPosition(0.5f, 0.4f);
-    crossHairVertContainer->setDimensions(0.001f, 0.2f);
-    crossHairVertContainer->setMaterialName("BaseWhite");
-    crossHairVertContainer->getMaterial()->setReceiveShadows(false);
-
-    crossHairVertOverlay->add2D( crossHairVertContainer ); // Add crossHairVertContainer to the crossHairVertOverlay
-
-    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create("crossHairHoriz"); // Create an overlay for the horizontal crosshair
-
-    // Create an overlay container for the horizontal crosshair
-    Ogre::OverlayContainer* crossHairHorizContainer = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "HorizontalPanel"));
-    crossHairHorizContainer->setPosition(0.425, 0.5);
-    crossHairHorizContainer->setDimensions(0.15, 0.001);
-    crossHairHorizContainer->setMaterialName("BaseWhite");
-    crossHairHorizContainer->getMaterial()->setReceiveShadows(false);
-
-    crossHairHorizOverlay->add2D(crossHairHorizContainer);     // Add the crossHairHorizContainer to the crossHairHorizOverlay
-
-    crossHairVertOverlay->hide();    // Hide the Crosshair till 
-    crossHairHorizOverlay->hide();   // til Aim View is activated 
-
-    playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay); // WDTD
 }
-
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
@@ -214,7 +192,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     }
     return true;
 }
-
+//-------------------------------------------------------------------------------------
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
 	CEGUI::System &sys = CEGUI::System::getSingleton();
@@ -260,7 +238,6 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 
     return true;
 }
-
 //-------------------------------------------------------------------------------------
 bool MCP::mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
 {
@@ -273,7 +250,6 @@ bool MCP::mouseReleased(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
     CEGUI::System::getSingleton().injectMouseButtonUp(convertButton(id));
     return true;
 }
-
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
@@ -281,25 +257,20 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     
     if (mShutDown)
         return false;
-
     if(!gameStart && !gameOver) // Game not started
     {
         pauseLabel->hide();
         mTrayMgr->removeWidgetFromTray(pauseLabel);
         gameOverPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverPanel);
-        /*startLabel->show();
-        startLabel->setCaption("Press ENTER to begin!");*/               
+        mTrayMgr->removeWidgetFromTray(gameOverPanel);          
     }
     else if(gameOver)
     {
-
         gameOverPanel->show();
         mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
         gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
         if (gameStart)
             gameOverScreen();
-
         gameStart = false;
     }
     else // Game started
@@ -308,7 +279,10 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         {
             if(!processUnbufferedInput(evt)) 
                 return false;
-            
+            if (hostPlayer != NULL)
+                restrictPlayerMovement(hostPlayer);
+            if (clientPlayer != NULL)
+                restrictPlayerMovement(clientPlayer);
             gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
             gameSimulator->parseCollisions(); // check collisions
             modifyScore(gameSimulator->tallyScore());
@@ -324,11 +298,10 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             time(&pcurrTime);
             updatePauseTime(pcurrTime);
         }
-    }
-    
+    } 
     return ret;
 }
-
+//-------------------------------------------------------------------------------------
 bool MCP::keyPressed(const OIS::KeyEvent &evt)
 {
 	CEGUI::System &sys = CEGUI::System::getSingleton();
@@ -365,37 +338,6 @@ bool MCP::keyReleased(const OIS::KeyEvent &evt)
 {
     CEGUI::System::getSingleton().injectKeyUp(evt.key);
     return true;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
-{
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
-    
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    
-    CEGUI::Window *host = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/HostButton");
-    host->setText("Host a game");
-    host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
-    
-    CEGUI::Window *join = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/JoinButton");
-    join->setText("Join a game");
-    join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
-    
-    sheet->addChildWindow(quit);
-    sheet->addChildWindow(host);
-    sheet->addChildWindow(join);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, this));
-    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, this));
 }
 //-------------------------------------------------------------------------------------
 bool MCP::startGame(const CEGUI::EventArgs &e)
@@ -503,10 +445,35 @@ void MCP::gameOverScreen()
     restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
 }
 //-------------------------------------------------------------------------------------
-bool MCP::quit(const CEGUI::EventArgs &e)
+bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
 {
-    mShutDown = true;
-    return true;
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    
+    CEGUI::Window *host = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/HostButton");
+    host->setText("Host a game");
+    host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
+    
+    CEGUI::Window *join = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/JoinButton");
+    join->setText("Join a game");
+    join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(host);
+    sheet->addChildWindow(join);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, this));
+    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, this));
 }
 //-------------------------------------------------------------------------------------
 void MCP::createGUI()
@@ -552,7 +519,59 @@ void MCP::createGUI()
     multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::createMultiplayerMenu, this));
 }
 //-------------------------------------------------------------------------------------
+bool MCP::quit(const CEGUI::EventArgs &e)
+{
+    mShutDown = true;
+    return true;
+}
+//-------------------------------------------------------------------------------------
+void MCP::createOverlays(PlayerCamera* playCam)
+{
+    /********************    MENUS    ********************/
+    Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
+    
+    Ogre::Overlay* crossHairVertOverlay = overlayManager->create("crossHairVert"); // Create an overlay for the vertical crosshair
 
+    // Create an overlay container for the vertical crosshair
+    Ogre::OverlayContainer* crossHairVertContainer = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "VerticalPanel"));
+    crossHairVertContainer->setPosition(0.5f, 0.4f);
+    crossHairVertContainer->setDimensions(0.001f, 0.2f);
+    crossHairVertContainer->setMaterialName("BaseWhite");
+    crossHairVertContainer->getMaterial()->setReceiveShadows(false);
+
+    crossHairVertOverlay->add2D( crossHairVertContainer ); // Add crossHairVertContainer to the crossHairVertOverlay
+
+    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create("crossHairHoriz"); // Create an overlay for the horizontal crosshair
+
+    // Create an overlay container for the horizontal crosshair
+    Ogre::OverlayContainer* crossHairHorizContainer = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "HorizontalPanel"));
+    crossHairHorizContainer->setPosition(0.425, 0.5);
+    crossHairHorizContainer->setDimensions(0.15, 0.001);
+    crossHairHorizContainer->setMaterialName("BaseWhite");
+    crossHairHorizContainer->getMaterial()->setReceiveShadows(false);
+
+    crossHairHorizOverlay->add2D(crossHairHorizContainer);     // Add the crossHairHorizContainer to the crossHairHorizOverlay
+
+    crossHairVertOverlay->hide();    // Hide the Crosshair till 
+    crossHairHorizOverlay->hide();   // til Aim View is activated 
+
+    playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay); // WDTD
+}
+//-------------------------------------------------------------------------------------
+void MCP::restrictPlayerMovement(Player* p)
+{
+    Ogre::Vector3 pos = p->getSceneNode()->getPosition();
+    Ogre::Vector3 dim = p->getPlayerDimensions();
+
+
+    // Left/Right wall check
+    if ((pos.x + dim.x) >= gameRoom->getWidth()/2.0f || (pos.x + dim.x) <= -gameRoom->getWidth()/2.0f)
+        p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), p->getBody()->getLinearVelocity().getZ()));
+    // Gap and (Relative) Back wall check
+    if ((pos.z + dim.z) >= gameRoom->getHeight()/2.0f || (pos.z + dim.z) <= -gameRoom->getHeight()/2.0f)
+        p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), 0.0f));
+}
+//-------------------------------------------------------------------------------------
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
 #include "windows.h"

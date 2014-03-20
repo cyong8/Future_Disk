@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "Disk.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, Ogre::String side) 
 	: GameObject(nym, mgr, sim)
 {
 	this->dimensions = dimensions;
@@ -9,6 +9,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	groundY = -99999.0f;
 	prevGroundY = -99999.0f;
 	jumpFactor = 8.0f;
+	playerSide = side;
 
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
@@ -44,7 +45,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->setVisible(false, false);
 	this->rootNode->showBoundingBox(true);
 }
-
+//-------------------------------------------------------------------------------------
 void Player::attachDisk(Disk* d)
 {
 	isHolding = true;
@@ -53,43 +54,54 @@ void Player::attachDisk(Disk* d)
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+	rootNode->setVisible(false, false);
 }
+//-------------------------------------------------------------------------------------
 void Player::setHolding()
 {
 	isHolding = !isHolding;
 }
+//-------------------------------------------------------------------------------------
 bool Player::checkHolding()
 {
 	return isHolding;
 }
+//-------------------------------------------------------------------------------------
 void Player::throwDisk()
 {
 }
+//-------------------------------------------------------------------------------------
 Disk* Player::getPlayerDisk()
 {
 	return playerDisk;
 }
+//-------------------------------------------------------------------------------------
 Ogre::SceneNode* Player::getPlayerSightNode()
 {
 	return pSightNode;
 }
+//-------------------------------------------------------------------------------------
 Ogre::SceneNode* Player::getPlayerCameraNode()
 {
 	return pCamNode;
 }
+//-------------------------------------------------------------------------------------
 Ogre::Vector3 Player::getPlayerDimensions()
 {
 	return dimensions;
 }
+//-------------------------------------------------------------------------------------
 void Player::setGroundY(Ogre::Real y)
 {
 	groundY = y;
 	groundConstantSet = true;           	
 }
+//-------------------------------------------------------------------------------------
 float Player::getGroundY()
 {
 	return groundY;
 }
+//-------------------------------------------------------------------------------------
 bool Player::performJump()
 {
 	if (groundConstantSet == false)
@@ -101,4 +113,8 @@ bool Player::performJump()
 	    return true;
 	}
 	return false;
+}
+Ogre::String Player::checkPlayerSide()
+{
+
 }

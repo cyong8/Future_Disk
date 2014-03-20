@@ -17,12 +17,14 @@ PlayerCamera::PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Came
 
     mCameraNode->attachObject(pCamera); // attach Ogre::Camera to camera node
 }
+//-------------------------------------------------------------------------------------
 PlayerCamera::~PlayerCamera()
 {
 	mCameraNode->detachAllObjects();
     mCamSceneMgr->destroySceneNode(name);
     mCamSceneMgr->destroySceneNode(name + "_target");
 }
+//-------------------------------------------------------------------------------------
 void PlayerCamera::toggleThirdPersonView()
 {
     inAimMode = !inAimMode;    
@@ -42,11 +44,13 @@ void PlayerCamera::toggleThirdPersonView()
         p->getSceneNode()->setVisible(false);
     }
 }
+//-------------------------------------------------------------------------------------
 void PlayerCamera::initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition)
 {
     mCameraNode->setPosition(cameraPosition);
     mTargetNode->setPosition(sightPosition);
 }
+//-------------------------------------------------------------------------------------
 void PlayerCamera::update (Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition) 
 {
     // Handle movement
@@ -58,23 +62,28 @@ void PlayerCamera::update (Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition,
     displacement = (targetPosition - mTargetNode->getPosition());
     mTargetNode->translate(displacement);
 }
+//-------------------------------------------------------------------------------------
 void PlayerCamera::setPlayer(Player* player)
 {
     p = player;
 }
+//-------------------------------------------------------------------------------------
 bool PlayerCamera::isInAimMode()
 {
     return inAimMode;
 }
+//-------------------------------------------------------------------------------------
 Ogre::Camera* PlayerCamera::getMCamera()
 {
     return mCamera;
 }
+//-------------------------------------------------------------------------------------
 void PlayerCamera::setCHOverlays(Ogre::Overlay* o, Ogre::Overlay* o2)
 {
     overlay = o;
     overlay2 = o2;
 }
+//-------------------------------------------------------------------------------------
 Ogre::SceneNode* PlayerCamera::getPCamSceneNode()
 {
     return mCameraNode;

@@ -38,6 +38,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	mass = 0.1f;
 	offWallRotation = false;
 }
+//-------------------------------------------------------------------------------------
 void Disk::setThrownVelocity(btVector3 v)
 {
 	thrownVelocity = v;
@@ -55,14 +56,17 @@ void Disk::setThrownVelocity(btVector3 v)
 	dTrans.setRotation(diskOrientation);
 	body->setCenterOfMassTransform(dTrans);
 }
+//-------------------------------------------------------------------------------------
 btVector3 Disk::getThrownVelocity()
 {
 	return thrownVelocity;
 }
+//-------------------------------------------------------------------------------------
 void Disk::setOldVelocity(btVector3 v)
 {
 	oldVelocity = v;
 }
+//-------------------------------------------------------------------------------------
 btVector3 Disk::getOldVelocity()
 {
 	return oldVelocity;

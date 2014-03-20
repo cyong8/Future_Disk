@@ -104,11 +104,11 @@ Music::Music()
     currentChunkChannel = 0;
 	currentMusicChannel = 1;
 }
-
+//-------------------------------------------------------------------------------------
 Music::~Music()
 {
 }
-
+//-------------------------------------------------------------------------------------
 void Music::musicDone()
 {
     Mix_FreeChunk(startStopScreen);
@@ -124,7 +124,7 @@ void Music::musicDone()
     Mix_CloseAudio();
     SDL_Quit();
 }
-
+//-------------------------------------------------------------------------------------
 void Music::playCollisionSound(string objA, string objB)
 {
     if (!muted)
@@ -152,6 +152,7 @@ void Music::playCollisionSound(string objA, string objB)
     	SDL_Delay(50);
     }
 }
+//-------------------------------------------------------------------------------------
 void Music::playMusic(string state)
 {
     if (!muted)
@@ -184,6 +185,7 @@ void Music::playMusic(string state)
     	SDL_Delay(50);
     }
 }
+//-------------------------------------------------------------------------------------
 void Music::toggleMute(void)
 {
     if (muted) // Unmute the Music 

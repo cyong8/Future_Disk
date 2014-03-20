@@ -37,17 +37,17 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
 }
-
+//-------------------------------------------------------------------------------------
 void Target::targetHit()
 {
 	hit = true;
 }
-
+//-------------------------------------------------------------------------------------
 void Target::resetHit()
 {
 	hit = false;
 }
-
+//-------------------------------------------------------------------------------------
 bool Target::isHit()
 {
 	return hit;

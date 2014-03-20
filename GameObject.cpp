@@ -18,12 +18,12 @@ GameObject::GameObject(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim
 	ReAddFlag = false;
 	hit = false;
 }
-
+//-------------------------------------------------------------------------------------
 btRigidBody* GameObject::getBody()	
 {
 	return (*this).body;		
 }
-
+//-------------------------------------------------------------------------------------
 void GameObject::updateTransform() 
 {
 	Ogre::Vector3 pos = rootNode->getPosition();
@@ -33,6 +33,7 @@ void GameObject::updateTransform()
 	if(motionState) 
 		motionState->updateTransform(tr);	
 }
+//-------------------------------------------------------------------------------------
 void GameObject::addToSimulator()
 {
 	motionState = new OgreMotionState(tr, rootNode);
@@ -57,24 +58,29 @@ void GameObject::addToSimulator()
 	body = new btRigidBody(rbInfo);
 	simulator->addObject(this);
 }
+//-------------------------------------------------------------------------------------
 void GameObject::removeFromSimulator()
 {
 	delete motionState;
 	delete body;
 	ReAddFlag = true;
 }
+//-------------------------------------------------------------------------------------
 Ogre::String GameObject::getGameObjectName()
 {
 	return this->name;
 }
+//-------------------------------------------------------------------------------------
 Ogre::SceneNode* GameObject::getSceneNode()
 {
 	return this->rootNode;
 }
+//-------------------------------------------------------------------------------------
 OgreMotionState* GameObject::getOgreMotionState()
 {
 	return this->motionState;
 }
+//-------------------------------------------------------------------------------------
 bool GameObject::checkReAddFlag()
 {
 	return this->ReAddFlag;

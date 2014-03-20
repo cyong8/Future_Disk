@@ -2,9 +2,9 @@
 
 Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
-	Ogre::Real width = 30.0f;
-	Ogre::Real height = 60.0f;
-	Ogre::Real floorLength = 35.0f;
+	width = 30.0f;
+	height = 60.0f;
+	floorLength = 35.0f;
 	Ogre::Real heightScalingFactor = 3.0f/4.0f;
 	Ogre::Vector3 position;
 	Ogre::Plane plane;
@@ -100,3 +100,19 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 
 	(new Wall("NearRightWall", "NearRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f)))->addToSimulator();
 }
+//-------------------------------------------------------------------------------------
+Ogre::Real Room::getWidth()
+{
+	return width;
+}
+//-------------------------------------------------------------------------------------
+Ogre::Real Room::getHeight()
+{
+	return height;
+}
+//-------------------------------------------------------------------------------------
+Ogre::Real Room::getFloorLength()
+{
+	return floorLength;
+}
+//-------------------------------------------------------------------------------------

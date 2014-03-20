@@ -40,6 +40,7 @@ class Simulator
 		bool gameStart;
 		bool player1CanCatch;
 		Ogre::String previousWallHit;
+		bool giveDisk;
 		
 		Music* gameMusic;
 

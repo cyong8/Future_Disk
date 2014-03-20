@@ -14,6 +14,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	throwFlag = false;
 	gameStart = false;
 	player1CanCatch = true;
+	giveDisk = false;
 	previousWallHit = "NULL";
 
 	gameMusic = music;
@@ -36,6 +37,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	//make sure to re-use collision shapes among rigid bodies whenever possible!
 	btAlignedObjectArray<btCollisionShape*> collisionShapes;
 }
+//-------------------------------------------------------------------------------------
 Simulator::~Simulator()
 {
 	gameMusic = NULL;
@@ -44,7 +46,7 @@ Simulator::~Simulator()
 	delete(solver);
 	delete(dynamicsWorld);
 }
-
+//-------------------------------------------------------------------------------------
 void Simulator::addObject (GameObject* o) 
 {
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);	
@@ -62,10 +64,10 @@ void Simulator::addObject (GameObject* o)
 	if(o->typeName == "Disk")
 	{
 		gameDisk = (Disk*)o;
-		//o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		o->getBody()->setRestitution(1.0f);
-		o->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 4.0f));
+		o->getBody()->setLinearVelocity(btVector3(0.0f, -5.0f, 0.0f));
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 	}
 	if(o->typeName == "Target")
@@ -82,7 +84,7 @@ void Simulator::addObject (GameObject* o)
 		o->getBody()->setRestitution(0.8f);
 	}
 }
-
+//-------------------------------------------------------------------------------------
 GameObject* Simulator::getGameObject(Ogre::String name)
 {
 	for (int i = 0; i < objList.size(); i++)
@@ -94,7 +96,7 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 	}
 	return NULL;
 }
-
+//-------------------------------------------------------------------------------------
 void Simulator::removeObject(Ogre::String name)
 {
 	if (getGameObject(name)->typeName == "Target")
@@ -117,8 +119,7 @@ void Simulator::removeObject(Ogre::String name)
 		}
 	}
 }
-
-// original stepSimulation is in btDiscreteDynamicsWorld
+//-------------------------------------------------------------------------------------
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
 	Ogre::Vector3 sightPosBeforeSim1;
@@ -145,7 +146,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 	}
 }
-
+//-------------------------------------------------------------------------------------
 void Simulator::parseCollisions(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
@@ -182,15 +183,16 @@ void Simulator::parseCollisions(void)
 	else
 		p1->groundConstantSet = false;
 	if (groundCheck && !gameStart)
-		gameStart = true;
-
+	{
+		giveDisk = true;
+	}
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
 	{
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
 		soundedJump = false;
 	}
 }
-
+//-------------------------------------------------------------------------------------
 void Simulator::setCamera(PlayerCamera* pcam)
 {
 	if (Ogre::StringUtil::match(pcam->name, "P1Cam", true))
@@ -198,6 +200,7 @@ void Simulator::setCamera(PlayerCamera* pcam)
 	if (Ogre::StringUtil::match(pcam->name, "P2Cam", true))
 		this->player2Cam = pcam;
 }
+//-------------------------------------------------------------------------------------
 void Simulator::setPlayer(Player* p)
 {
 	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player1", true))
@@ -205,6 +208,7 @@ void Simulator::setPlayer(Player* p)
 	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player2", true))
 		this->p2 = p;
 }
+//-------------------------------------------------------------------------------------
 PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
 {
 	if (Ogre::StringUtil::match(name, "P1Cam", true))
@@ -212,6 +216,7 @@ PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
 	if (Ogre::StringUtil::match(name, "P2Cam", true))
 		return this->player2Cam;
 }
+//-------------------------------------------------------------------------------------
 void Simulator::toggleViewChange(Ogre::String name)
 {
 	if (Ogre::StringUtil::match(name, "Player1", true))
@@ -219,10 +224,12 @@ void Simulator::toggleViewChange(Ogre::String name)
 	if (Ogre::StringUtil::match(name, "Player2", true))
 		viewChangeP2 = !viewChangeP2;
 }
+//-------------------------------------------------------------------------------------
 void Simulator::setThrowFlag()
 {
 	throwFlag = !throwFlag;
 }
+//-------------------------------------------------------------------------------------
 void Simulator::performThrow(Player* p)
 {
    	Disk *d = p->getPlayerDisk();	
@@ -232,8 +239,6 @@ void Simulator::performThrow(Player* p)
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
     	Ogre::Vector3 toParentPosition = d->getSceneNode()->_getDerivedPosition();
-    	p->setHolding();
-		// rotate disk node here
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
 		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
@@ -253,6 +258,7 @@ void Simulator::performThrow(Player* p)
 
 		throwFlag = false;
 		player1CanCatch = false; 
+    	p->setHolding();
     }
     else // Update position relative to the Player
     {
@@ -267,12 +273,14 @@ void Simulator::performThrow(Player* p)
 		d->getBody()->setCenterOfMassTransform(transform);
     }
 }
+//-------------------------------------------------------------------------------------
 int Simulator::tallyScore(void)
 {
 	int tmpScore = score;
 	score = 0;
 	return tmpScore;
 }
+//-------------------------------------------------------------------------------------
 void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
 	// Wall
@@ -292,7 +300,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
-		if (!player1CanCatch)
+		if (!player1CanCatch && p1->checkHolding())
 			player1CanCatch = true;
 	}
 	// Player
@@ -300,6 +308,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (((Player*)o)->checkHolding() == false && player1CanCatch)
 		{
+			gameStart = true;
 			((Player*)o)->attachDisk((Disk*)disk);
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
@@ -323,7 +332,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		}
 	}
 }
-
+//-------------------------------------------------------------------------------------
 void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::String wallName)
 {
 	if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
@@ -351,11 +360,12 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 	d->setOldVelocity(currVelocity);
 	d->needsOrientationUpdate = false;
 }
-
+//-------------------------------------------------------------------------------------
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
 {
 
 }
+//-------------------------------------------------------------------------------------
 void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime)
 {
 	if (cam->name == "P1Cam")
@@ -399,6 +409,7 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 		}
 	}
 }
+//-------------------------------------------------------------------------------------
 bool Simulator::checkGameStart()
 {
 	return gameStart;

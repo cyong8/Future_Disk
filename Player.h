@@ -8,7 +8,7 @@ class Disk;
 class Player : public GameObject
 {
 public:
-	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition);
+	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition, Ogre::String side);
 
 	void setHolding(void); // Set whether the player is holding the disk
 	bool checkHolding(void); // Check if the player is holding the disk
@@ -23,6 +23,7 @@ public:
 	void setGroundY(float y);
 	Ogre::Real getGroundY(void);
 	bool performJump(void);
+	Ogre::String checkPlayerSide(void);
 	bool groundConstantSet;
 	Ogre::Real jumpFactor;
 
@@ -34,6 +35,7 @@ protected:
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
 	Ogre::Real groundY;
 	Ogre::Real prevGroundY;
+	Ogre::String playerSide;	
 };
 
 #endif // #ifndef __Player_h_
