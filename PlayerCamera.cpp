@@ -68,6 +68,11 @@ void PlayerCamera::setPlayer(Player* player)
     p = player;
 }
 //-------------------------------------------------------------------------------------
+Player* PlayerCamera::getPlayer()
+{
+    return p;
+}
+//-------------------------------------------------------------------------------------
 bool PlayerCamera::isInAimMode()
 {
     return inAimMode;

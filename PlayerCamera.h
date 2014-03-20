@@ -23,11 +23,11 @@ public:
     void update(Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition);
     void toggleThirdPersonView(void);
     void setPlayer(Player* player);
+    Player* getPlayer(void);
     bool isInAimMode(void);
     Ogre::Camera* getMCamera(void);
     void setCHOverlays(Ogre::Overlay* o, Ogre::Overlay* o2);
     Ogre::SceneNode* getPCamSceneNode(void);
-    
 
 	Ogre::String name;
     Ogre::Overlay* overlay;

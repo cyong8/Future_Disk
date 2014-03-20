@@ -13,7 +13,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle);
 
-	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
+	Ogre::Vector3 position = Ogre::Vector3(1.0f, 1.0f, 15.0f);
 	//Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);  FOR DISK
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);
 	thrownVelocity = btVector3(0.0f, 0.0f, 0.0f);

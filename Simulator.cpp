@@ -12,7 +12,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	viewChangeP1 = false;
 	viewChangeP2 = false;
 	throwFlag = false;
-	gameStart = false;
+	gameStart = true;
 	player1CanCatch = true;
 	giveDisk = false;
 	previousWallHit = "NULL";

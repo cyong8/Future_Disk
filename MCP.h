@@ -42,6 +42,8 @@ public:
 	Music* gameMusic;
 	
 	CEGUI::OgreRenderer* mRenderer;
+	
+	Ogre::ManualObject* trajectory;
 
 	MCP(void);
 	virtual ~MCP(void);
@@ -67,6 +69,7 @@ protected:
 	bool quit(const CEGUI::EventArgs &e);
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement(Player* p);
+	void showTrajectory(PlayerCamera* playCam);
 
 	Ogre::Light* pointLight;
 	Disk* gameDisk;
