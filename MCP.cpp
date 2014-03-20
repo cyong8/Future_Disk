@@ -585,15 +585,14 @@ void MCP::restrictPlayerMovement(Player* p)
 //-------------------------------------------------------------------------------------
 void MCP::showTrajectory(PlayerCamera* playCam)
 {
-    Ogre::Camera* cam = playCam->getMCamera();
     Ogre::Vector3 init_pos = playCam->getPlayer()->getSceneNode()->getPosition();
-    Ogre::Vector3 init_dir = cam->getDirection();
+    Ogre::Vector3 init_sight_pos = playCam->getPlayer()->getPlayerSightNode()->getPosition();
     
-    trajectory->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+    trajectory->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
     
     trajectory->position(init_pos);
-    trajectory->position(init_dir.x * 50.0f, init_dir.y * 50.0f, init_dir.z * 50.0f);
-    trajectory->position(init_dir.x + 40, init_dir.y + 200, init_dir.z + 140);
+    trajectory->position(init_sight_pos);
+    //trajectory->position(init_dir.x + 40, init_dir.y + 200, init_dir.z + 140);
     trajectory->end();   
     
     mSceneMgr->getRootSceneNode()->attachObject(trajectory);
