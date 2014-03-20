@@ -70,7 +70,7 @@ void MCP::createTargetModeScene()
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
-    trajectory = mSceneMgr->createManualObject("Line");
+    //trajectory = mSceneMgr->createManualObject("Line");
     
     /********************    LIGHTS     ********************/
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
@@ -130,7 +130,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             gameSimulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
             vKeyDown = true;
-            showTrajectory(pc);
+            //showTrajectory(pc);
         }
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown) // if 'v' is not pressed and was pressed last frame - exit aim mode
         {
@@ -138,8 +138,8 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             gameSimulator->toggleViewChange("Player1");
             pc->toggleThirdPersonView();
             vKeyDown = false;
-            mSceneMgr->getRootSceneNode()->detachObject(trajectory);
-            trajectory->clear();
+            //mSceneMgr->getRootSceneNode()->detachObject(trajectory);
+            //trajectory->clear();
         }
         if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Move into Boost mode
         {
@@ -228,11 +228,11 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 
         sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
         
-        if (p->checkHolding()) {
+        /*if (p->checkHolding()) {
             mSceneMgr->getRootSceneNode()->detachObject(trajectory);
             trajectory->clear();
             showTrajectory(pCam);
-        }
+        }*/
     }
     else
     {
@@ -583,7 +583,7 @@ void MCP::restrictPlayerMovement(Player* p)
         p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), 0.0f));
 }
 //-------------------------------------------------------------------------------------
-void MCP::showTrajectory(PlayerCamera* playCam)
+/*void MCP::showTrajectory(PlayerCamera* playCam)
 {
     Ogre::Vector3 init_pos = playCam->getPlayer()->getSceneNode()->getPosition();
     Ogre::Vector3 init_sight_pos = playCam->getPlayer()->getPlayerSightNode()->getPosition();
@@ -596,7 +596,7 @@ void MCP::showTrajectory(PlayerCamera* playCam)
     trajectory->end();   
     
     mSceneMgr->getRootSceneNode()->attachObject(trajectory);
-}
+}*/
 //-------------------------------------------------------------------------------------
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN

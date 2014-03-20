@@ -43,7 +43,7 @@ public:
 	
 	CEGUI::OgreRenderer* mRenderer;
 	
-	Ogre::ManualObject* trajectory;
+	//Ogre::ManualObject* trajectory;
 
 	MCP(void);
 	virtual ~MCP(void);
