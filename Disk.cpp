@@ -73,6 +73,7 @@ btVector3 Disk::getOldVelocity()
 {
 	return oldVelocity;
 }
+
 Ogre::String Disk::checkInitialPlayer()
 {
 	return initialPlayer;
