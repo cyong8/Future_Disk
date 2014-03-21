@@ -102,11 +102,15 @@ void Network::initializeConnection()
 	}
 	if (client)
 	{
-		if(SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum) == -1) // Connects to the listening host
-		{
-	    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
-	    	exit(1);
-		}
+		int wait;
+		// while (wait)
+		// {
+			if ((wait = SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum)) == -1) // Connects to the listening host
+			{
+		    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+		    	exit(1);
+			}
+		// }
 		TCP_playerSocket = SDLNet_TCP_Open(&serverIP);
 
 		if(!TCP_playerSocket) 
@@ -117,8 +121,7 @@ void Network::initializeConnection()
 		/* Player has to wait for Server to send packet - Info of UDP */
 		char portData[512];
 		int result = 0;
-		while (!result)
-			result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 512);
+		result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
 		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", portData);
