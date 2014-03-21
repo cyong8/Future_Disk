@@ -11,6 +11,7 @@ protected:
 	bool offWallRotation;
 	btVector3 thrownVelocity;
 	btVector3 oldVelocity;
+	Ogre::String initialPlayer;
 
 public:
 	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
@@ -22,6 +23,7 @@ public:
 	Ogre::ParticleSystem* tailParticle;
 	Ogre::SceneNode* particleNode;
 	bool needsOrientationUpdate;
+	Ogre::String checkInitialPlayer(void);
 };
 
 #endif // #ifndef __Disk_h_

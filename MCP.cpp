@@ -63,12 +63,10 @@ void MCP::createTargetModeScene()
     /********************  OBJECT CREATION  ********************/
     PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
-    (new Disk("Disk", mSceneMgr, gameSimulator, Ogre::Math::RangeRandom(0,1)))->addToSimulator(); 
-    (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(1.0f, 1.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
+    (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     
     /********************    LIGHTS     ********************/
@@ -88,6 +86,66 @@ void MCP::createTargetModeScene()
 void MCP::createMultiplayerModeScene()
 {
     
+}
+//-------------------------------------------------------------------------------------
+bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
+{
+    bool ret = BaseApplication::frameRenderingQueued(evt);
+    
+    if (mShutDown)
+        return false;
+    if(!gameStart && !gameOver) // Game not started
+    {
+        pauseLabel->hide();
+        mTrayMgr->removeWidgetFromTray(pauseLabel);
+        gameOverPanel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverPanel);          
+    }
+    else if(gameOver)
+    {
+        gameOverPanel->show();
+        mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
+        gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
+        if (gameStart)
+            gameOverScreen();
+        gameStart = false;
+    }
+    else // Game started
+    {
+        if(!gamePause)
+        {
+ 
+            if(!processUnbufferedInput(evt)) 
+                return false;
+            /*
+            if (hostPlayer != NULL)
+                restrictPlayerMovement(hostPlayer);
+            if (clientPlayer != NULL)
+                restrictPlayerMovement(clientPlayer);
+            */
+            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
+            gameSimulator->parseCollisions(); // check collisions
+            if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
+            {
+                (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,1)*/))->addToSimulator();
+                Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
+                d->particleNode->setVisible(true);
+            }
+            modifyScore(gameSimulator->tallyScore());
+            time_t currTime;
+            time(&currTime);
+            gameOver = updateTimer(currTime);
+            if (gameOver)
+                gameMusic->playMusic("Pause");
+        }
+        else
+        {
+            time_t pcurrTime;
+            time(&pcurrTime);
+            updatePauseTime(pcurrTime);
+        }
+    } 
+    return ret;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
@@ -251,57 +309,6 @@ bool MCP::mouseReleased(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
     return true;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
-{
-    bool ret = BaseApplication::frameRenderingQueued(evt);
-    
-    if (mShutDown)
-        return false;
-    if(!gameStart && !gameOver) // Game not started
-    {
-        pauseLabel->hide();
-        mTrayMgr->removeWidgetFromTray(pauseLabel);
-        gameOverPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverPanel);          
-    }
-    else if(gameOver)
-    {
-        gameOverPanel->show();
-        mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
-        gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
-        if (gameStart)
-            gameOverScreen();
-        gameStart = false;
-    }
-    else // Game started
-    {
-        if(!gamePause)
-        {
-            if(!processUnbufferedInput(evt)) 
-                return false;
-            if (hostPlayer != NULL)
-                restrictPlayerMovement(hostPlayer);
-            if (clientPlayer != NULL)
-                restrictPlayerMovement(clientPlayer);
-            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
-            gameSimulator->parseCollisions(); // check collisions
-            modifyScore(gameSimulator->tallyScore());
-            time_t currTime;
-            time(&currTime);
-            gameOver = updateTimer(currTime);
-            if (gameOver)
-                gameMusic->playMusic("Pause");
-        }
-        else
-        {
-            time_t pcurrTime;
-            time(&pcurrTime);
-            updatePauseTime(pcurrTime);
-        }
-    } 
-    return ret;
-}
-//-------------------------------------------------------------------------------------
 bool MCP::keyPressed(const OIS::KeyEvent &evt)
 {
 	CEGUI::System &sys = CEGUI::System::getSingleton();
@@ -319,14 +326,6 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
         case OIS::KC_M:
             gameMusic->toggleMute();
             break;
-        /*case OIS::KC_RETURN:
-            if (!gameStart)
-                startGame();
-            break;
-        case OIS::KC_NUMPADENTER:
-            if (!gameStart)
-                startGame();
-            break;*/
         case OIS::KC_P:
             togglePause();
             break;
@@ -346,8 +345,6 @@ bool MCP::startGame(const CEGUI::EventArgs &e)
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
     
-    Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
-    d->particleNode->setVisible(true);
     gameMusic->playMusic("Play");
     //startLabel->hide();
     //mTrayMgr->removeWidgetFromTray(startLabel);

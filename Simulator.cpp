@@ -14,8 +14,9 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	throwFlag = false;
 	gameStart = false;
 	player1CanCatch = true;
-	giveDisk = false;
 	previousWallHit = "NULL";
+	gameDisk = NULL;
+	setDisk = false;
 
 	gameMusic = music;
 	sceneMgr = mSceneMgr;
@@ -62,13 +63,19 @@ void Simulator::addObject (GameObject* o)
 		player1Cam->setPlayer((Player*)o);
 	}
 	if(o->typeName == "Disk")
-	{
+	{	
 		gameDisk = (Disk*)o;
-		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
-		o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-		o->getBody()->setRestitution(1.0f);
-		o->getBody()->setLinearVelocity(btVector3(0.0f, -5.0f, 0.0f));
+		printf("\n\n\n adding game disk\n\n\n");
+		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+		gameDisk->getBody()->setRestitution(1.0f);
+
+		Ogre::Vector3 toPlayerDirection = p1->getSceneNode()->getPosition().normalisedCopy();
+
+		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z));
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
+
+		// gameDisk->setThrownVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(15.0f, 15.0f, 15.0f));
 	}
 	if(o->typeName == "Target")
 	{
@@ -127,7 +134,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	if (p1)
 		// keep track of sight node position to reapply it after simulator is stepped 
 		sightPosBeforeSim1 = p1->getPlayerSightNode()->getPosition(); 
-	
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 
 	if (p1)
@@ -140,10 +146,13 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
         performThrow(p1);
 	else	// Speed disk back up in order to mimic inelasticity
 	{	
-		btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-		gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
-		if (gameDisk->needsOrientationUpdate)
-			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+		if (gameDisk != NULL)
+		{
+			btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+			gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
+			if (gameDisk->needsOrientationUpdate)
+				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+		}
 	}
 }
 //-------------------------------------------------------------------------------------
@@ -170,22 +179,20 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gA, gB);
 		else if (gB->typeName == "Disk")
 			handleDiskCollisions(gB, gA);
-		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor"))
+		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor") ||
+					(gA->typeName == "Player" && gB->getGameObjectName() == "Floor2") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor2"))
 		{
 			if (!groundCheck)
 				groundCheck = true;
 		}
-
 		contactManifold->clearManifold();
 	}
 	if (!groundCheck)
 		soundedJump = true;
 	else
 		p1->groundConstantSet = false;
-	if (groundCheck && !gameStart)
-	{
-		giveDisk = true;
-	}
+	if (groundCheck && gameDisk == NULL)
+    	setDisk = true;
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
 	{
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
@@ -257,7 +264,7 @@ void Simulator::performThrow(Player* p)
 		d->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
-		player1CanCatch = false; 
+		player1CanCatch = false;
     	p->setHolding();
     }
     else // Update position relative to the Player
@@ -300,7 +307,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
-		if (!player1CanCatch && p1->checkHolding())
+		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
 	}
 	// Player

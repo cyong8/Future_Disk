@@ -32,7 +32,6 @@ class Simulator
 		Player* p2;
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
-		Disk* gameDisk;
 		int score;
 		bool viewChangeP1;
 		bool viewChangeP2;
@@ -67,6 +66,8 @@ class Simulator
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
 		bool soundedJump;
+		Disk* gameDisk;
+		bool setDisk;
 };
 
 #endif // #ifndef __Simulator_h_
