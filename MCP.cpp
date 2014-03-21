@@ -90,11 +90,8 @@ void MCP::createMultiplayerModeScene_host()
     PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
-    (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 2
-    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    
+    (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side"))->addToSimulator(); // Create Player 2
+
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
@@ -113,6 +110,13 @@ void MCP::createMultiplayerModeScene_host()
 void MCP::createMultiplayerModeScene_client()
 {
     gameRoom = new Room(mSceneMgr, NULL, clientServerIdentifier);
+    PlayerCamera* pCam = new PlayerCamera("P2Cam", mSceneMgr, mCamera); 
+
+    new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
+    new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
+
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
+    mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
     // Create Light for room
     pointLight = mSceneMgr->createLight("pointLight");  // Point light
@@ -120,6 +124,8 @@ void MCP::createMultiplayerModeScene_client()
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
+    pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+    createOverlays(pCam);
 }
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
@@ -148,8 +154,26 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
+
     clientServerIdentifier = 0;
     gameNetwork = new Network(clientServerIdentifier, NULL); // Initialize Network
+
+    CEGUI::MouseCursor::getSingleton().hide();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+
+    gameMusic->playMusic("Play");
+
+    objectivePanel->hide();
+    instructPanel->hide();
+    mTrayMgr->removeWidgetFromTray(instructPanel);
+    mTrayMgr->removeWidgetFromTray(objectivePanel);
+    gameOverPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameStart = true;
+    gameOver = false;
+    score = 0;
+    time(&initTime);
 
     createMultiplayerModeScene_host();
     return true;
@@ -161,6 +185,23 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     {
         clientServerIdentifier = 1;
         gameNetwork = new Network(clientServerIdentifier, termArgs[1]); // Initialize Network
+
+        CEGUI::MouseCursor::getSingleton().hide();
+        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+        wmgr.destroyAllWindows();
+
+        gameMusic->playMusic("Play");
+
+        objectivePanel->hide();
+        instructPanel->hide();
+        mTrayMgr->removeWidgetFromTray(instructPanel);
+        mTrayMgr->removeWidgetFromTray(objectivePanel);
+        gameOverPanel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverPanel);
+        gameStart = true;
+        gameOver = false;
+        score = 0;
+        time(&initTime);
 
         createMultiplayerModeScene_client();
         return true;

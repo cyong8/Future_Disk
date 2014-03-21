@@ -80,7 +80,6 @@ void Network::initializeConnection()
 		}
 		std::ostringstream portData_ss;
 		portData_ss << UDP_portNum;
-		std::cout << portData_ss.str() << std::endl;
 		char portData[portData_ss.str().length()];
 		strcpy(portData, portData_ss.str().c_str());
 
@@ -126,7 +125,7 @@ void Network::initializeConnection()
 		result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
-		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", portData);
+		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
 		SDLNet_TCP_Close(TCP_playerSocket);
 	}
 }
@@ -180,8 +179,9 @@ void Network::acceptClient(char *data, TCPsocket* sock)
 {
 	int length = strlen(data) + 1;
 	TCP_serverSocket = SDLNet_TCP_Accept(*sock);
+
 	if (TCP_serverSocket == NULL)
 		return;
-	SDLNet_TCP_Send(TCP_serverSocket, &data, length);
+	SDLNet_TCP_Send(TCP_serverSocket, data, length);
 	playerIP = SDLNet_TCP_GetPeerAddress(TCP_serverSocket);
 }
