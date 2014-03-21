@@ -28,7 +28,16 @@ Network::Network(int sc_identifier, char* hostIP)
 //-------------------------------------------------------------------------------------
 Network::~Network()
 {
-	SDLNet_TCP_Close(TCP_serverSocket);
+	if (server == 1) // clean up server side
+	{
+		SDLNet_TCP_Close(TCP_serverSocket);
+		SDLNet_UDP_Close(serverSocket);
+	}
+	if (client == 1)	// clean up client side
+	{
+		SDLNet_TCP_Close(TCP_playerSocket);
+		SDLNet_UDP_Close(playerSocket);
+	}
 }
 //-------------------------------------------------------------------------------------
 void Network::initializeConnection()
@@ -63,13 +72,13 @@ void Network::initializeConnection()
 				break;
 			}
 		}
+		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
 		/* Check if the socket was opened correctly */
 		if(!serverSocket) 
 		{
 		    printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
 		    exit(2);
 		}
-
 		std::ostringstream portData_ss;
 		portData_ss << UDP_portNum;
 		char portData[portData_ss.str().length()];
@@ -106,10 +115,10 @@ void Network::initializeConnection()
 		    exit(2);
 		}
 		/* Player has to wait for Server to send packet - Info of UDP */
-		char portData[33];
+		char portData[512];
 		int result = 0;
 		while (!result)
-			result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 33);
+			result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
 		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", portData);
