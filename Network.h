@@ -16,7 +16,7 @@ enum enumKeyboard{};
 class Network
 {
 public:
-	Network(int sc_identifier);
+	Network(int sc_identifier, char* hostIP);
 	~Network();
 	void initializeConnection(void);
 	bool waitForPacket(void);
@@ -33,6 +33,7 @@ private:
 	UDPsocket playerSocket;
 	IPaddress serverIP;
 	IPaddress* playerIP;
+	char* serverIP_c;
 	int UDP_portNum;
 	int server; 
 	int client;

@@ -1,6 +1,6 @@
 #include "Network.h"
 
-Network::Network(int sc_identifier)
+Network::Network(int sc_identifier, char* hostIP)
 {
 	if (sc_identifier == 0) // Set as server
 	{
@@ -11,6 +11,7 @@ Network::Network(int sc_identifier)
 	{
 		server = 0;
 		client = 1;
+		serverIP_c = hostIP;
 	}
 
 	/*Initialize the network*/
@@ -32,7 +33,7 @@ Network::~Network()
 //-------------------------------------------------------------------------------------
 void Network::initializeConnection()
 {
-	SDLNet_SocketSet set;
+	SDLNet_SocketSet set = SDLNet_AllocSocketSet(2);
 	serverSocket = NULL;
 	if (server)
 	{
@@ -92,7 +93,7 @@ void Network::initializeConnection()
 	}
 	if (client)
 	{
-		if(SDLNet_ResolveHost(&serverIP, "localhost", TCP_portNum) == -1) // Connects to the listening host
+		if(SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum) == -1) // Connects to the listening host
 		{
 	    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 	    	exit(1);

@@ -148,7 +148,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
     clientServerIdentifier = 0;
-    gameNetwork = new Network(clientServerIdentifier); // Initialize Network
+    gameNetwork = new Network(clientServerIdentifier, NULL); // Initialize Network
 
     createMultiplayerModeScene_host();
     return true;
@@ -156,11 +156,16 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
-    clientServerIdentifier = 1;
-    gameNetwork = new Network(clientServerIdentifier); // Initialize Network
+    if (termArgs.size() == 2)
+    {
+        clientServerIdentifier = 1;
+        gameNetwork = new Network(clientServerIdentifier, termArgs[1]); // Initialize Network
 
-    createMultiplayerModeScene_client();
-    return true;
+        createMultiplayerModeScene_client();
+        return true;
+    }
+    else
+        return false;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
