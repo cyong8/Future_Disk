@@ -81,6 +81,7 @@ void Network::initializeConnection()
 		}
 		std::ostringstream portData_ss;
 		portData_ss << UDP_portNum;
+		std::cout << portData_ss.str() << std::endl;
 		char portData[portData_ss.str().length()];
 		strcpy(portData, portData_ss.str().c_str());
 		
