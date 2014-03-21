@@ -72,7 +72,6 @@ void Network::initializeConnection()
 				break;
 			}
 		}
-		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
 		/* Check if the socket was opened correctly */
 		if(!serverSocket) 
 		{
@@ -83,7 +82,9 @@ void Network::initializeConnection()
 		portData_ss << UDP_portNum;
 		char portData[portData_ss.str().length()];
 		strcpy(portData, portData_ss.str().c_str());
-		
+
+		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", portData);
+				
 		SDLNet_TCP_AddSocket(set, init_serverSocket);
 
 		int clientReady = SDLNet_CheckSockets(set, 60000);
