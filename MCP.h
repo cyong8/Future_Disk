@@ -37,6 +37,11 @@ public:
 	bool gameOver;
 	bool jumpFlag;
 	bool allowJumping;
+	int clientServerIdentifier;
+	vector<char*> termArgs;
+
+	// NETWORK OBJECT
+	Network* gameNetwork;
 
 	// MUSIC OBJECT
 	Music* gameMusic;

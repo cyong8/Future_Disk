@@ -24,6 +24,8 @@ public:
 	int getUDPPortNumber(void);
 	UDPsocket getServerSocket(void);
 	UDPsocket getPlayerSocket(void);
+	void setServer(void);
+	void setClient(void);
 
 private:
 	TCPsocket init_newServerSocket;

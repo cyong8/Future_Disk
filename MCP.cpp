@@ -32,17 +32,29 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    srand(time(0));
+    createGUI();
 
-    hostPlayer = NULL;
-    clientPlayer = NULL;
+    srand(time(0));
 
     gameMusic = new Music();    // Initialize Music
     gameMusic->playMusic("Start");
 
+    hostPlayer = NULL;
+    clientPlayer = NULL;
+
+    if (termArgs.size() == 1)
+        clientServerIdentifier = 0;
+    else if (termArgs.size() == 2 && termArgs[1] == "client")
+        clientServerIdentifier = 1;
+    else
+    {
+        printf("INVALID ")
+        return;
+    }
+
+    gameNetwork = new Network(clientServerIdentifier); // Initialize Network
+
     gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
-    
-    createGUI();
     
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -54,11 +66,10 @@ void MCP::createScene(void)
     /* Create room and store player bounds */
     gameRoom = new Room(mSceneMgr, gameSimulator);
 
-    createTargetModeScene();
-    //createMultiplayerModeScene();
+    createMultiplayerModeScene();
 }
 //-------------------------------------------------------------------------------------
-void MCP::createTargetModeScene()
+void MCP::createSoloModeScene()
 {
     /********************  OBJECT CREATION  ********************/
     PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
@@ -350,15 +361,15 @@ bool MCP::keyReleased(const OIS::KeyEvent &evt)
     return true;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::startGame(const CEGUI::EventArgs &e)
+bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
+    createSoloModeScene();
 	CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
     
     gameMusic->playMusic("Play");
-    //startLabel->hide();
-    //mTrayMgr->removeWidgetFromTray(startLabel);
+
     objectivePanel->hide();
     instructPanel->hide();
     mTrayMgr->removeWidgetFromTray(instructPanel);
@@ -375,11 +386,15 @@ bool MCP::startGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
+    clientServerIdentifier = 0;
+    createMultiplayerModeScene();
     return true;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
+    clientServerIdentifier = 1;
+    createMultiplayerModeScene();
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -507,7 +522,7 @@ void MCP::createGUI()
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
     CEGUI::Window *singlePlayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/SinglePlayerStartButton");
-    singlePlayerStart->setText("Single Player");
+    singlePlayerStart->setText("Solo Mode");
     singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     
@@ -523,7 +538,7 @@ void MCP::createGUI()
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
+    singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
     multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::createMultiplayerMenu, this));
 }
 //-------------------------------------------------------------------------------------
@@ -612,7 +627,11 @@ extern "C" {
     {
         // Create application object
         MCP app;
- 
+        for (int i = 0; i < argc; i++)
+        {
+            app.termArgs.push_back(argv[i]);
+        }
+
         try {
             app.go();
         } catch( Ogre::Exception& e ) {

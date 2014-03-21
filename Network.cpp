@@ -157,3 +157,11 @@ UDPsocket Network::getPlayerSocket()
 {
 	return playerSocket;
 }
+void Network::setServer(int i)
+{
+	server = i;
+}
+void Network::setClient(int i)
+{
+	client = i;
+}
