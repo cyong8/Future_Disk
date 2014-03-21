@@ -7,7 +7,7 @@ class Wall;
 class Room
 {
 public:
-	Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator);
+	Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident);
 	Ogre::Real getWidth(void);
 	Ogre::Real getHeight(void);
 	Ogre::Real getFloorLength(void);

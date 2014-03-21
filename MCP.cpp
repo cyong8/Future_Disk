@@ -54,7 +54,7 @@ void MCP::createSoloModeScene()
 {
     gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
 
-    gameRoom = new Room(mSceneMgr, gameSimulator);
+    gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
 
     /********************  OBJECT CREATION  ********************/
     PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
@@ -84,7 +84,7 @@ void MCP::createMultiplayerModeScene_host()
 {
     gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
 
-    gameRoom = new Room(mSceneMgr, gameSimulator);
+    gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
 
     /********************  OBJECT CREATION  ********************/
     PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
@@ -112,6 +112,7 @@ void MCP::createMultiplayerModeScene_host()
 //-------------------------------------------------------------------------------------
 void MCP::createMultiplayerModeScene_client()
 {
+    gameRoom = new Room(mSceneMgr, NULL, clientServerIdentifier);
 
     // Create Light for room
     pointLight = mSceneMgr->createLight("pointLight");  // Point light
