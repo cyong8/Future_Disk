@@ -55,8 +55,12 @@ public:
 
 protected:
 	virtual void createScene(void);
-	void createTargetModeScene(void);
-	void createMultiplayerModeScene(void);
+	void createSoloModeScene(void);
+	void createMultiplayerModeScene_host(void);
+	void createMultiplayerModeScene_client(void);
+	bool soloMode(const CEGUI::EventArgs &e);
+	bool hostGame(const CEGUI::EventArgs &e);
+	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
@@ -64,9 +68,7 @@ protected:
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
-	bool startGame(const CEGUI::EventArgs &e);
-	bool hostGame(const CEGUI::EventArgs &e);
-	bool joinGame(const CEGUI::EventArgs &e);
+
 	void togglePause(void);
 	void gameOverScreen(void);
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);

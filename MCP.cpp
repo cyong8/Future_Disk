@@ -42,35 +42,20 @@ void MCP::createScene(void)
     hostPlayer = NULL;
     clientPlayer = NULL;
 
-    if (termArgs.size() == 1)
-        clientServerIdentifier = 0;
-    else if (termArgs.size() == 2 && termArgs[1] == "client")
-        clientServerIdentifier = 1;
-    else
-    {
-        printf("INVALID ")
-        return;
-    }
-
-    gameNetwork = new Network(clientServerIdentifier); // Initialize Network
-
-    gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
-    
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
     gameStart = false;
     gameOver = false;
     vKeyDown = false;    
     mRotate = 0.1f;
-
-    /* Create room and store player bounds */
-    gameRoom = new Room(mSceneMgr, gameSimulator);
-
-    createMultiplayerModeScene();
 }
 //-------------------------------------------------------------------------------------
 void MCP::createSoloModeScene()
 {
+    gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
+
+    gameRoom = new Room(mSceneMgr, gameSimulator);
+
     /********************  OBJECT CREATION  ********************/
     PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
@@ -95,9 +80,87 @@ void MCP::createSoloModeScene()
     createOverlays(pCam);
 }
 //-------------------------------------------------------------------------------------
-void MCP::createMultiplayerModeScene()
+void MCP::createMultiplayerModeScene_host()
 {
+    gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
+
+    gameRoom = new Room(mSceneMgr, gameSimulator);
+
+    /********************  OBJECT CREATION  ********************/
+    PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
+    gameSimulator->setCamera(pCam); 
+    (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
+    (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 2
+    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
     
+    hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
+
+    mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
+    mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+    
+    pointLight = mSceneMgr->createLight("pointLight");  // Point light
+    pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setDiffuseColour(Ogre::ColourValue::White);
+    pointLight->setSpecularColour(Ogre::ColourValue::White);
+    pointLight->setVisible(true);
+    pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+    
+    createOverlays(pCam);
+}
+//-------------------------------------------------------------------------------------
+void MCP::createMultiplayerModeScene_client()
+{
+
+    // Create Light for room
+    pointLight = mSceneMgr->createLight("pointLight");  // Point light
+    pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setDiffuseColour(Ogre::ColourValue::White);
+    pointLight->setSpecularColour(Ogre::ColourValue::White);
+    pointLight->setVisible(true);
+}
+//-------------------------------------------------------------------------------------
+bool MCP::soloMode(const CEGUI::EventArgs &e)
+{
+    CEGUI::MouseCursor::getSingleton().hide();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+    
+    gameMusic->playMusic("Play");
+
+    objectivePanel->hide();
+    instructPanel->hide();
+    mTrayMgr->removeWidgetFromTray(instructPanel);
+    mTrayMgr->removeWidgetFromTray(objectivePanel);
+    gameOverPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameStart = true;
+    gameOver = false;
+    score = 0;
+    time(&initTime);
+
+    createSoloModeScene();
+    
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::hostGame(const CEGUI::EventArgs &e)
+{
+    clientServerIdentifier = 0;
+    gameNetwork = new Network(clientServerIdentifier); // Initialize Network
+
+    createMultiplayerModeScene_host();
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::joinGame(const CEGUI::EventArgs &e)
+{
+    clientServerIdentifier = 1;
+    gameNetwork = new Network(clientServerIdentifier); // Initialize Network
+
+    createMultiplayerModeScene_client();
+    return true;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -361,43 +424,6 @@ bool MCP::keyReleased(const OIS::KeyEvent &evt)
     return true;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::soloMode(const CEGUI::EventArgs &e)
-{
-    createSoloModeScene();
-	CEGUI::MouseCursor::getSingleton().hide();
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    
-    gameMusic->playMusic("Play");
-
-    objectivePanel->hide();
-    instructPanel->hide();
-    mTrayMgr->removeWidgetFromTray(instructPanel);
-    mTrayMgr->removeWidgetFromTray(objectivePanel);
-    gameOverPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameStart = true;
-    gameOver = false;
-    score = 0;
-    time(&initTime);
-    
-    return true;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::hostGame(const CEGUI::EventArgs &e)
-{
-    clientServerIdentifier = 0;
-    createMultiplayerModeScene();
-    return true;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::joinGame(const CEGUI::EventArgs &e)
-{
-    clientServerIdentifier = 1;
-    createMultiplayerModeScene();
-    return true;
-}
-//-------------------------------------------------------------------------------------
 void MCP::togglePause()
 {
     if (gamePause == true)  //leaving pause
@@ -465,7 +491,7 @@ void MCP::gameOverScreen()
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::startGame, this));
+    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
 }
 //-------------------------------------------------------------------------------------
 bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)

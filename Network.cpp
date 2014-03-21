@@ -21,25 +21,31 @@ Network::Network(int sc_identifier)
 		exit(1);
 	}
 
-	/* Initialize TCP connection between Client and Server and passes UDP port number */
+	/* Initialize TCP connection between Client and Server and pass UDP port number */
 	initializeConnection();
-	/* Close TCP Sockets now that UDP connection has been established */
+}
+//-------------------------------------------------------------------------------------
+Network::~Network()
+{
+	SDLNet_TCP_Close(TCP_serverSocket);
 }
 //-------------------------------------------------------------------------------------
 void Network::initializeConnection()
 {
+	SDLNet_SocketSet set;
+	serverSocket = NULL;
 	if (server)
 	{
 		TCPsocket init_serverSocket;
 
 		/* Initialize listening of the host for clients */
-		if (SDLNet_ResolveHost(serverIP, NULL, TCP_portNum) == -1) // NULL indicates listening
+		if (SDLNet_ResolveHost(&serverIP, NULL, TCP_portNum) == -1) // NULL indicates listening
 		{
 		    printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 		    exit(1);
 		}
 		/* Open the TCP connection with the server IP found above */
-		init_serverSocket = SDLNet_TCP_Open(serverIP);	
+		init_serverSocket = SDLNet_TCP_Open(&serverIP);	
 		if(!init_serverSocket) 
 		{
 		    printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
@@ -56,27 +62,6 @@ void Network::initializeConnection()
 				break;
 			}
 		}
-		char* portData;
-		std::ostringstream portData_ss;
-		portData_ss << UDP_portNum;
-		strcpy(portData, portData_ss.str().c_str());
-
-		while (init_newServerSocket == NULL) // While the host does not find a client
-		{
-			init_newServerSocket = SDLNet_TCP_Accept(init_serverSocket); // Binds a client to the server
-			if (init_newServerSocket)
-			{
-				if (playerIP = SDLNet_TCP_GetPeerAddress(init_newServerSocket))
-					printf("Host connected!");
-				else
-					fprintf(stderr, "SDLNet_TCP_GetPeerAddress: %s\n", SDLNet_GetError());
-			
-				/* Client bounded to init_newServerSocket - send a packet containing the UDP_portNum and serverIP */
-				int result = 0;				
-				while (!result)
-					result = SDLNet_TCP_Send(init_newServerSocket, portData, strlen(portData));
-			}
-		}		
 		/* Check if the socket was opened correctly */
 		if(!serverSocket) 
 		{
@@ -84,17 +69,37 @@ void Network::initializeConnection()
 		    exit(2);
 		}
 
+		std::ostringstream portData_ss;
+		portData_ss << UDP_portNum;
+		char portData[portData_ss.str().length()];
+		strcpy(portData, portData_ss.str().c_str());
+		
+		SDLNet_TCP_AddSocket(set, init_serverSocket);
+
+		int clientReady = SDLNet_CheckSockets(set, 60000);
+
+		if (clientReady == -1)
+		{
+			printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
+    		//most of the time this is a system error, where perror might help you.
+    		perror("SDLNet_CheckSockets");
+		}
+		else
+		{
+			acceptClient(portData, &init_serverSocket);
+		}	
 		SDLNet_TCP_Close(init_serverSocket);
 	}
 	if (client)
 	{
-		if(SDLNet_ResolveHost(serverIP, "localhost", TCP_portNum) == -1) // Connects to the listening host
+		if(SDLNet_ResolveHost(&serverIP, "localhost", TCP_portNum) == -1) // Connects to the listening host
 		{
 	    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 	    	exit(1);
 		}
-		init_playerSocket = SDLNet_TCP_Open(serverIP);
-		if(!init_playerSocket) 
+		TCP_playerSocket = SDLNet_TCP_Open(&serverIP);
+
+		if(!TCP_playerSocket) 
 		{
 		    printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
 		    exit(2);
@@ -103,12 +108,10 @@ void Network::initializeConnection()
 		char portData[33];
 		int result = 0;
 		while (!result)
-			result = SDLNet_TCP_Recv(init_playerSocket, portData, 33);
+			result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 33);
 		UDP_portNum = atoi(portData);
 
-		SDLNet_TCP_Close(init_playerSocket);
-
-
+		SDLNet_TCP_Close(TCP_playerSocket);
 	}
 }
 //-------------------------------------------------------------------------------------
@@ -157,11 +160,12 @@ UDPsocket Network::getPlayerSocket()
 {
 	return playerSocket;
 }
-void Network::setServer(int i)
+void Network::acceptClient(char *data, TCPsocket* sock)
 {
-	server = i;
-}
-void Network::setClient(int i)
-{
-	client = i;
+	int length = strlen(data) + 1;
+	TCP_serverSocket = SDLNet_TCP_Accept(*sock);
+	if (TCP_serverSocket == NULL)
+		return;
+	SDLNet_TCP_Send(TCP_serverSocket, &data, length);
+	playerIP = SDLNet_TCP_GetPeerAddress(TCP_serverSocket);
 }
