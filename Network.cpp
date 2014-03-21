@@ -175,6 +175,7 @@ UDPsocket Network::getPlayerSocket()
 {
 	return playerSocket;
 }
+//-------------------------------------------------------------------------------------
 void Network::acceptClient(char *data, TCPsocket* sock)
 {
 	int length = strlen(data) + 1;

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string>
 #include <sstream>
+#include <iostream>
 
 #define TCP_portNum 64669
 
