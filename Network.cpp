@@ -112,7 +112,7 @@ void Network::initializeConnection()
 			result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 33);
 		UDP_portNum = atoi(portData);
 
-		printf("UDP Port Number that will facilitate game transactions: %d\n", UDP_portNum);
+		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", portData);
 		SDLNet_TCP_Close(TCP_playerSocket);
 	}
 }
