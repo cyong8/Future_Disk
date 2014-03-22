@@ -42,14 +42,11 @@ public:
 
 	// NETWORK OBJECT
 	Network* gameNetwork;
-
 	// MUSIC OBJECT
 	Music* gameMusic;
 	
 	CEGUI::OgreRenderer* mRenderer;
-	
 	//Ogre::ManualObject* trajectory;
-
 	MCP(void);
 	virtual ~MCP(void);
 
@@ -63,6 +60,7 @@ protected:
 	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
+	bool frameRenderingQueued_client(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
@@ -82,6 +80,8 @@ protected:
 	Disk* gameDisk;
 	Player* hostPlayer;
 	Player* clientPlayer;
+	PlayerCamera* pCam;
+	int gameMode;
 };
 
 #endif // #ifndef __MCP_h_

@@ -57,7 +57,7 @@ void MCP::createSoloModeScene()
     gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
 
     /********************  OBJECT CREATION  ********************/
-    PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
+    pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
@@ -87,12 +87,13 @@ void MCP::createMultiplayerModeScene_host()
     gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
 
     /********************  OBJECT CREATION  ********************/
-    PlayerCamera* pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
+    pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side"))->addToSimulator(); // Create Player 2
 
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
+    clientPlayer = (Player*)gameSimulator->getGameObject("Player2");
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -110,10 +111,10 @@ void MCP::createMultiplayerModeScene_host()
 void MCP::createMultiplayerModeScene_client()
 {
     gameRoom = new Room(mSceneMgr, NULL, clientServerIdentifier);
-    PlayerCamera* pCam = new PlayerCamera("P2Cam", mSceneMgr, mCamera); 
+    pCam = new PlayerCamera("P2Cam", mSceneMgr, mCamera); 
 
-    new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
-    new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
+    hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
+    clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -124,16 +125,17 @@ void MCP::createMultiplayerModeScene_client()
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
-    pointLight->setPosition(Ogre::Vector3(0.0f, gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition().y, 0.0f));
+    pointLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getHeight()/2, 0.0f));
     createOverlays(pCam);
 }
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
+    gameMode = 0;
     CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
-    
+    clientServerIdentifier = 0;
     gameMusic->playMusic("Play");
 
     objectivePanel->hide();
@@ -154,7 +156,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
-
+    gameMode = 1;
     clientServerIdentifier = 0;
     gameNetwork = new Network(clientServerIdentifier, NULL); // Initialize Network
 
@@ -181,6 +183,7 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
+    gameMode = 1;
     if (termArgs.size() == 2)
     {
         clientServerIdentifier = 1;
@@ -213,7 +216,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     bool ret = BaseApplication::frameRenderingQueued(evt);
-    
+
     if (mShutDown)
         return false;
     if(!gameStart && !gameOver) // Game not started
@@ -236,39 +239,60 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(!gamePause)
         {
- 
-            if(!processUnbufferedInput(evt)) 
-                return false;
-            /*
-            if (hostPlayer != NULL)
-                restrictPlayerMovement(hostPlayer);
-            if (clientPlayer != NULL)
-                restrictPlayerMovement(clientPlayer);
-            */
-            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
-            gameSimulator->parseCollisions(); // check collisions
-            if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
+
+            if(gameMode = 0)
             {
-                (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,1)*/))->addToSimulator();
-                Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
-                d->particleNode->setVisible(true);
+                time_t currTime;
+                time(&currTime);
+                gameOver = updateTimer(currTime);
+                if (gameOver)
+                    gameMusic->playMusic("Pause");
+                else
+                {
+                    time_t pcurrTime;
+                    time(&pcurrTime);
+                    updatePauseTime(pcurrTime);
+                }
             }
-            modifyScore(gameSimulator->tallyScore());
-            time_t currTime;
-            time(&currTime);
-            gameOver = updateTimer(currTime);
-            if (gameOver)
-                gameMusic->playMusic("Pause");
+
+            if(clientServerIdentifier == 0)
+            {
+                if(!processUnbufferedInput(evt)) 
+                    return false;
+                /*
+                if (hostPlayer != NULL)
+                    restrictPlayerMovement(hostPlayer);
+                if (clientPlayer != NULL)
+                    restrictPlayerMovement(clientPlayer);
+                */
+
+                gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
+                gameSimulator->parseCollisions(); // check collisions
+                if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
+                {
+                    (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,1)*/))->addToSimulator();
+                    Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
+                    d->particleNode->setVisible(true);
+                }
+                modifyScore(gameSimulator->tallyScore());
+            }
+            else if (clientServerIdentifier = 1)
+            {
+                frameRenderingQueued_client(evt);
+            }     
         }
-        else
-        {
-            time_t pcurrTime;
-            time(&pcurrTime);
-            updatePauseTime(pcurrTime);
-        }
-    } 
+    }
     return ret;
 }
+
+bool MCP::frameRenderingQueued_client(const Ogre::FrameEvent& evt)
+{
+    //RECIEVE PACKETS?!
+    //INTERPRETS PACKET
+    //INDIVIDUAL BUFFER
+    //SENDs PACKETS
+}
+
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
@@ -387,8 +411,18 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
   	
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
-    Player* p = (Player*)gameSimulator->getGameObject("Player1");
-    PlayerCamera* pCam = gameSimulator->getPlayerCamera("P1Cam");
+
+    Player* p;
+    
+    if(clientServerIdentifier == 0)
+    {
+        p = hostPlayer;
+    }
+    if(clientServerIdentifier == 1)
+    {
+        p = clientPlayer;
+    }
+
     Ogre::SceneNode* pSceneNode = p->getSceneNode();
     Ogre::SceneNode* pSightNode = p->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = p->getPlayerCameraNode();
