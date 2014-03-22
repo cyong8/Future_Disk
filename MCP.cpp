@@ -423,11 +423,14 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     Ogre::SceneNode* pCamNode = p->getPlayerCameraNode();
     Ogre::Vector3 sightHeight;
 
+    btRigidBody* pBody;
+    btTransform transform;
+    btQuaternion rotationQ;
+
     if (clientServerIdentifier == 0)
     {
-        btRigidBody* pBody = p->getBody();
-        btTransform transform = pBody->getCenterOfMassTransform();
-        btQuaternion rotationQ;
+        pBody = p->getBody();
+        transform = pBody->getCenterOfMassTransform();
     }
 
     /* rotation working, but camera not following */
