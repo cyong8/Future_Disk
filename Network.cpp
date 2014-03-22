@@ -30,20 +30,20 @@ Network::~Network()
 {
 	if (server == 1) // clean up server side
 	{
-		SDLNet_TCP_Close(TCP_serverSocket);
-		SDLNet_UDP_Close(serverSocket);
+		SDLNet_TCP_Close(TCP_gameSocket);
+		SDLNet_UDP_Close(UDP_gameSocket);
 	}
 	if (client == 1)	// clean up client side
 	{
-		SDLNet_TCP_Close(TCP_playerSocket);
-		SDLNet_UDP_Close(playerSocket);
+		SDLNet_TCP_Close(TCP_gameSocket);
+		SDLNet_UDP_Close(UDP_gameSocket);
 	}
 }
 //-------------------------------------------------------------------------------------
 void Network::initializeConnection()
 {
 	SDLNet_SocketSet set = SDLNet_AllocSocketSet(2);
-	serverSocket = NULL;
+	UDP_gameSocket = NULL;
 	if (server)
 	{
 		TCPsocket init_serverSocket;
@@ -62,18 +62,18 @@ void Network::initializeConnection()
 		    exit(2);
 		}
 		/* Find the UDP Port number that will be used for game state transactions */
-		for (int i = 49152; (serverSocket == NULL) && i < 65536; ++i) // Look thru Dynamic/Private ports and open socket at first available
+		for (int i = 49152; (UDP_gameSocket == NULL) && i < 65536; ++i) // Look thru Dynamic/Private ports and open socket at first available
 		{
 			/* Open UDP socket with the free port above */
-			serverSocket = SDLNet_UDP_Open(i);		// Socket does not need to be binded to a channel; Open does this for UDP
-			if (serverSocket != NULL)				// Store the channel associated with the Socket; the player needs this
+			UDP_gameSocket = SDLNet_UDP_Open(i);		// Socket does not need to be binded to a channel; Open does this for UDP
+			if (UDP_gameSocket != NULL)				// Store the channel associated with the Socket; the player needs this
 			{
 				UDP_portNum = i;
 				break;
 			}
 		}
 		/* Check if the socket was opened correctly */
-		if(!serverSocket) 
+		if(!UDP_gameSocket) 
 		{
 		    printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
 		    exit(2);
@@ -112,9 +112,9 @@ void Network::initializeConnection()
 		    	exit(1);
 			}
 		// }
-		TCP_playerSocket = SDLNet_TCP_Open(&serverIP);
+		TCP_gameSocket = SDLNet_TCP_Open(&serverIP);
 
-		if(!TCP_playerSocket) 
+		if(!TCP_gameSocket) 
 		{
 		    printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
 		    exit(2);
@@ -122,43 +122,20 @@ void Network::initializeConnection()
 		/* Player has to wait for Server to send packet - Info of UDP */
 		char portData[512];
 		int result = 0;
-		result = SDLNet_TCP_Recv(TCP_playerSocket, portData, 512);
+		result = SDLNet_TCP_Recv(TCP_gameSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
 		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
-		SDLNet_TCP_Close(TCP_playerSocket);
-	}
-}
-//-------------------------------------------------------------------------------------
-bool Network::waitForPacket()
-{
-	UDPpacket* p;
-	if (!(p = SDLNet_AllocPacket(1024)))
-	{
-		fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
-	}
-	while (1)
-	{
-		if (SDLNet_UDP_Recv(serverSocket, p))
+
+		UDP_gameSocket = SDLNet_UDP_Open(UDP_portNum);		// Socket does not need to be binded to a channel; Open does this for UDP
+		if (UDP_gameSocket == NULL)				// Store the channel associated with the Socket; the player needs this
 		{
-			printf("UDP Packet incoming\n");
-			printf("\tChan:    %d\n", p->channel);
-			printf("\tData:    %s\n", (char *)p->data);
-			printf("\tLen:     %d\n", p->len);
-			printf("\tMaxlen:  %d\n", p->maxlen);
-			printf("\tStatus:  %d\n", p->status);
-			printf("\tAddress: %x %x\n", p->address.host, p->address.port);
-		}		
+		    printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		    exit(2);
+		}
+
+		SDLNet_TCP_Close(TCP_gameSocket);
 	}
-}
-//-------------------------------------------------------------------------------------
-void Network::readPacket(UDPpacket* p)
-{
-	/* Packet Notes:
-		- Apparently packets are not dropped unless they are larger than the buffer, so since we control
-		packets, we just have to make sure that the buffer is greater than the largest packet we will send
-		- Must close a packet after you are done using it; SDLNet_FreePacket(p);
-	*/
 }
 //-------------------------------------------------------------------------------------
 int Network::getUDPPortNumber()
@@ -166,23 +143,66 @@ int Network::getUDPPortNumber()
 	return UDP_portNum;
 }
 //-------------------------------------------------------------------------------------
-UDPsocket Network::getServerSocket()
+TCPsocket Network::getTCPSocket()
 {
-	return serverSocket;
+	return TCP_gameSocket;
 }
 //-------------------------------------------------------------------------------------
-UDPsocket Network::getPlayerSocket()
+UDPsocket Network::getUDPSocket()
 {
-	return playerSocket;
+	return UDP_gameSocket;
 }
 //-------------------------------------------------------------------------------------
 void Network::acceptClient(char *data, TCPsocket* sock)
 {
 	int length = strlen(data) + 1;
-	TCP_serverSocket = SDLNet_TCP_Accept(*sock);
+	TCP_gameSocket = SDLNet_TCP_Accept(*sock);
 
-	if (TCP_serverSocket == NULL)
+	if (TCP_gameSocket == NULL)
 		return;
-	SDLNet_TCP_Send(TCP_serverSocket, data, length);
-	playerIP = SDLNet_TCP_GetPeerAddress(TCP_serverSocket);
+	SDLNet_TCP_Send(TCP_gameSocket, data, length);
+	playerIP = SDLNet_TCP_GetPeerAddress(TCP_gameSocket);
+}
+//-------------------------------------------------------------------------------------
+void Network::sendPacket(MCP_Packet pack)
+{
+	int dataSize = sizeof(pack.sequence);
+	dataSize += sizeof(pack.id);
+	dataSize += sizeof(pack.X_coordinate);
+	dataSize += sizeof(pack.Y_coordinate);
+	dataSize += sizeof(pack.Z_coordinate);
+
+	(char*)&pack;
+
+	UDPpacket *p;
+	p = SDLNet_AllocPacket(dataSize + sizeof(UDPpacket));
+
+	p->len = dataSize + 1;
+
+	SDLNet_UDP_Send(sd, -1, p);
+	
+	if (client)
+	{
+		p->address.host = serverIP.host;	/* Set the destination host */
+		p->address.port = serverIP.port;	/* And destination port */
+
+		//SDLNet_UDP_Send()
+	}
+	if (server)
+	{
+		p->address.host = serverIP.host;	/* Set the destination host */
+		p->address.port = serverIP.port;	/* And destination port */
+	}
+}
+//-------------------------------------------------------------------------------------
+MCP_Packet Network::receivePacket()
+{
+	UDPpacket *p;
+	MCP_Packet pack;
+
+//	if (SDLNet_UDP_Recv(UDP_gameSocket, p))
+	{
+		
+	}
+	return pack;
 }

@@ -239,8 +239,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(!gamePause)
         {
-
-            if(gameMode = 0)
+            if(gameMode = 0)    // Limit Solo mode to option of pausing
             {
                 time_t currTime;
                 time(&currTime);
@@ -254,8 +253,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     updatePauseTime(pcurrTime);
                 }
             }
-
-            if(clientServerIdentifier == 0)
+            if(clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
             {
                 if(!processUnbufferedInput(evt)) 
                     return false;
@@ -265,12 +263,11 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if (clientPlayer != NULL)
                     restrictPlayerMovement(clientPlayer);
                 */
-
                 gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
                 gameSimulator->parseCollisions(); // check collisions
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
-                    (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,1)*/))->addToSimulator();
+                    (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
                     Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
                     d->particleNode->setVisible(true);
                 }
@@ -278,21 +275,39 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             }
             else if (clientServerIdentifier = 1)
             {
-                frameRenderingQueued_client(evt);
+                updateClient(evt);
             }     
         }
     }
     return ret;
 }
-
-bool MCP::frameRenderingQueued_client(const Ogre::FrameEvent& evt)
+//-------------------------------------------------------------------------------------
+bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
-    //RECIEVE PACKETS?!
+    MCP_Packet pack;
     //INTERPRETS PACKET
-    //INDIVIDUAL BUFFER
-    //SENDs PACKETS
-}
+    do 
+    {
+        pack = gameNetwork->receivePacket();
+        if (pack != NULL)
+            interpretPacket(pack);
+    }
+    while (pack != NULL);
 
+    
+    //INDIVIDUAL INPUT - SEND PACKETS
+    checkClientInput(evt);
+}
+//-------------------------------------------------------------------------------------
+bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
+{
+    return false;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::interpretPacket(MCP_Packet pack)
+{
+    return false;
+}
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {

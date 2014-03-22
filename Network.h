@@ -10,9 +10,14 @@
 
 #define TCP_portNum 64669
 
-enum enumGameObject{};
-enum enumKeyboard{};
-
+struct MCP_Packet
+{
+	char* sequence;
+	char* id;
+	char* X_coordinate;
+	char* Y_coordinate;
+	char* Z_coordinate;
+};
 
 class Network
 {
@@ -21,31 +26,22 @@ public:
 	~Network();
 	void initializeConnection(void);
 	bool waitForPacket(void);
-	void readPacket(UDPpacket* p);
 	int getUDPPortNumber(void);
-	UDPsocket getServerSocket(void);
-	UDPsocket getPlayerSocket(void);
+	TCPsocket getTCPSocket(void);
+	UDPsocket getUDPSocket(void);
 	void acceptClient(char* data, TCPsocket* sock);
+	void sendPacket(MCP_Packet pack);
+	MCP_Packet receivePacket(void);
 
 private:
-	TCPsocket TCP_serverSocket;
-	TCPsocket TCP_playerSocket;
-	UDPsocket serverSocket;
-	UDPsocket playerSocket;
+	TCPsocket TCP_gameSocket;
+	UDPsocket UDP_gameSocket;
 	IPaddress serverIP;
 	IPaddress* playerIP;
 	char* serverIP_c;
 	int UDP_portNum;
 	int server; 
 	int client;
-};
-
-struct Packet
-{
-	u_int8_t id;
-	u_int32_t X_coordinate;
-	u_int32_t Y_coordinate;
-	u_int32_t Z_coordinate;
 };
 
 #endif // #ifndef __Network_h_

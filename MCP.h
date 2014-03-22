@@ -60,7 +60,9 @@ protected:
 	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
-	bool frameRenderingQueued_client(const Ogre::FrameEvent& evt);
+	bool updateClient(const Ogre::FrameEvent& evt);
+	bool checkClientInput(const Ogre::FrameEvent& evt);
+	bool interpretPacket(MCP_Packet pack);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
