@@ -143,6 +143,12 @@ bool Network::establishConnection()
 		    exit(2);
 		}
 		UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, &serverIP);
+		if(UDP_channel == -1) 
+		{
+    		printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
+    		exit(2);
+		}
+
 		connectionEstablished = true;
 	}
 
@@ -161,10 +167,16 @@ void Network::acceptClient(char *data)
 		return;
 	}
 	SDLNet_TCP_Send(TCP_gameSocket, data, length);
-	playerIP = SDLNet_TCP_GetPeerAddress(TCP_gameSocket);
+	clientIP = SDLNet_TCP_GetPeerAddress(TCP_gameSocket);
 	printf("Client connected\n\n");
 	/* UDP socket is open; now we have the IP of the client, so we can bind */
-	UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, playerIP);
+	UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, clientIP);
+	if(UDP_channel == -1) 
+	{
+    	printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
+    	exit(2);
+	}
+
 	connectionEstablished = true;
 }
 //-------------------------------------------------------------------------------------
@@ -195,8 +207,8 @@ void Network::sendPacket(MCP_Packet pack)
 	}
 	if (server) /* Server sends data to client */
 	{
-		p->address.host = serverIP.host;	/* Set the destination host */
-		p->address.port = serverIP.port;	/* And destination port */
+		p->address.host = clientIP->host;	/* Set the destination host */
+		p->address.port = clientIP->port;	/* And destination port */
 		p->channel = UDP_channel;			/* Use the specified channel for the client IP */
 
 		int checkSent;

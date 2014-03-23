@@ -36,7 +36,7 @@ private:
 	TCPsocket TCP_gameSocket;
 	UDPsocket UDP_gameSocket;
 	IPaddress serverIP;
-	IPaddress* playerIP;
+	IPaddress* clientIP;
 	char* serverIP_c;
 	int UDP_portNum;
 	int UDP_channel;
