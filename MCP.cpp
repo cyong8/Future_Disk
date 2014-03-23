@@ -89,6 +89,7 @@ void MCP::createMultiplayerModeScene_host()
     /********************  OBJECT CREATION  ********************/
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
+
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side"))->addToSimulator(); // Create Player 2
 
@@ -126,6 +127,7 @@ void MCP::createMultiplayerModeScene_client()
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
     pointLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getHeight()/2, 0.0f));
+
     createOverlays(pCam);
 }
 //-------------------------------------------------------------------------------------
@@ -172,7 +174,6 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(objectivePanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameStart = true;
     gameOver = false;
     score = 0;
     time(&initTime);
@@ -201,7 +202,6 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
         mTrayMgr->removeWidgetFromTray(objectivePanel);
         gameOverPanel->hide();
         mTrayMgr->removeWidgetFromTray(gameOverPanel);
-        gameStart = true;
         gameOver = false;
         score = 0;
         time(&initTime);
@@ -219,6 +219,16 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if (mShutDown)
         return false;
+    if (gameMode == 1) // attempt to establish the connection
+    {
+        if (!gameNetwork->checkConnection())
+        {
+            if (!gameNetwork->establishConnection())
+                return true;
+            else 
+                gameStart = true;
+        }
+    }
     if(!gameStart && !gameOver) // Game not started
     {
         pauseLabel->hide();
@@ -239,7 +249,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     {
         if(!gamePause)
         {
-            if(gameMode = 0)    // Limit Solo mode to option of pausing
+            if(gameMode == 0)    // Limit Solo mode to option of pausing
             {
                 time_t currTime;
                 time(&currTime);
@@ -284,12 +294,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
-    MCP_Packet pack;
+    MCP_Packet* pack;
     //INTERPRETS PACKET
     do 
     {
         pack = gameNetwork->receivePacket();
-        if (pack != NULL)
+        if (pack == NULL)
             interpretPacket(pack);
     }
     while (pack != NULL);
@@ -304,7 +314,7 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
     return false;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::interpretPacket(MCP_Packet pack)
+bool MCP::interpretPacket(MCP_Packet* pack)
 {
     return false;
 }
@@ -638,7 +648,7 @@ void MCP::createGUI()
     
     CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
     CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
-    CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(0,0));
+    CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(mWindow->getWidth()/2, mWindow->getHeight()/2));
     
     CEGUI::MouseCursor::getSingleton().show();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
