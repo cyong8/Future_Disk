@@ -269,7 +269,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if(!processUnbufferedInput(evt)) 
                     return false;
-                checkUpdatesForClient();
+                constructAndSendGameState();
                 /*
                 if (hostPlayer != NULL)
                     restrictPlayerMovement(hostPlayer);
@@ -297,22 +297,22 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::constructAndSendGameState()
 {
-    MCP_Packet* pack;
+    MCP_Packet pack;
     // Update hostPlayer
-    pack->sequence = NULL;  // for now
-    pack->id = 'h';
-    pack->x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
-    pack->y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
-    pack->z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.sequence = NULL;  // for now
+    pack.id = 'h';
+    pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
 
     gameNetwork->sendPacket(pack);
 
     // Update clientPlayer
-    pack->sequence = NULL;  // for now
-    pack->id = 'c';
-    pack->x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
-    pack->y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
-    pack->z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.sequence = NULL;  // for now
+    pack.id = 'c';
+    pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
 
     gameNetwork->sendPacket(pack);
 }

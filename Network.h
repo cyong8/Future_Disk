@@ -12,9 +12,9 @@ struct MCP_Packet
 {
 	char* sequence;		// Max = 2 Bytes - 16 Bits
 	char id;			// Max = 2 Bytes - 16 Bits
-	float X_coordinate;	// Max = 4 Bytes - 32 Bits
-	float Y_coordinate;
-	float Z_coordinate;
+	float x_coordinate;	// Max = 4 Bytes - 32 Bits
+	float y_coordinate;
+	float z_coordinate;
 };						// Max Total = 16 Bytes - Must alloc at least 16 Bytes for buffer
 
 class Network
@@ -39,6 +39,7 @@ private:
 	IPaddress* playerIP;
 	char* serverIP_c;
 	int UDP_portNum;
+	int UDP_channel;
 	Uint16 TCP_portNum;
 	int server; 
 	int client;
