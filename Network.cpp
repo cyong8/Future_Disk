@@ -113,9 +113,9 @@ bool Network::establishConnection()
 	{
 		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", serverIP_c);
 		
-		if (SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum) == -1) // Connects to the listening host
+		if (SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum) < 0) // Connects to the listening host
 		{
-	    	//printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
+	    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 	    	return false;
 		}
 		
@@ -191,8 +191,8 @@ void Network::sendPacket(MCP_Packet pack)
 	}
 	if (server) /* Server sends data to client */
 	{
-		p->address.host = serverIP.host;	/* Set the destination host */
-		p->address.port = serverIP.port;	/* And destination port */
+		p->address.host = playerIP->host;	/* Set the destination host */
+		p->address.port = playerIP->port;	/* And destination port */
 
 		int checkSent;
 		checkSent = SDLNet_UDP_Send(UDP_gameSocket, -1, p);
@@ -204,7 +204,7 @@ void Network::sendPacket(MCP_Packet pack)
 //-------------------------------------------------------------------------------------
 MCP_Packet* Network::receivePacket()
 {
-	MCP_Packet* pack;
+	MCP_Packet* pack = NULL;
 	UDPpacket *p;
 	
 	if (!(p = SDLNet_AllocPacket(maxPacketSize)))
@@ -213,7 +213,7 @@ MCP_Packet* Network::receivePacket()
 		exit(EXIT_FAILURE);
 	}
 	if (SDLNet_UDP_Recv(UDP_gameSocket, p))
-		p->data = (Uint8*)&pack;
+		pack = (MCP_Packet*)p->data;
 
 	return pack;
 }

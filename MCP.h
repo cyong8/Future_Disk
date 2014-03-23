@@ -60,6 +60,7 @@ protected:
 	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
+	bool constructAndSendGameState();
 	bool updateClient(const Ogre::FrameEvent& evt);
 	bool checkClientInput(const Ogre::FrameEvent& evt);
 	bool interpretPacket(MCP_Packet* pack);
@@ -79,9 +80,9 @@ protected:
 	void showTrajectory(PlayerCamera* playCam);
 
 	Ogre::Light* pointLight;
-	Disk* gameDisk;
-	Player* hostPlayer;
-	Player* clientPlayer;
+	Disk* gameDisk;			// 'd'
+	Player* hostPlayer;		// 'h'
+	Player* clientPlayer;	// 'c'
 	PlayerCamera* pCam;
 	int gameMode;
 };
