@@ -383,8 +383,6 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 
 			if(player1Cam->isInAimMode()) // Go into Aim view
 				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			
-
 			else // Return from Aim view
 				player1Cam->initializePosition(p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 		}
@@ -394,25 +392,6 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 			else
 				player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());			
-		}
-	}
-	if (cam->name == "P2Cam")
-	{
-		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
-		{
-			toggleViewChange(p2->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
-
-			if(player1Cam->isInAimMode()) // Go into Aim view
-				player1Cam->initializePosition(((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
-			else // Return from Aim view
-				player1Cam->initializePosition(p2->getPlayerCameraNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
-		}
-		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
-		{
-			if (player1Cam->isInAimMode())
-				player1Cam->update(elapseTime, ((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
-			else
-				player1Cam->update(elapseTime,p2->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
 }
