@@ -61,6 +61,7 @@ class BaseApplication : public Ogre::FrameListener, public Ogre::WindowEventList
 #endif
 {
 public:
+    vector<char*> termArgs;
     BaseApplication(void);
     virtual ~BaseApplication(void);
 

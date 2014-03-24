@@ -37,29 +37,40 @@ public:
 	bool gameOver;
 	bool jumpFlag;
 	bool allowJumping;
+	int clientServerIdentifier;
+	vector<char*> termArgs;
 
+	// NETWORK OBJECT
+	Network* gameNetwork;
 	// MUSIC OBJECT
 	Music* gameMusic;
 	
 	CEGUI::OgreRenderer* mRenderer;
-
+	//Ogre::ManualObject* trajectory;
 	MCP(void);
 	virtual ~MCP(void);
 
 protected:
 	virtual void createScene(void);
-	void createTargetModeScene(void);
-	void createMultiplayerModeScene(void);
+	void createSoloModeScene(void);
+	void createMultiplayerModeScene_host(void);
+	void createMultiplayerModeScene_client(void);
+	bool soloMode(const CEGUI::EventArgs &e);
+	bool hostGame(const CEGUI::EventArgs &e);
+	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
+	bool constructAndSendGameState(void);
+	bool updateClient(const Ogre::FrameEvent& evt);
+	bool checkClientInput(const Ogre::FrameEvent& evt);
+	bool interpretPacket(MCP_Packet pack);
+	bool processUnbufferedClientInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
-	bool startGame(const CEGUI::EventArgs &e);
-	bool hostGame(const CEGUI::EventArgs &e);
-	bool joinGame(const CEGUI::EventArgs &e);
+
 	void togglePause(void);
 	void gameOverScreen(void);
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
@@ -67,11 +78,15 @@ protected:
 	bool quit(const CEGUI::EventArgs &e);
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement(Player* p);
+	void showTrajectory(PlayerCamera* playCam);
 
 	Ogre::Light* pointLight;
-	Disk* gameDisk;
-	Player* hostPlayer;
-	Player* clientPlayer;
+	Disk* gameDisk;			// 'd'
+	Player* hostPlayer;		// 'h'
+	Player* clientPlayer;	// 'c'
+	PlayerCamera* pCam;
+	int gameMode;
+	int sceneRendered;
 };
 
 #endif // #ifndef __MCP_h_

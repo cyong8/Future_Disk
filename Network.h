@@ -6,43 +6,45 @@
 #include <stdlib.h>
 #include <string>
 #include <sstream>
+#include <iostream>
 
-#define TCP_portNum 64669
-
-enum enumGameObject{};
-enum enumKeyboard{};
-
+struct MCP_Packet
+{
+	char sequence;		// Max = 2 Bytes - 16 Bits
+	char id;			// Max = 2 Bytes - 16 Bits
+	float x_coordinate;	// Max = 4 Bytes - 32 Bits
+	float y_coordinate;
+	float z_coordinate;
+};						// Max Total = 16 Bytes - Must alloc at least 16 Bytes for buffer
 
 class Network
 {
 public:
-	Network(int sc_identifier);
+	Network(int sc_identifier, char* hostIP);
 	~Network();
-	void initializeConnection(void);
+	void initializeSockets(void);
+	bool establishConnection(void);
 	bool waitForPacket(void);
-	void readPacket(UDPpacket* p);
-	int getUDPPortNumber(void);
-	UDPsocket getServerSocket(void);
-	UDPsocket getPlayerSocket(void);
+	void acceptClient(char* data);
+	void sendPacket(MCP_Packet pack);
+	MCP_Packet receivePacket(void);
+	bool checkConnection(void);
 
 private:
-	TCPsocket init_newServerSocket;
-	TCPsocket init_playerSocket;
-	UDPsocket serverSocket;
-	UDPsocket playerSocket;
-	IPaddress* serverIP;
-	IPaddress* playerIP;
+	SDLNet_SocketSet i_set;
+	TCPsocket init_serverSocket;
+	TCPsocket TCP_gameSocket;
+	UDPsocket UDP_gameSocket;
+	IPaddress serverIP;
+	IPaddress* clientIP;
+	char* serverIP_c;
 	int UDP_portNum;
+	int UDP_channel;
+	Uint16 TCP_portNum;
 	int server; 
 	int client;
-};
-
-struct Packet
-{
-	u_int8_t id;
-	u_int32_t X_coordinate;
-	u_int32_t Y_coordinate;
-	u_int32_t Z_coordinate;
+	int maxPacketSize;
+	bool connectionEstablished;
 };
 
 #endif // #ifndef __Network_h_

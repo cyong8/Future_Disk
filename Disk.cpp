@@ -13,11 +13,14 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle);
 
-	Ogre::Vector3 position = Ogre::Vector3(-3.0f, 0.0f, 0.0f);
-	//Ogre::Vector3 disk_dimensions = Ogre::Vector3(0.5f, 0.01f, 0.5f);  FOR DISK
+	if (dropToPlayer = 0.0f)
+		initialPlayer = "Player1";
+	if (dropToPlayer = 1.0f)
+		initialPlayer = "Player2";
+
+	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);
-	thrownVelocity = btVector3(0.0f, 0.0f, 0.0f);
-	diskDirection = Ogre::Vector3(0.0f, 0.0f, -1.0f);
+
 	particleNode->setVisible(false);
 	
 	typeName = "Disk";
@@ -42,7 +45,6 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 void Disk::setThrownVelocity(btVector3 v)
 {
 	thrownVelocity = v;
-	oldVelocity = v;
 
 	btTransform dTrans = body->getCenterOfMassTransform();
 	Ogre::Vector3 dPos = Ogre::Vector3(rootNode->getPosition().x, rootNode->getPosition().y, 0.0f);
@@ -70,4 +72,9 @@ void Disk::setOldVelocity(btVector3 v)
 btVector3 Disk::getOldVelocity()
 {
 	return oldVelocity;
+}
+
+Ogre::String Disk::checkInitialPlayer()
+{
+	return initialPlayer;
 }
