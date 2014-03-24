@@ -121,7 +121,6 @@ void MCP::createMultiplayerModeScene_client()
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
 
-
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
@@ -291,8 +290,8 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
-                    Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
-                    d->particleNode->setVisible(true);
+                    gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
+                    gameDisk->particleNode->setVisible(true);
                 }
                 modifyScore(gameSimulator->tallyScore());
             }
@@ -345,8 +344,8 @@ bool MCP::constructAndSendGameState()
         pack.sequence = 'i';
         pack.id = 'd';
         pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
         pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
     }
 
@@ -424,7 +423,10 @@ bool MCP::interpretPacket(MCP_Packet pack)
     if (pack.id == 'd')
     {
         if (gameDisk == NULL)
-            gameDisk = new Disk("Disk", mSceneMgr, NULL, -1.0f);
+        {
+            gameDisk = new Disk("Disk", mSceneMgr, gameSimulator, -1.0f);
+            gameDisk->particleNode->setVisible(true);
+        }
 
         gameDisk->getSceneNode()->_setDerivedPosition(newPos);
         gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
