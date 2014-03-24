@@ -239,7 +239,7 @@ MCP_Packet Network::receivePacket()
 	char buff[maxPacketSize];
 	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, maxPacketSize) <= 0)
 	{
-		pack.id = 'n';
+		pack.sequence = 'n';
 		return pack;
 	}
 	/* UDP Packet/Sockets not working - Doing TCP for now */

@@ -276,7 +276,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                     constructAndSendGameState();
-
                 /*
                 if (hostPlayer != NULL)
                     restrictPlayerMovement(hostPlayer);
@@ -306,18 +305,25 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     return ret;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::constructAndSendGameState()
+bool MCP::constructAndSendGameState()   
 {
+    /* Construct/Update/Send Packets containing Position/Orientation of:
+         Disk, 
+         hostPlayer, 
+         clientPlayer
+     */
     MCP_Packet pack;
     int packetSize = 0;
+
     // Update hostPlayer
     pack.sequence = 'i';  // for now
     pack.id = 'h';
     pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.orientationQ = hostPlayer->getSceneNode()->_getDerivedOrientation();
 
-    gameNetwork->sendPacket(pack);    
+    gameNetwork->sendPacket(pack);  // Send Player
 
     // Update clientPlayer
     pack.sequence = 'i';  // for now
@@ -325,9 +331,20 @@ bool MCP::constructAndSendGameState()
     pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
 
-    gameNetwork->sendPacket(pack);
+    gameNetwork->sendPacket(pack);  // Send Player
 
+    pack.sequence = 'i';
+    pack.id = 'd';
+    pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+    pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+    pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+
+    gameNetwork->sendPacket(pack);  // Send Disk
+
+    /* Signify end of frame data */
     pack.sequence = 'n';
 
     gameNetwork->sendPacket(pack);
@@ -357,17 +374,28 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
 bool MCP::interpretPacket(MCP_Packet pack)
 {
     Ogre::Vector3 newPos;
+    Ogre::Quaternion newQuat;
     newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
+    newQuat = pack.orientationQ;
 
     if (pack.id == 'h')
+    {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
-
+        hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
     if (pack.id == 'c')   
+    {
         clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
+        clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
+    if (pack.id == 'd')
+    {
+        gameDisk->getSceneNode()->_setDerivedPosition(newPos);
+        gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
 
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
-    printf("INTERPRETTING!!!!\n\n\n");
 
     return true;
 }
