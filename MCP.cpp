@@ -118,6 +118,9 @@ void MCP::createMultiplayerModeScene_client()
     hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
     clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
 
+    pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    pCam->setPlayer(clientPlayer);
+
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
@@ -299,7 +302,10 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     return false;
 
                 if (sceneRendered)
+                {
                     updateClient(evt);
+                    updateClientCamera(evt.timeSinceLastFrame);
+                }
             }     
         }
     }
@@ -342,12 +348,40 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
     pack = gameNetwork->receivePacket();
     while (pack.sequence != 'n')
     {
+        if (mShutDown)
+            exit(2);
         interpretPacket(pack);
         pack = gameNetwork->receivePacket();
     }
     //INDIVIDUAL INPUT - SEND PACKETS
     checkClientInput(evt);
 }
+
+//-------------------------------------------------------------------------------------
+void MCP::updateClientCamera(Ogre::Real elapseTime)
+{
+    if (clientViewMode) // View was toggled; now check what view it needs to be changed to
+    {
+        clientViewMode = !clientViewMode;
+
+        if(pCam->isInAimMode()) // Go into Aim view
+            pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        
+
+        else // Return from Aim view
+            pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+    {
+        if (pCam->isInAimMode())
+            pCam->update(elapseTime,clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        else
+            pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
+    }
+}
+
+
+
 //-------------------------------------------------------------------------------------
 bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
 {
