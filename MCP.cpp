@@ -27,7 +27,7 @@ MCP::~MCP(void)
 {
     gameMusic->musicDone();
     gameMusic = NULL;
-	delete mRoot;
+    delete mRoot;
 }
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
@@ -41,6 +41,7 @@ void MCP::createScene(void)
 
     hostPlayer = NULL;
     clientPlayer = NULL;
+    gameDisk = NULL;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -117,9 +118,9 @@ void MCP::createMultiplayerModeScene_client()
 
     hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
     clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
-
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
+
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -295,14 +296,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 }
                 modifyScore(gameSimulator->tallyScore());
             }
-            else if (clientServerIdentifier = 1)    // Client render loop - Specific processing of inputs
+            else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
             {
-                if(!processUnbufferedClientInput(evt)) 
-                    return false;
-
                 if (sceneRendered)
                 {
-                    updateClient(evt);
+                    if (!updateClient(evt))
+                        return false;
                     updateClientCamera(evt.timeSinceLastFrame);
                 }
             }     
@@ -341,12 +340,15 @@ bool MCP::constructAndSendGameState()
 
     gameNetwork->sendPacket(pack);  // Send Player
 
-    pack.sequence = 'i';
-    pack.id = 'd';
-    pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-    pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-    pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+    if (gameDisk != NULL)
+    {
+        pack.sequence = 'i';
+        pack.id = 'd';
+        pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+    }
 
     gameNetwork->sendPacket(pack);  // Send Disk
 
@@ -365,26 +367,21 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
     pack = gameNetwork->receivePacket();
     while (pack.sequence != 'n')
     {
-        if (mShutDown)
-            exit(2);
         interpretPacket(pack);
         pack = gameNetwork->receivePacket();
     }
     //INDIVIDUAL INPUT - SEND PACKETS
-    checkClientInput(evt);
+    return checkClientInput(evt);
 }
-
 //-------------------------------------------------------------------------------------
 void MCP::updateClientCamera(Ogre::Real elapseTime)
 {
     if (clientViewMode) // View was toggled; now check what view it needs to be changed to
     {
         clientViewMode = !clientViewMode;
-
         if(pCam->isInAimMode()) // Go into Aim view
             pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
         
-
         else // Return from Aim view
             pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
@@ -396,13 +393,15 @@ void MCP::updateClientCamera(Ogre::Real elapseTime)
             pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
     }
 }
-
-
-
 //-------------------------------------------------------------------------------------
 bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
 {
-    return false;
+    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    {
+        mShutDown = true;
+        return false;
+    }
+    return true;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::interpretPacket(MCP_Packet pack)
@@ -420,27 +419,21 @@ bool MCP::interpretPacket(MCP_Packet pack)
     if (pack.id == 'c')   
     {
         clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
-        clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+        // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
     }
     if (pack.id == 'd')
     {
+        if (gameDisk == NULL)
+            gameDisk = new Disk("Disk", mSceneMgr, NULL, -1.0f);
+
         gameDisk->getSceneNode()->_setDerivedPosition(newPos);
         gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
+        gameDisk->getSceneNode()->needUpdate();
     }
 
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
 
-    return true;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::processUnbufferedClientInput(const Ogre::FrameEvent& evt)
-{
-    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-    {
-        mShutDown = true;
-        return false;
-    }
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -552,13 +545,13 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
-	CEGUI::System &sys = CEGUI::System::getSingleton();
-  	sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
-  	// Scroll wheel.
-  	if (evt.state.Z.rel){
-    	sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
-  	}
-  	
+    CEGUI::System &sys = CEGUI::System::getSingleton();
+    sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
+    // Scroll wheel.
+    if (evt.state.Z.rel){
+        sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
+    }
+    
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
 
@@ -632,7 +625,7 @@ bool MCP::mouseReleased(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
 //-------------------------------------------------------------------------------------
 bool MCP::keyPressed(const OIS::KeyEvent &evt)
 {
-	CEGUI::System &sys = CEGUI::System::getSingleton();
+    CEGUI::System &sys = CEGUI::System::getSingleton();
     sys.injectKeyDown(evt.key);
     sys.injectChar(evt.text);
     
@@ -664,10 +657,10 @@ void MCP::togglePause()
 {
     if (gamePause == true)  //leaving pause
     {
-    	CEGUI::MouseCursor::getSingleton().hide();
-    	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    	wmgr.destroyAllWindows();
-    	
+        CEGUI::MouseCursor::getSingleton().hide();
+        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+        wmgr.destroyAllWindows();
+        
         gameMusic->playMusic("Play");
         gamePause = false;
         pauseLabel->hide();
@@ -679,20 +672,20 @@ void MCP::togglePause()
     }
     else //entering Pause
     {
-    	CEGUI::MouseCursor::getSingleton().show();
-    	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    	CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
-    	
-    	CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/Pause/QuitButton");
-    	quit->setText("Quit Game");
-    	quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    	
-    	sheet->addChildWindow(quit);
-    	
-    	CEGUI::System::getSingleton().setGUISheet(sheet);
+        CEGUI::MouseCursor::getSingleton().show();
+        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+        CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
+        
+        CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/Pause/QuitButton");
+        quit->setText("Quit Game");
+        quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+        sheet->addChildWindow(quit);
+        
+        CEGUI::System::getSingleton().setGUISheet(sheet);
     
-    	quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    	
+        quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+        
         gameMusic->playMusic("Start");
         pauseLabel->setCaption("GAME PAUSED!");
         pauseLabel->show();
