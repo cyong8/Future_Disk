@@ -4,21 +4,43 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator)
 {
 	width = 30.0f;
 	height = 60.0f;
-	floorLength = 35.0f;
+	gapSize = 10.0f; 
+	floorLength =35.0f;
+	//floorLength = (height + width*2/3 - gapSize) / 2.0f;
 	Ogre::Real heightScalingFactor = 3.0f/4.0f;
 	Ogre::Vector3 position;
 	Ogre::Plane plane;
 	plane.d = 0;
+	//Ogre::Real tileSize = 5.0f;
+	//Ogre::Real tileNum = (floorLength * width)/tileSize;
 
-	/* Plane for Floor 1 */
+
+	// X position of the first tile for player1 is -width/2 + tileSize/2, y is 0 and z is gapsize/2 + floorLength - tileSize/2
+	//position = Ogre::Vector3((-width/2.0) + tileSize/2.0, 0.0, gapSize/2.0 + floorLength - tileSize/2.0);
+
+	/* Instead of a wall the floor is a collection of tiles */
+	//int i;
+	//for(i = 0; i < tileNum; i++)
+	{
+		//if(position.x >= width/2)
+		{
+			// reset x position and increment z position
+			//position.x = (-width/2) + tileSize/2;
+			//position.y = gapSize/2.0 + floorLength - tileSize/2 + tileSize;
+		}
+		//Tile *tile1 = new Tile("tile" + i, mSceneMgr, game_simulator, position, tileSize);
+		// Add tile to simulator
+		//tile1->addToSimulator();
+		// increment x position by tileSize
+		//position.x += tileSize;
+	}
+
+	/* Plane for 2nd player Floor */
 	plane.normal = Ogre::Vector3::UNIT_Y;
-	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, -height/2.0f - width/3.0f + floorLength/2.0f);
+	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, height/2.0f + width/3.0f - floorLength/2.0f);
 	Ogre::MeshManager::getSingleton().createPlane("Floor_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	width, floorLength, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Z);
 
-	(new Wall("Floor", "Floor_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength)))->addToSimulator();
-	
-	/* Plane for Floor 2 */
 	plane.normal = Ogre::Vector3::UNIT_Y;
 	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, height/2.0f + width/3.0f - floorLength/2.0f);
 	Ogre::MeshManager::getSingleton().createPlane("Floor2_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 

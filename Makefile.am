@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS= -I m4
-noinst_HEADERS = Network.h Simulator.h MCP.h PlayerCamera.h Player.h Disk.h Target.h Room.h  Wall.h GameObject.h OgreMotionState.h Music.h BaseApplication.h 
+noinst_HEADERS = Network.h Simulator.h MCP.h PlayerCamera.h Player.h Disk.h Target.h Room.h Wall.h GameObject.h OgreMotionState.h Music.h BaseApplication.h 
 bin_PROGRAMS = TronGame
 TronGame_CPPFLAGS = -I$(top_srcdir) -I/usr/local/include/ -I/usr/local/lib
 TronGame_SOURCES = Network.cpp Simulator.cpp MCP.cpp PlayerCamera.cpp Player.cpp Disk.cpp Target.cpp GameObject.cpp Room.cpp Wall.cpp Music.cpp BaseApplication.cpp  
