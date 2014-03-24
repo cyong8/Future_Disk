@@ -41,6 +41,7 @@ void MCP::createScene(void)
 
     hostPlayer = NULL;
     clientPlayer = NULL;
+    gameDisk = NULL;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -287,16 +288,19 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
-                    Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
-                    d->particleNode->setVisible(true);
+                    gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
+                    gameDisk->particleNode->setVisible(true);
                 }
                 modifyScore(gameSimulator->tallyScore());
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
             {
                 if (sceneRendered)
+                {
                     if (!updateClient(evt))
                         return false;
+                    updateClientCamera(evt.timeSinceLastFrame);
+                }
             }     
         }
     }
@@ -333,13 +337,13 @@ bool MCP::constructAndSendGameState()
 
     gameNetwork->sendPacket(pack);  // Send Player
 
-    if (gameSimulator->gameDisk != NULL)
+    if (gameDisk != NULL)
     {
         pack.sequence = 'i';
         pack.id = 'd';
         pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
         pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
     }
 
@@ -365,6 +369,26 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
     }
     //INDIVIDUAL INPUT - SEND PACKETS
     return checkClientInput(evt);
+}
+//-------------------------------------------------------------------------------------
+void MCP::updateClientCamera(Ogre::Real elapseTime)
+{
+    if (clientViewMode) // View was toggled; now check what view it needs to be changed to
+    {
+        clientViewMode = !clientViewMode;
+        if(pCam->isInAimMode()) // Go into Aim view
+            pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        
+        else // Return from Aim view
+            pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+    {
+        if (pCam->isInAimMode())
+            pCam->update(elapseTime,clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        else
+            pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
+    }
 }
 //-------------------------------------------------------------------------------------
 bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
@@ -397,10 +421,14 @@ bool MCP::interpretPacket(MCP_Packet pack)
     if (pack.id == 'd')
     {
         if (gameDisk == NULL)
+        {
             gameDisk = new Disk("Disk", mSceneMgr, gameSimulator, -1.0f);
-        
+            gameDisk->particleNode->setVisible(true);
+        }
+
         gameDisk->getSceneNode()->_setDerivedPosition(newPos);
         gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
+        gameDisk->getSceneNode()->needUpdate();
     }
 
     hostPlayer->getSceneNode()->needUpdate();

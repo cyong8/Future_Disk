@@ -41,9 +41,9 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	pSightNode->setVisible(true, false);
 	pSightNode->showBoundingBox(true);
 	sightEnt->setMaterialName("Examples/Chrome");
-	*/
+	
 	rootNode->setVisible(false, false);
-	this->rootNode->showBoundingBox(true);
+	this->rootNode->showBoundingBox(true); */
 }
 //-------------------------------------------------------------------------------------
 void Player::attachDisk(Disk* d)
@@ -54,7 +54,6 @@ void Player::attachDisk(Disk* d)
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
-	rootNode->setVisible(false, false);
 }
 //-------------------------------------------------------------------------------------
 void Player::setHolding()
