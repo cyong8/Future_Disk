@@ -62,6 +62,7 @@ protected:
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	bool constructAndSendGameState(void);
 	bool updateClient(const Ogre::FrameEvent& evt);
+	void updateClientCamera(Ogre::Real elapseTime);
 	bool checkClientInput(const Ogre::FrameEvent& evt);
 	bool interpretPacket(MCP_Packet pack);
 	bool processUnbufferedClientInput(const Ogre::FrameEvent& evt);
@@ -87,6 +88,7 @@ protected:
 	PlayerCamera* pCam;
 	int gameMode;
 	int sceneRendered;
+	bool clientViewMode;
 };
 
 #endif // #ifndef __MCP_h_
