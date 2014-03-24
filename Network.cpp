@@ -3,7 +3,7 @@
 Network::Network(int sc_identifier, char* hostIP)
 {
 	connectionEstablished = false;
-	maxPacketSize = 1024;
+	maxPacketSize = 256;
 	init_serverSocket = NULL;
 	UDP_gameSocket = NULL;
 	TCP_gameSocket = NULL;
@@ -128,8 +128,7 @@ bool Network::establishConnection()
 		}
 		/* Player has to wait for Server to send packet - Info of UDP */
 		char portData[512];
-		int result = 0;
-		result = SDLNet_TCP_Recv(TCP_gameSocket, portData, 512);
+		SDLNet_TCP_Recv(TCP_gameSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
 		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
@@ -143,12 +142,12 @@ bool Network::establishConnection()
 		    printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
 		    exit(2);
 		}
-		UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, &serverIP);
-		if(UDP_channel == -1) 
-		{
-    		printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
-    		exit(2);
-		}
+		// UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, &serverIP);
+		// if(UDP_channel == -1) 
+		// {
+  //   		printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
+  //   		exit(2);
+		// }
 
 		connectionEstablished = true;
 	}
@@ -171,69 +170,97 @@ void Network::acceptClient(char *data)
 	clientIP = SDLNet_TCP_GetPeerAddress(TCP_gameSocket);
 	printf("Client connected - IP: %d\n\n", clientIP->host);
 	/* UDP socket is open; now we have the IP of the client, so we can bind */
-	UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, clientIP);
-	if(UDP_channel == -1) 
-	{
-    	printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
-    	exit(2);
-	}
+	// UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, clientIP);
+	// if(UDP_channel == -1) 
+	// {
+ //    	printf("SDLNet_UDP_Bind: %s\n", SDLNet_GetError());
+ //    	exit(2);
+	// }
 
 	connectionEstablished = true;
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(MCP_Packet pack)
+void Network::sendPacket(MCP_Packet pack, int packetSize)
 {
-	UDPpacket *p;
+	int numSent;
+	char buff[sizeof(struct MCP_Packet)];
+	memcpy(buff, &pack, sizeof(pack));
+
+	numSent = SDLNet_TCP_Send(TCP_gameSocket, buff, maxPacketSize);	
+	if (!numSent)
+	{
+		printf("*****Failed to send packet; Packet ID: %c\n\n", pack.id);
+	}
+	else
+		printf ("Size of packet sent: %d\n\n\n", numSent);
+
+	/* UDP Packet/Sockets not working - Doing TCP for now */
+	// UDPpacket *p;
 	
-	if (!(p = SDLNet_AllocPacket(maxPacketSize)))
-	{
-		printf("SDLNet_AllocPacket: %s\n", SDLNet_GetError());
-		exit(2);
-	}
+	// if (!(p = SDLNet_AllocPacket(maxPacketSize)))
+	// {
+	// 	printf("SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+	// 	exit(2);
+	// }
 
-	p->len = maxPacketSize;
-	p->data = (Uint8*)&pack;
+	// p->len = maxPacketSize;
+	// p->data = (Uint8*)&pack;
 	
-	if (client) /* Client sends data to server */
-	{
-		p->address.host = serverIP.host;	/* Set the destination host */
-		p->address.port = serverIP.port;	/* And destination port */
-		p->channel = UDP_channel;			/* Use the specified channel for the server IP */
+	// if (client) /* Client sends data to server */
+	// {
+	// 	p->address.host = serverIP.host;	/* Set the destination host */
+	// 	p->address.port = serverIP.port;	/* And destination port */
+	// 	// p->channel = UDP_channel;			/* Use the specified channel for the server IP */
 
-		int checkSent;
-		checkSent = SDLNet_UDP_SendV(UDP_gameSocket, &p, 1);
+	// 	int checkSent;
+	// 	checkSent = SDLNet_UDP_Send(UDP_gameSocket, p->channel, p);
 
-		if (!checkSent)
-			printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
-	}
-	if (server) /* Server sends data to client */
-	{
-		p->address.host = clientIP->host;	/* Set the destination host */
-		p->address.port = clientIP->port;	/* And destination port */
-		p->channel = UDP_channel;			/* Use the specified channel for the client IP */
-		printf("UDP Channel: %d\n\n\n", UDP_channel);
+	// 	if (!checkSent)
+	// 		printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+	// }
+	// if (server) /* Server sends data to client */
+	// {
+	// 	p->address.host = clientIP->host;	/* Set the destination host */
+	// 	p->address.port = clientIP->port;	/* And destination port */
+	// 	// p->channel = UDP_channel;			/* Use the specified channel for the client IP */
 
-		int checkSent;
-		checkSent = SDLNet_UDP_SendV(UDP_gameSocket, &p, 1);
+	// 	int checkSent;
+	// 	checkSent = SDLNet_UDP_Send(UDP_gameSocket, p->channel, p);
 
-		if (!checkSent)
-			printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
-	}
-	SDLNet_FreePacket(p);
+	// 	if (!checkSent)
+	// 		printf("SDLNet_UDP_Send: %s\n", SDLNet_GetError());
+	// }
+	// SDLNet_FreePacket(p);
 }
 //-------------------------------------------------------------------------------------
-MCP_Packet* Network::receivePacket()
+MCP_Packet Network::receivePacket()
 {
-	MCP_Packet* pack = NULL;
-	UDPpacket *p;
-	
-	if (!(p = SDLNet_AllocPacket(maxPacketSize)))
+	MCP_Packet pack;
+	char buff[maxPacketSize];
+	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, maxPacketSize) <= 0)
 	{
-		fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
-		exit(EXIT_FAILURE);
+		pack.id = 'n';
+		return pack;
 	}
-	if (SDLNet_UDP_Recv(UDP_gameSocket, p))	// ATM no patcket received
-		pack = (MCP_Packet*)p->data;
+	/* UDP Packet/Sockets not working - Doing TCP for now */
+	// MCP_Packet* pack = NULL;
+	// UDPpacket *p;
+	
+	// if (!(p = SDLNet_AllocPacket(maxPacketSize)))
+	// {
+	// 	fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
+	// 	exit(EXIT_FAILURE);
+	// }
+	// if (SDLNet_UDP_Recv(UDP_gameSocket, p))	// ATM no patcket received
+	// 	pack = (MCP_Packet*)p->data;
+
+	// pack = (MCP_Packet*)&buf;
+	memcpy(&pack, buff, sizeof(pack));
+
+	printf("\t\tReceive - ID: %c\n", pack.id);
+	printf("\t\tReceive - X: %f\n", pack.x_coordinate);
+	printf("\t\tReceive - Y: %f\n", pack.y_coordinate);
+	printf("\t\tReceive - Z: %f\n\n\n", pack.z_coordinate);
 
 	return pack;
 }

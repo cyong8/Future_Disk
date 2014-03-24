@@ -48,6 +48,7 @@ void MCP::createScene(void)
     gameOver = false;
     vKeyDown = false;    
     mRotate = 0.1f;
+    sceneRendered = 0;
 }
 //-------------------------------------------------------------------------------------
 void MCP::createSoloModeScene()
@@ -179,6 +180,7 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
     time(&initTime);
 
     createMultiplayerModeScene_host();
+    sceneRendered = 1;
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -207,6 +209,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
         time(&initTime);
 
         createMultiplayerModeScene_client();
+        sceneRendered = 1;
         return true;
     }
     else
@@ -215,6 +218,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
+    static int count = 0;
     bool ret = BaseApplication::frameRenderingQueued(evt);
 
     if (mShutDown)
@@ -228,7 +232,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             else 
                 gameStart = true;
         }
-        else 
+        else if (!gameStart)
             gameStart = true;
     }
     if(!gameStart && !gameOver) // Game not started
@@ -265,11 +269,13 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     updatePauseTime(pcurrTime);
                 }
             }
-            if(clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
+            if (clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
             {
                 if(!processUnbufferedInput(evt)) 
                     return false;
-                constructAndSendGameState();
+                if (sceneRendered)
+                    constructAndSendGameState();
+
                 /*
                 if (hostPlayer != NULL)
                     restrictPlayerMovement(hostPlayer);
@@ -288,7 +294,11 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             }
             else if (clientServerIdentifier = 1)    // Client render loop - Specific processing of inputs
             {
-                updateClient(evt);
+                if(!processUnbufferedClientInput(evt)) 
+                    return false;
+
+                if (sceneRendered)
+                    updateClient(evt);
             }     
         }
     }
@@ -298,36 +308,44 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 bool MCP::constructAndSendGameState()
 {
     MCP_Packet pack;
+    int packetSize = 0;
     // Update hostPlayer
-    pack.sequence = NULL;  // for now
+    pack.sequence = 'i';  // for now
     pack.id = 'h';
     pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
 
-    gameNetwork->sendPacket(pack);
+    packetSize = sizeof(pack.sequence) + sizeof(pack.id) + sizeof(pack.x_coordinate)
+                    + sizeof(pack.y_coordinate) + sizeof(pack.z_coordinate);
+
+    gameNetwork->sendPacket(pack, packetSize);    
 
     // Update clientPlayer
-    pack.sequence = NULL;  // for now
+    pack.sequence = 'i';  // for now
     pack.id = 'c';
     pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
 
-    gameNetwork->sendPacket(pack);
+    packetSize = sizeof(pack.sequence) + sizeof(pack.id) + sizeof(pack.x_coordinate)
+                    + sizeof(pack.y_coordinate) + sizeof(pack.z_coordinate);
+
+    gameNetwork->sendPacket(pack, packetSize);
 }
 //-------------------------------------------------------------------------------------
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
-    MCP_Packet* pack;
+    MCP_Packet pack; 
+    if (mShutDown)
+        exit(2);
     // INTERPRETS PACKET
-    while ((pack = gameNetwork->receivePacket()))
+    pack = gameNetwork->receivePacket();
+    while (pack.id != 'n')
     {
         interpretPacket(pack);
-        if (mShutDown)
-            return false;
+        pack = gameNetwork->receivePacket();
     }
-    
     //INDIVIDUAL INPUT - SEND PACKETS
     checkClientInput(evt);
 }
@@ -337,17 +355,31 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
     return false;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::interpretPacket(MCP_Packet* pack)
+bool MCP::interpretPacket(MCP_Packet pack)
 {
     Ogre::Vector3 newPos;
-    newPos = Ogre::Vector3(pack->x_coordinate, pack->y_coordinate, pack->z_coordinate);
+    newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
 
-    if (pack->id == 'h')
+    if (pack.id == 'h')
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
 
-    if (pack->id == 'c')   
+    if (pack.id == 'c')   
         clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
 
+    hostPlayer->getSceneNode()->needUpdate();
+    clientPlayer->getSceneNode()->needUpdate();
+    printf("INTERPRETTING!!!!\n\n\n");
+
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::processUnbufferedClientInput(const Ogre::FrameEvent& evt)
+{
+    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    {
+        mShutDown = true;
+        return false;
+    }
     return true;
 }
 //-------------------------------------------------------------------------------------

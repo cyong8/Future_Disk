@@ -10,7 +10,7 @@
 
 struct MCP_Packet
 {
-	char* sequence;		// Max = 2 Bytes - 16 Bits
+	char sequence;		// Max = 2 Bytes - 16 Bits
 	char id;			// Max = 2 Bytes - 16 Bits
 	float x_coordinate;	// Max = 4 Bytes - 32 Bits
 	float y_coordinate;
@@ -26,8 +26,8 @@ public:
 	bool establishConnection(void);
 	bool waitForPacket(void);
 	void acceptClient(char* data);
-	void sendPacket(MCP_Packet pack);
-	MCP_Packet* receivePacket(void);
+	void sendPacket(MCP_Packet pack, int packetSize);
+	MCP_Packet receivePacket(void);
 	bool checkConnection(void);
 
 private:
