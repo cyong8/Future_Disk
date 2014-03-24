@@ -26,7 +26,7 @@ public:
 	bool establishConnection(void);
 	bool waitForPacket(void);
 	void acceptClient(char* data);
-	void sendPacket(MCP_Packet pack, int packetSize);
+	void sendPacket(MCP_Packet pack);
 	MCP_Packet receivePacket(void);
 	bool checkConnection(void);
 

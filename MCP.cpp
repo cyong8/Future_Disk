@@ -273,6 +273,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if(!processUnbufferedInput(evt)) 
                     return false;
+
                 if (sceneRendered)
                     constructAndSendGameState();
 
@@ -316,10 +317,7 @@ bool MCP::constructAndSendGameState()
     pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
 
-    packetSize = sizeof(pack.sequence) + sizeof(pack.id) + sizeof(pack.x_coordinate)
-                    + sizeof(pack.y_coordinate) + sizeof(pack.z_coordinate);
-
-    gameNetwork->sendPacket(pack, packetSize);    
+    gameNetwork->sendPacket(pack);    
 
     // Update clientPlayer
     pack.sequence = 'i';  // for now
@@ -328,10 +326,11 @@ bool MCP::constructAndSendGameState()
     pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
 
-    packetSize = sizeof(pack.sequence) + sizeof(pack.id) + sizeof(pack.x_coordinate)
-                    + sizeof(pack.y_coordinate) + sizeof(pack.z_coordinate);
+    gameNetwork->sendPacket(pack);
 
-    gameNetwork->sendPacket(pack, packetSize);
+    pack.sequence = 'n';
+
+    gameNetwork->sendPacket(pack);
 }
 //-------------------------------------------------------------------------------------
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
@@ -341,7 +340,7 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
         exit(2);
     // INTERPRETS PACKET
     pack = gameNetwork->receivePacket();
-    while (pack.id != 'n')
+    while (pack.sequence != 'n')
     {
         interpretPacket(pack);
         pack = gameNetwork->receivePacket();

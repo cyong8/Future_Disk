@@ -180,7 +180,7 @@ void Network::acceptClient(char *data)
 	connectionEstablished = true;
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(MCP_Packet pack, int packetSize)
+void Network::sendPacket(MCP_Packet pack)
 {
 	int numSent;
 	char buff[sizeof(struct MCP_Packet)];
