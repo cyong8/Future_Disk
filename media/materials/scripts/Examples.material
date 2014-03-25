@@ -491,6 +491,44 @@ material Examples/Chrome
 	}
 }
 
+material Examples/RedChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 0.0 0.0
+			diffuse 1.0 0.0 0.0 
+			specular 1.0 0.0 0.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/GreenChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 1.0 0.0
+			diffuse 0.0 1.0 0.0 
+			specular 0.0 1.0 0.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
 material Examples/BlueChrome
 {
 	technique
@@ -500,6 +538,101 @@ material Examples/BlueChrome
 			ambient 0.0 0.0 1.0
 			diffuse 0.0 0.0 1.0 
 			specular 0.0 0.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/YellowChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 1.0 0.0
+			diffuse 1.0 1.0 0.0 
+			specular 1.0 1.0 0.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/MagentaChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 0.0 1.0
+			diffuse 1.0 0.0 1.0 
+			specular 1.0 0.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/CyanChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 1.0 1.0
+			diffuse 0.0 1.0 1.0 
+			specular 0.0 1.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/WhiteChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 1.0 1.0
+			diffuse 1.0 1.0 1.0 
+			specular 1.0 1.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/BlackChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 0.0 0.0
+			diffuse 0.0 0.0 0.0 
+			specular 0.0 0.0 0.0 10.0
 
 			texture_unit
 			{

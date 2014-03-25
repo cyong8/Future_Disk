@@ -3,10 +3,12 @@
 
 #include "GameObject.h"
 
+enum targetType {POINT, POWER, SPEED};
+
 class Target : public GameObject
 {
 public:
-	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition);
+	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition, targetType tt);
 	void targetHit();
 	void resetHit();
 	bool isHit(); 
