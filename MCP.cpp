@@ -44,6 +44,9 @@ void MCP::createScene(void)
     gameDisk = NULL;
     gameSimulator = NULL;
 
+    /******************** Movement Constants ******************/
+    mMove = 3.0f;
+
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
     gameStart = false;
@@ -273,7 +276,20 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     return false;
 
                 if (sceneRendered)
+                {
                     constructAndSendGameState();
+
+                    /* wait for packets from client */
+                    MCP_Packet pack;
+                    pack = gameNetwork->receivePacket();
+                    while (pack.sequence != 'n')
+                    {
+                        if (mShutDown)
+                            return false;
+                        interpretClientPacket(pack);
+                        pack = gameNetwork->receivePacket();
+                    }
+                }
                 /*
                 if (hostPlayer != NULL)
                     restrictPlayerMovement(hostPlayer);
@@ -288,7 +304,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
                     gameDisk->particleNode->setVisible(true);
                 }
-
                 modifyScore(gameSimulator->tallyScore());
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
@@ -311,141 +326,10 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     return ret;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::constructAndSendGameState()   
-{
-    /* Construct/Update/Send Packets containing Position/Orientation of:
-         Disk, 
-         hostPlayer, 
-         clientPlayer
-     */
-    MCP_Packet pack;
-    int packetSize = 0;
-
-    // Update hostPlayer
-    pack.sequence = 'i';  // for now
-    pack.id = 'h';
-    pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
-    pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
-    pack.orientationQ = hostPlayer->getSceneNode()->_getDerivedOrientation();
-
-    gameNetwork->sendPacket(pack);  // Send Player
-
-    // Update clientPlayer
-    pack.sequence = 'i';  // for now
-    pack.id = 'c';
-    pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
-    pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
-    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
-
-    gameNetwork->sendPacket(pack);  // Send Player
-
-    if (gameDisk != NULL)
-    {
-        pack.sequence = 'i';
-        pack.id = 'd';
-        pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
-        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
-        pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
-    }
-
-    gameNetwork->sendPacket(pack);  // Send Disk
-
-    /* Signify end of frame data */
-    pack.sequence = 'n';
-
-    gameNetwork->sendPacket(pack);
-}
-//-------------------------------------------------------------------------------------
-bool MCP::updateClient(const Ogre::FrameEvent& evt)
-{
-    MCP_Packet pack; 
-    if (mShutDown)
-        exit(2);
-    // INTERPRETS PACKET
-    pack = gameNetwork->receivePacket();
-    while (pack.sequence != 'n')
-    {
-        interpretPacket(pack);
-        pack = gameNetwork->receivePacket();
-    }
-    //INDIVIDUAL INPUT - SEND PACKETS
-    return checkClientInput(evt);
-}
-//-------------------------------------------------------------------------------------
-void MCP::updateClientCamera(Ogre::Real elapseTime)
-{
-    if (clientViewMode) // View was toggled; now check what view it needs to be changed to
-    {
-        clientViewMode = !clientViewMode;
-        if(pCam->isInAimMode()) // Go into Aim view
-            pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-        
-        else // Return from Aim view
-            pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    }
-    else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
-    {
-        if (pCam->isInAimMode())
-            pCam->update(elapseTime,clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-        else
-            pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
-    }
-}
-//-------------------------------------------------------------------------------------
-bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
-{
-    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-    {
-        mShutDown = true;
-        return false;
-    }
-    return true;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::interpretPacket(MCP_Packet pack)
-{
-    Ogre::Vector3 newPos;
-    Ogre::Quaternion newQuat;
-    newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
-    newQuat = pack.orientationQ;
-
-    if (pack.id == 'h')
-    {
-        hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
-        hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
-    }
-    if (pack.id == 'c')   
-    {
-        clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
-        // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
-    }
-    if (pack.id == 'd')
-    {
-        if (gameDisk == NULL)
-        {
-            gameDisk = new Disk("Disk", mSceneMgr, gameSimulator, -1.0f);
-            gameDisk->particleNode->setVisible(true);
-        }
-
-        gameDisk->getSceneNode()->_setDerivedPosition(newPos);
-        gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
-        gameDisk->getSceneNode()->needUpdate();
-    }
-
-    hostPlayer->getSceneNode()->needUpdate();
-    clientPlayer->getSceneNode()->needUpdate();
-
-    return true;
-}
-//-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     /********************  KEY VARIABLES ********************/    
     static bool mMouseDown = false;                                    // If a mouse button is depressed
-    static Ogre::Real mMove = 3.0f;                                    // The movement constant
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     static bool spacePressedLast = false;
     static Ogre::Real timeSinceLastJump = 0.0f;
@@ -534,7 +418,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
                 spacePressedLast = false;
-            if(keyWasPressed == true)
+            if(keyWasPressed)
             {   // Rotate the velocity vector by the orientation of the player
                 Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
                 trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
@@ -544,6 +428,216 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             }
         }
     }
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::constructAndSendGameState()   
+{
+    /* Construct/Update/Send Packets containing Position/Orientation of:
+         Disk, 
+         hostPlayer, 
+         clientPlayer
+     */
+    MCP_Packet pack;
+    int packetSize = 0;
+
+    // Update hostPlayer
+    pack.sequence = 'i';  // for now
+    pack.id = 'h';
+    pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.orientationQ = hostPlayer->getSceneNode()->_getDerivedOrientation();
+
+    gameNetwork->sendPacket(pack);  // Send Player
+
+    // Update clientPlayer
+    pack.sequence = 'i';  // for now
+    pack.id = 'c';
+    pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+
+    gameNetwork->sendPacket(pack);  // Send Player
+
+    if (gameDisk != NULL)
+    {
+        pack.sequence = 'i';
+        pack.id = 'd';
+        pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
+        pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+    }
+
+    gameNetwork->sendPacket(pack);  // Send Disk
+
+    /* Signify end of frame data */
+    pack.sequence = 'n';
+
+    gameNetwork->sendPacket(pack);
+}
+//-------------------------------------------------------------------------------------
+bool MCP::updateClient(const Ogre::FrameEvent& evt)
+{
+    MCP_Packet pack; 
+    if (mShutDown)
+        exit(2);
+    // INTERPRETS PACKET
+    pack = gameNetwork->receivePacket();
+    while (pack.sequence != 'n')
+    {
+        interpretServerPacket(pack);
+        pack = gameNetwork->receivePacket();
+    }
+    //INDIVIDUAL INPUT - SEND PACKETS
+    return checkClientInput(evt);
+}
+//-------------------------------------------------------------------------------------
+void MCP::updateClientCamera(Ogre::Real elapseTime)
+{
+    if (clientViewMode) // View was toggled; now check what view it needs to be changed to
+    {
+        clientViewMode = !clientViewMode;
+        if(pCam->isInAimMode()) // Go into Aim view
+            pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        
+        else // Return from Aim view
+            pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+    {
+        if (pCam->isInAimMode())
+            pCam->update(elapseTime,clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        else
+            pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
+    }
+}
+//-------------------------------------------------------------------------------------
+bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
+{
+    MCP_Packet pack;    
+    pack.sequence = 'n';
+
+    static char clientKeyLastSent = 'n';
+
+    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    {
+        mShutDown = true;
+        return false;
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
+        pack.sequence = 'w';
+    else if (mKeyboard->isKeyDown(OIS::KC_A)) // Left
+        pack.sequence = 'a';
+    else if (mKeyboard->isKeyDown(OIS::KC_S)) // Backwards
+        pack.sequence = 's';
+    else if (mKeyboard->isKeyDown(OIS::KC_D)) // Right
+        pack.sequence = 'd';
+    else if (mKeyboard->isKeyDown(OIS::KC_J) && clientKeyLastSent != 'j') // Jump
+        pack.sequence = 'j';
+    else if (mKeyboard->isKeyDown(OIS::KC_V) && clientKeyLastSent != 'v') // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+        pack.sequence = 'v';
+    else if (mKeyboard->isKeyDown(OIS::KC_B)) // Speed Boost
+        pack.sequence = 'b';
+
+    if (pack.sequence != 'n')
+        gameNetwork->sendPacket(pack);
+
+    pack.sequence = 'o';
+    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+    gameNetwork->sendPacket(pack); 
+
+    pack.sequence = 'n';
+    gameNetwork->sendPacket(pack);  // Send Player
+
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::interpretClientPacket(MCP_Packet pack)
+{
+    // Update the player rigid body and scenenode
+    char typeInput = pack.sequence;
+    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
+    float sprintFactor = 3.0f;
+    bool movementFlag = false;
+
+    if (typeInput == 'w')   // Forward
+    {
+        velocityVector = velocityVector + btVector3(0.0f, 0.0f, -mMove);
+        movementFlag = true;
+    }
+    if (typeInput == 'a')   // Left
+    {
+        velocityVector = velocityVector + btVector3(-mMove, 0.0f, 0.0f);
+        movementFlag = true;
+    }
+    if (typeInput == 's')   // Backwards
+    {
+        velocityVector = velocityVector + btVector3(0.0f, 0.0f, mMove);
+        movementFlag = true;
+    }
+    if (typeInput == 'd')   // Right
+    {
+        velocityVector = velocityVector + btVector3(mMove, 0.0f, 0.0f);
+        movementFlag = true;
+    }
+    if (typeInput == 'j')   // Jump
+        ;
+    if (typeInput == 'v')   // View Mode Toggle
+    //    gameSimulator->setThrowFlag();
+        ;
+    if (typeInput == 'b')   //
+        ;
+    if (typeInput == 'o')
+        clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
+
+    if (movementFlag)
+    {
+        Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
+        trueVelocity = clientPlayer->getSceneNode()->getOrientation() * trueVelocity; 
+        btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
+
+        clientPlayer->getBody()->setLinearVelocity((btTrueVelocity /* sprintFactor*/) + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
+    }
+
+    return false;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::interpretServerPacket(MCP_Packet pack)
+{
+    Ogre::Vector3 newPos;
+    Ogre::Quaternion newQuat;
+    newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
+    newQuat = pack.orientationQ;
+
+    if (pack.id == 'h')
+    {
+        hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
+        hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
+    if (pack.id == 'c')   
+    {
+        clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
+        // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
+    if (pack.id == 'd')
+    {
+        if (gameDisk == NULL)
+        {
+            gameDisk = new Disk("Disk", mSceneMgr, gameSimulator, -1.0f);
+            gameDisk->particleNode->setVisible(true);
+        }
+
+        gameDisk->getSceneNode()->_setDerivedPosition(newPos);
+        gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
+        gameDisk->getSceneNode()->needUpdate();
+    }
+
+    hostPlayer->getSceneNode()->needUpdate();
+    clientPlayer->getSceneNode()->needUpdate();
+
     return true;
 }
 //-------------------------------------------------------------------------------------
