@@ -20,11 +20,12 @@ public:
 	btVector3 getOldVelocity(void);
 	void setOldVelocity(btVector3 v);
 	Ogre::Vector3 diskDirection;
-	Ogre::ParticleSystem* tailParticle[9];
+	Ogre::ParticleSystem* tailParticle[7];
 	Ogre::SceneNode* particleNode;
 	bool needsOrientationUpdate;
 	int previousParticleSystem;
 	Ogre::String checkInitialPlayer(void);
+	void createNewParticleSystem(int index);
 };
 
 #endif // #ifndef __Disk_h_

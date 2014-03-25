@@ -14,6 +14,8 @@ class PlayerCamera;
 class Disk;
 class Music;
 
+enum powerUp{NONE, POWER, SPEED, SHIELD, BOOST, JUMP, RESTORE};
+
 class Simulator
 {
 	protected:
@@ -40,12 +42,10 @@ class Simulator
 		bool gameStart;
 		bool player1CanCatch;
 	    bool player2CanCatch;
-		bool canActivatePowerUp;
-		bool speedIncrease;
-		bool particleSystemEstablished;
 		Ogre::String previousWallHit;
 		bool giveDisk;
 		Ogre::Real diskSpeedFactor;
+		powerUp currentPower;
 		
 		Music* gameMusic;
 

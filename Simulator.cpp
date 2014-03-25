@@ -20,12 +20,10 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	gameStart = false;
 	player1CanCatch = true;
     player2CanCatch = true;
-	canActivatePowerUp = false;
-	speedIncrease = false;
-	particleSystemEstablished = true;
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	setDisk = false;
+	currentPower = NONE;
 
 	gameMusic = music;
 	sceneMgr = mSceneMgr;
@@ -89,7 +87,7 @@ void Simulator::addObject (GameObject* o)
 
 		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
-		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z));
+		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 	}
 	if(o->typeName == "Target")
@@ -97,15 +95,44 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->resetHit();
-			score = 10;
+			if (o->getGameObjectName() == "Power") {
+			    powerUpLimit = 1500;
+			    currentPower = POWER;
+			}
+			else if (o->getGameObjectName() == "Speed") {
+			    powerUpLimit = 1500;
+			    currentPower = SPEED;
+			}
+			else if (o->getGameObjectName() == "Shield") {
+			    powerUpLimit = 1800;
+			    currentPower = SHIELD;
+			}
+			else if (o->getGameObjectName() == "Boost") {
+			    powerUpLimit = 3000;
+			    currentPower = BOOST;
+			}
+			else if (o->getGameObjectName() == "Jump") {
+			    powerUpLimit = 3000;
+			    currentPower = JUMP;
+			}
+			else if (o->getGameObjectName() == "Restore") {
+			    powerUpLimit = 1;
+			    currentPower = RESTORE;
+			} 
+			else {
+			    score = 10;
+			    resetPowerUps();
+		    }
 		}
 		targetList.push_back((Target*)o);
 	}
-	if(o->typeName == "Power")
+	/*if(o->typeName == "Power")
 	{
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->resetHit();
+			powerUpLimit = 1500;
+			currentPower = POWER;
 			// knock out many tiles
 		}
 		targetList.push_back((Target*)o);
@@ -115,9 +142,8 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->resetHit();
-            speedIncrease = true;
             powerUpLimit = 1500;
-            particleSystemEstablished = false;
+            currentPower = SPEED;
 		}
 		targetList.push_back((Target*)o);
 	}
@@ -126,6 +152,8 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->resetHit();
+			powerUpLimit = 1800;
+			currentPower = SHIELD;
 		}
 		targetList.push_back((Target*)o);
 	}
@@ -134,6 +162,18 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->resetHit();
+			powerUpLimit = 3000;
+			currentPower = BOOST;
+		}
+		targetList.push_back((Target*)o);
+	}
+	if(o->typeName == "Jump")
+	{
+	    if (o->checkReAddFlag())
+		{
+			((Target*)o)->resetHit();
+			powerUpLimit = 3000;
+			currentPower = JUMP;
 		}
 		targetList.push_back((Target*)o);
 	}
@@ -142,9 +182,11 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->resetHit();
+			powerUpLimit = 1;
+			currentPower = RESTORE;
 		}
 		targetList.push_back((Target*)o);
-	}
+	}*/
 	if(o->typeName == "Wall")
 	{
 		o->getBody()->setRestitution(0.8f);
@@ -165,8 +207,7 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 //-------------------------------------------------------------------------------------
 void Simulator::removeObject(Ogre::String name)
 {
-	if (getGameObject(name)->typeName == "Target" || getGameObject(name)->typeName == "Power" || getGameObject(name)->typeName == "Speed"
-	    || getGameObject(name)->typeName == "Shield" || getGameObject(name)->typeName == "Boost" || getGameObject(name)->typeName == "Restore")
+	if (getGameObject(name)->typeName == "Target")
 	{
 		for (int i = 0; i < targetList.size(); i++)
 		{	
@@ -217,25 +258,66 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	{	
 		if (gameDisk != NULL)
 		{
-			btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-			if (!speedIncrease)
-			    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-		    else if (speedIncrease && powerUpLimit > 0) 
-		    {
-		        gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
-		        if (!particleSystemEstablished) 
-		        {
-		            gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
-		            gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
-	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[2]);
-	                gameDisk->previousParticleSystem = 1;
-	                particleSystemEstablished = true;
+		    btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+		    if (--powerUpLimit <= 0) {
+		        resetPowerUps();
+		        if (gameDisk->previousParticleSystem != 0) {
+		            gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+		            gameDisk->createNewParticleSystem(0);
 		        }
-		        if (--powerUpLimit <= 0)
-		            particleSystemEstablished = false;
-	        }
-	        else if (powerUpLimit <= 0) 
-	        {
+		    }
+		    else {
+		        switch (currentPower) {
+		            case NONE:    printf("THIS SHOULD NEVER RUN!\n");
+		                          assert(false);
+		                          break;
+                    case POWER:   if (gameDisk->previousParticleSystem != 1) {
+                                      gameDisk->createNewParticleSystem(1);
+                                  }
+                                  break;
+                    case SPEED:   if (gameDisk->previousParticleSystem != 2) {
+                                      gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
+                                      gameDisk->createNewParticleSystem(2);
+                                  }
+                                  break;
+                    case SHIELD:  if (gameDisk->previousParticleSystem != 3) {
+                                      gameDisk->createNewParticleSystem(3);
+                                  }
+                                  break;
+                    case BOOST:   if (gameDisk->previousParticleSystem != 4) {
+                                      gameDisk->createNewParticleSystem(4);
+                                  }
+                                  break;
+                    case JUMP:    if (gameDisk->previousParticleSystem != 5) {
+                                      gameDisk->createNewParticleSystem(5);
+                                  }
+                                  break;
+                    case RESTORE: if (gameDisk->previousParticleSystem != 6) {
+                                      gameDisk->createNewParticleSystem(6);
+                                  }
+                                  break;
+		        }
+		    }
+		    /*if (powerUpLimit.sum() > 0) {
+			    btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+			    if (!speedIncrease)
+			        gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+		        else if (speedIncrease && powerUpLimit > 0) 
+		        {
+		            gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
+		            if (!particleSystemEstablished) 
+		            {
+		                gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
+		                gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
+	                    gameDisk->particleNode->attachObject(gameDisk->tailParticle[2]);
+	                    gameDisk->previousParticleSystem = 2;
+	                    particleSystemEstablished = true;
+		            }
+		            if (--powerUpLimit <= 0)
+		                particleSystemEstablished = false;
+	            }
+            }
+	        else {
 	            resetPowerUps();
 	            if (!particleSystemEstablished) {
 	                gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
@@ -244,7 +326,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	                gameDisk->previousParticleSystem = 0;
 	                particleSystemEstablished = true;
 	            }
-	        }
+	        }*/
+	        
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 		}
@@ -400,7 +483,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Wall
 	if (o->typeName == "Wall")
 	{
-	    canActivatePowerUp = true;
 		if (previousWallHit == "NULL")
 		{
 			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
@@ -427,7 +509,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Player
 	else if (o->typeName == "Player")
 	{
-	    canActivatePowerUp = false;
 		if (((Player*)o)->checkHolding() == false)
 		{
 			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
@@ -447,34 +528,32 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		}
 	}
 	// Target
-	else if (o->typeName == "Target" || o->typeName == "Power" || o->typeName == "Speed" || o->typeName == "Shield" || o->typeName == "Boost" || o->typeName == "Restore")
+	else if (o->typeName == "Target")
 	{
 		if (((Target*)o)->isHit() == false)
 		{
 			// The 47.0f value is the x-width and y-height of the disk
-			if (o->typeName == "Target") {
-			    ((Target*)o)->targetHit();
-			    removeObject(o->getGameObjectName());
+		    ((Target*)o)->targetHit();
+			removeObject(o->getGameObjectName());
+			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Shield" ||
+			    o->getGameObjectName() == "Boost" || o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") {
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Tile")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
+                // play power up sound effect
+			}
+			else {		    
+			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
 								    ,getGameObject("FarWall")->getSceneNode()->getPosition().z));
-			    o->addToSimulator();
 			    gameMusic->playCollisionSound("Disk", "Target");
-			}
-			else if (canActivatePowerUp) {
-			    ((Target*)o)->targetHit();
-			    removeObject(o->getGameObjectName());
-			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Tile")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
-			    o->addToSimulator();
-			    // new sound effect for power-up
-			}
+		    }
+			o->addToSimulator();
 		}
 	}
 	//else if (o->typeName == "Tile")
@@ -560,5 +639,5 @@ bool Simulator::checkGameStart()
 void Simulator::resetPowerUps()
 {
     powerUpLimit = 0;
-    speedIncrease = false;
+    currentPower = NONE;
 }

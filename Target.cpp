@@ -2,7 +2,7 @@
 #include "Simulator.h"
 
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, targetType tt)
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position)
 	: GameObject(nym, mgr, sim)
 {
 	/* 
@@ -23,7 +23,7 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/47.0f, dimensions.y/442.0f, dimensions.z/47.0f);
 	
 	//rootNode->setPosition(position);
-	if (tt == POINT) {
+	if (nym != "Power" && nym != "Speed" && nym != "Shield" && nym != "Boost" && nym != "Jump" && nym != "Restore") {
 	    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
@@ -41,29 +41,28 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     
 	rootNode->pitch(Ogre::Degree(90));
 
-    if (tt == POINT) {
-    	typeName = "Target";
-    	ent->setMaterialName("Examples/BlueChrome");
-	}
-	else if (tt == POWER) {
-	    typeName = "Power";
+    typeName = "Target";
+
+	if (nym == "Power") {
 	    ent->setMaterialName("Examples/RedChrome");
     }
-    else if (tt == SPEED) {
-        typeName = "Speed";
+    else if (nym == "Speed") {
         ent->setMaterialName("Examples/GreenChrome");
     }
-    else if (tt == SHIELD) {
-        typeName = "Shield";
+    else if (nym == "Shield") {
         ent->setMaterialName("Examples/CyanChrome");
     }
-    else if (tt == BOOST) {
-        typeName = "Boost";
+    else if (nym == "Boost") {
         ent->setMaterialName("Examples/YellowChrome");
     }
-    else if (tt == RESTORE) {
-        typeName = "Restore";
+    else if (nym == "Jump") {
+        ent->setMaterialName("Examples/MagentaChrome");
+    }
+    else if (nym == "Restore") {
         ent->setMaterialName("Examples/WhiteChrome");
+    }
+    else {
+        ent->setMaterialName("Examples/BlueChrome");
     }
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
