@@ -9,7 +9,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 {
 	p1 = NULL;
 	p2 = NULL;
-	diskSpeedFactor = 15.0f;
+	diskSpeedFactor = diskSpeedFactor;
 
 	score = 0;
 	powerUpLimit = 0;
@@ -178,12 +178,12 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
 		updatePlayerCamera(player1Cam, elapseTime);
-	if (p1->checkHolding())
-        performThrow(p1);
-    if (p2 != NULL)
+	if (p1->checkHolding() || (p2 != NULL))
     {
     	if (p2->checkHolding())
     		performThrow(p2);
+    	else 
+    		performThrow(p1);
     }
 	else	// Speed disk back up in order to mimic inelasticity
 	{	
@@ -191,10 +191,12 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		{
 			btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 			if (!speedIncrease)
-			    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
-		    else if (speedIncrease && powerUpLimit > 0) {
-		        gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(30.0f, 30.0f, 30.0f));
-		        if (!particleSystemEstablished) {
+			    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+		    else if (speedIncrease && powerUpLimit > 0) 
+		    {
+		        gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
+		        if (!particleSystemEstablished) 
+		        {
 		            gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
 		            gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
 	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[1]);
@@ -204,7 +206,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		        if (--powerUpLimit <= 0)
 		            particleSystemEstablished = false;
 	        }
-	        else if (powerUpLimit <= 0) {
+	        else if (powerUpLimit <= 0) 
+	        {
 	            resetPowerUps();
 	            if (!particleSystemEstablished) {
 	                gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
@@ -303,7 +306,7 @@ void Simulator::setThrowFlag()
 //-------------------------------------------------------------------------------------
 void Simulator::performThrow(Player* p)
 {
-	printf("INSIDE PERFORM THROW!\n\n\n")
+	printf("INSIDE PERFORM THROW!\n\n\n");
 
    	Disk *d = p->getPlayerDisk();	
   	btQuaternion diskOrientation;
