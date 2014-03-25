@@ -3,7 +3,7 @@
 
 #include "GameObject.h"
 
-enum targetType {POINT, POWER, SPEED};
+enum targetType {POINT, POWER, SPEED, SHIELD, BOOST, RESTORE};
 
 class Target : public GameObject
 {

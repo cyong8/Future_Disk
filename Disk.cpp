@@ -10,7 +10,14 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	*/
 	needsOrientationUpdate = false;
 	tailParticle[0] = mgr->createParticleSystem("Sun", "Examples/Sun");
-	tailParticle[1] = mgr->createParticleSystem("GreenSun", "Examples/GreenSun");
+	tailParticle[1] = mgr->createParticleSystem("RedSun", "Examples/RedSun");
+	tailParticle[2] = mgr->createParticleSystem("GreenSun", "Examples/GreenSun");
+	tailParticle[3] = mgr->createParticleSystem("BlueSun", "Examples/BlueSun");
+	tailParticle[4] = mgr->createParticleSystem("YellowSun", "Examples/YellowSun");
+	tailParticle[5] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
+	tailParticle[6] = mgr->createParticleSystem("CyanSun", "Examples/CyanSun");
+	tailParticle[7] = mgr->createParticleSystem("WhiteSun", "Examples/WhiteSun");
+	tailParticle[8] = mgr->createParticleSystem("BlackSun", "Examples/BlackSun");
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle[0]);
 	previousParticleSystem = 0;
