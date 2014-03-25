@@ -13,9 +13,9 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle);
 
-	if (dropToPlayer = 0.0f)
+	if (dropToPlayer == 0.0f)
 		initialPlayer = "Player1";
-	if (dropToPlayer = 1.0f)
+	if (dropToPlayer == 1.0f)
 		initialPlayer = "Player2";
 
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);
