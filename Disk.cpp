@@ -9,9 +9,11 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=ParticleExampleSun&structure=Cookbook
 	*/
 	needsOrientationUpdate = false;
-	tailParticle = mgr->createParticleSystem("Sun", "Examples/Sun");
+	tailParticle[0] = mgr->createParticleSystem("Sun", "Examples/Sun");
+	tailParticle[1] = mgr->createParticleSystem("GreenSun", "Examples/GreenSun");
 	particleNode = rootNode->createChildSceneNode("Particle");
-	particleNode->attachObject(tailParticle);
+	particleNode->attachObject(tailParticle[0]);
+	previousParticleSystem = 0;
 
 	if (dropToPlayer == 0.0f)
 		initialPlayer = "Player1";
