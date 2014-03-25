@@ -303,6 +303,8 @@ void Simulator::setThrowFlag()
 //-------------------------------------------------------------------------------------
 void Simulator::performThrow(Player* p)
 {
+	printf("INSIDE PERFORM THROW!\n\n\n")
+
    	Disk *d = p->getPlayerDisk();	
   	btQuaternion diskOrientation;
  	btTransform transform;
