@@ -42,6 +42,7 @@ void MCP::createScene(void)
     hostPlayer = NULL;
     clientPlayer = NULL;
     gameDisk = NULL;
+    gameSimulator = NULL;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -50,6 +51,7 @@ void MCP::createScene(void)
     vKeyDown = false;    
     mRotate = 0.1f;
     sceneRendered = 0;
+    gameMode = 0;
 }
 //-------------------------------------------------------------------------------------
 void MCP::createSoloModeScene()
@@ -137,7 +139,6 @@ void MCP::createMultiplayerModeScene_client()
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
-    gameMode = 0;
     CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
@@ -150,13 +151,13 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(objectivePanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameStart = true;
     gameOver = false;
     score = 0;
     time(&initTime);
 
     createSoloModeScene();
     
+    gameStart = true;
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -265,12 +266,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 gameOver = updateTimer(currTime);
                 if (gameOver)
                     gameMusic->playMusic("Pause");
-                else
-                {
-                    time_t pcurrTime;
-                    time(&pcurrTime);
-                    updatePauseTime(pcurrTime);
-                }
             }
             if (clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
             {
@@ -293,6 +288,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
                     gameDisk->particleNode->setVisible(true);
                 }
+
                 modifyScore(gameSimulator->tallyScore());
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
@@ -304,6 +300,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     updateClientCamera(evt.timeSinceLastFrame);
                 }
             }     
+        }
+        else
+        {
+                    time_t pcurrTime;
+                    time(&pcurrTime);
+                    updatePauseTime(pcurrTime);
         }
     }
     return ret;
@@ -550,10 +552,15 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     CEGUI::System &sys = CEGUI::System::getSingleton();
     sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
     // Scroll wheel.
-    if (evt.state.Z.rel){
+    if (evt.state.Z.rel)
         sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
-    }
     
+    if (gameSimulator != NULL)
+    {
+        if (!gameSimulator->checkGameStart())
+            return false;
+    }
+
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
 
