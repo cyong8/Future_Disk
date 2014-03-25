@@ -34,7 +34,6 @@ public:
 	Ogre::Real mMove; // Move Constant
 	bool vKeyDown;
 	bool gameStart;
-	bool clientGameStart;
 	bool gamePause;
 	bool gameOver;
 	bool jumpFlag;
