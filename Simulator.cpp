@@ -9,7 +9,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 {
 	p1 = NULL;
 	p2 = NULL;
-	diskSpeedFactor = diskSpeedFactor;
+	diskSpeedFactor = 15.0f;
 
 	score = 0;
 	powerUpLimit = 0;
@@ -121,6 +121,30 @@ void Simulator::addObject (GameObject* o)
 		}
 		targetList.push_back((Target*)o);
 	}
+	if(o->typeName == "Shield")
+	{
+		if (o->checkReAddFlag())
+		{
+			((Target*)o)->resetHit();
+		}
+		targetList.push_back((Target*)o);
+	}
+	if(o->typeName == "Boost")
+	{
+		if (o->checkReAddFlag())
+		{
+			((Target*)o)->resetHit();
+		}
+		targetList.push_back((Target*)o);
+	}
+	if(o->typeName == "Restore")
+	{
+		if (o->checkReAddFlag())
+		{
+			((Target*)o)->resetHit();
+		}
+		targetList.push_back((Target*)o);
+	}
 	if(o->typeName == "Wall")
 	{
 		o->getBody()->setRestitution(0.8f);
@@ -141,7 +165,8 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 //-------------------------------------------------------------------------------------
 void Simulator::removeObject(Ogre::String name)
 {
-	if (getGameObject(name)->typeName == "Target" || getGameObject(name)->typeName == "Power" || getGameObject(name)->typeName == "Speed")
+	if (getGameObject(name)->typeName == "Target" || getGameObject(name)->typeName == "Power" || getGameObject(name)->typeName == "Speed"
+	    || getGameObject(name)->typeName == "Shield" || getGameObject(name)->typeName == "Boost" || getGameObject(name)->typeName == "Restore")
 	{
 		for (int i = 0; i < targetList.size(); i++)
 		{	
@@ -199,7 +224,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		        {
 		            gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
 		            gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
-	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[1]);
+	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[2]);
 	                gameDisk->previousParticleSystem = 1;
 	                particleSystemEstablished = true;
 		        }
@@ -246,7 +271,8 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gA, gB);
 		else if (gB->typeName == "Disk") // If the second object is a disk
 			handleDiskCollisions(gB, gA);
-		else if ((gA->typeName == "Player" && gB->typeName == "Tile") || (gB->typeName == "Player" && gA->typeName == "Tile"))
+		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor") ||
+                 (gA->typeName == "Player" && gB->getGameObjectName() == "Floor2") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor2"))
 		{
 			if (!groundCheck && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
 				groundCheck = true;
@@ -410,7 +436,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		}
 	}
 	// Target
-	else if (o->typeName == "Target" || o->typeName == "Power" || o->typeName == "Speed")
+	else if (o->typeName == "Target" || o->typeName == "Power" || o->typeName == "Speed" || o->typeName == "Shield" || o->typeName == "Boost" || o->typeName == "Restore")
 	{
 		if (((Target*)o)->isHit() == false)
 		{
@@ -434,27 +460,27 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-							       0);
+							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
 			    o->addToSimulator();
 			    // new sound effect for power-up
 			}
 		}
 	}
-	else if (o->typeName == "Tile")
-	{
+	//else if (o->typeName == "Tile")
+	//{
 		/* Handle powerups */
-		Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
-		if(powerup == "removeOneRow")
+		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
+		//if(powerup == "removeOneRow")
 		// Remove one row
 		// Heal one tile
 		// Remove area
 		// Remove gameObject from gameObject list
 		// Remove collided tile from simulator
 		// Remove one tile
-		removeObject(o->getGameObjectName());
-		o->removeFromSimulator();
+		//removeObject(o->getGameObjectName());
+		//o->removeFromSimulator();
 		
-	}
+	//}
 }
 
 //-------------------------------------------------------------------------------------

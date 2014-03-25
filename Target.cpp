@@ -36,7 +36,7 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									       0);
+									       Ogre::Math::RangeRandom(-5.0f, 5.0f));
     }
     
 	rootNode->pitch(Ogre::Degree(90));
@@ -52,6 +52,18 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     else if (tt == SPEED) {
         typeName = "Speed";
         ent->setMaterialName("Examples/GreenChrome");
+    }
+    else if (tt == SHIELD) {
+        typeName = "Shield";
+        ent->setMaterialName("Examples/CyanChrome");
+    }
+    else if (tt == BOOST) {
+        typeName = "Boost";
+        ent->setMaterialName("Examples/YellowChrome");
+    }
+    else if (tt == RESTORE) {
+        typeName = "Restore";
+        ent->setMaterialName("Examples/WhiteChrome");
     }
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
