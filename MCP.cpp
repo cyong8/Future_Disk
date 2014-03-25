@@ -174,8 +174,10 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
+    clientGameStart = false;
     gameMode = 1;
     clientServerIdentifier = 0;
+
     gameNetwork = new Network(clientServerIdentifier, NULL); // Initialize Network
 
     CEGUI::MouseCursor::getSingleton().hide();
@@ -201,7 +203,9 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
+    clientGameStart = false;
     gameMode = 1;
+
     if (termArgs.size() == 2)
     {
         clientServerIdentifier = 1;
@@ -449,6 +453,12 @@ bool MCP::constructAndSendGameState()
      */
     MCP_Packet pack;
     int packetSize = 0;
+    if (gameSimulator->checkGameStart() && !clientGameStart)
+    {
+        pack.id = 's';
+        gameNetwork->sendPacket(pack); 
+        clientGameStart = true;
+    }
 
     // Update hostPlayer
     pack.sequence = 'i';  // for now
@@ -491,7 +501,8 @@ bool MCP::constructAndSendGameState()
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack; 
-    checkClientInput(evt);
+    if (clientGameStart)
+        checkClientInput(evt);
 
     if (mShutDown)
         exit(2);
@@ -528,11 +539,15 @@ void MCP::updateClientCamera(Ogre::Real elapseTime)
 //-------------------------------------------------------------------------------------
 bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
 {
-    MCP_Packet pack;    
-    pack.sequence = 'n';
+    MCP_Packet pack;   
 
     static char clientKeyLastSent = 'n';
 
+    pack.sequence = 'o';
+    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+    gameNetwork->sendPacket(pack); 
+    
+    pack.sequence = 'n';
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
         mShutDown = true;
@@ -558,9 +573,7 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
     if (pack.sequence != 'n')
         gameNetwork->sendPacket(pack);
 
-    pack.sequence = 'o';
-    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
-    gameNetwork->sendPacket(pack); 
+
 
     pack.sequence = 'n';
     gameNetwork->sendPacket(pack);  // Send Player
@@ -625,6 +638,8 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
     newQuat = pack.orientationQ;
 
+    if (pack.id == 's')
+        clientGameStart = true;
     if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
