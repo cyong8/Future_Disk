@@ -192,12 +192,11 @@ void Simulator::parseCollisions(void)
 		GameObject* gA = OMSA->getGameObject();
 		GameObject* gB = OMSB->getGameObject();
 
-		if (gA->typeName == "Disk")
+		if (gA->typeName == "Disk") // If the first object is a disk
 			handleDiskCollisions(gA, gB);
-		else if (gB->typeName == "Disk")
+		else if (gB->typeName == "Disk") // If the second object is a disk
 			handleDiskCollisions(gB, gA);
-		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor") ||
-					(gA->typeName == "Player" && gB->getGameObjectName() == "Floor2") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor2"))
+		else if ((gA->typeName == "Player" && gB->typeName == "Tile") || (gB->typeName == "Player" && gA->typeName == "Tile"))
 		{
 			if (!groundCheck && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
 				groundCheck = true;
@@ -368,7 +367,23 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			gameMusic->playCollisionSound("Disk", "Target");
 		}
 	}
+	else if (o->typeName == "Tile")
+	{
+		/* Handle powerups */
+		Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
+		if(powerup == "removeOneRow")
+		// Remove one row
+		// Heal one tile
+		// Remove area
+		// Remove gameObject from gameObject list
+		// Remove collided tile from simulator
+		// Remove one tile
+		removeObject(o->getGameObjectName());
+		o->removeFromSimulator();
+		
+	}
 }
+
 //-------------------------------------------------------------------------------------
 void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::String wallName)
 {
