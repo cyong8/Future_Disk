@@ -2,7 +2,7 @@
 #include "Simulator.h"
 
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position)
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, targetType tt)
 	: GameObject(nym, mgr, sim)
 {
 	/* 
@@ -14,7 +14,6 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	sceneNode->attachObject(particleSystem); // attach the particle system to a scene node
 */
 
-	typeName = "Target";
 	hit = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
@@ -24,16 +23,36 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/47.0f, dimensions.y/442.0f, dimensions.z/47.0f);
 	
 	//rootNode->setPosition(position);
-	rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-										,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-									   Ogre::Math::RangeRandom(sim->getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									   Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
-
+	if (tt == POINT) {
+	    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+									       Ogre::Math::RangeRandom(sim->getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+									       Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
+										    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
+    }
+    else {
+        rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+									       Ogre::Math::RangeRandom(sim->getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+									       0);
+    }
+    
 	rootNode->pitch(Ogre::Degree(90));
 
-	ent->setMaterialName("Examples/BlueChrome");
+    if (tt == POINT) {
+    	typeName = "Target";
+    	ent->setMaterialName("Examples/BlueChrome");
+	}
+	else if (tt == POWER) {
+	    typeName = "Power";
+	    ent->setMaterialName("Examples/RedChrome");
+    }
+    else if (tt == SPEED) {
+        typeName = "Speed";
+        ent->setMaterialName("Examples/GreenChrome");
+    }
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
 }

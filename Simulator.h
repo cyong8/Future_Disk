@@ -33,11 +33,15 @@ class Simulator
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
 		int score;
+		int powerUpLimit;
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
 		bool gameStart;
 		bool player1CanCatch;
+		bool canActivatePowerUp;
+		bool speedIncrease;
+		bool particleSystemEstablished;
 		Ogre::String previousWallHit;
 		bool giveDisk;
 		
@@ -65,6 +69,7 @@ class Simulator
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
+		void resetPowerUps(void);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;

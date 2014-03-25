@@ -8,12 +8,16 @@
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
 	score = 0;
+	powerUpLimit = 0;
 	soundedJump = false;
 	viewChangeP1 = false;
 	viewChangeP2 = false;
 	throwFlag = false;
 	gameStart = false;
 	player1CanCatch = true;
+	canActivatePowerUp = false;
+	speedIncrease = false;
+	particleSystemEstablished = true;
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	setDisk = false;
@@ -86,6 +90,26 @@ void Simulator::addObject (GameObject* o)
 		}
 		targetList.push_back((Target*)o);
 	}
+	if(o->typeName == "Power")
+	{
+		if (o->checkReAddFlag())
+		{
+			((Target*)o)->resetHit();
+			// knock out many tiles
+		}
+		targetList.push_back((Target*)o);
+	}
+	if(o->typeName == "Speed")
+	{
+		if (o->checkReAddFlag())
+		{
+			((Target*)o)->resetHit();
+            speedIncrease = true;
+            powerUpLimit = 1500;
+            particleSystemEstablished = false;
+		}
+		targetList.push_back((Target*)o);
+	}
 	if(o->typeName == "Wall")
 	{
 		o->getBody()->setRestitution(0.8f);
@@ -106,7 +130,7 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 //-------------------------------------------------------------------------------------
 void Simulator::removeObject(Ogre::String name)
 {
-	if (getGameObject(name)->typeName == "Target")
+	if (getGameObject(name)->typeName == "Target" || getGameObject(name)->typeName == "Power" || getGameObject(name)->typeName == "Speed")
 	{
 		for (int i = 0; i < targetList.size(); i++)
 		{	
@@ -149,7 +173,30 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		if (gameDisk != NULL)
 		{
 			btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-			gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
+			if (!speedIncrease)
+			    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(15.0f, 15.0f, 15.0f));
+		    else if (speedIncrease && powerUpLimit > 0) {
+		        gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(30.0f, 30.0f, 30.0f));
+		        if (!particleSystemEstablished) {
+		            gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
+		            gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
+	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[1]);
+	                gameDisk->previousParticleSystem = 1;
+	                particleSystemEstablished = true;
+		        }
+		        if (--powerUpLimit <= 0)
+		            particleSystemEstablished = false;
+	        }
+	        else if (powerUpLimit <= 0) {
+	            resetPowerUps();
+	            if (!particleSystemEstablished) {
+	                gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
+	                gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
+	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[0]);
+	                gameDisk->previousParticleSystem = 0;
+	                particleSystemEstablished = true;
+	            }
+	        }
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 		}
@@ -245,6 +292,7 @@ void Simulator::performThrow(Player* p)
 
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
+        resetPowerUps();
     	Ogre::Vector3 toParentPosition = d->getSceneNode()->_getDerivedPosition();
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
@@ -293,12 +341,14 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Wall
 	if (o->typeName == "Wall")
 	{
+	    canActivatePowerUp = true;
 		if (previousWallHit == "NULL")
 		{
 			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
+			
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
@@ -306,6 +356,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
+			
 		}
 		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
@@ -313,29 +364,44 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Player
 	else if (o->typeName == "Player")
 	{
+	    canActivatePowerUp = false;
 		if (((Player*)o)->checkHolding() == false && player1CanCatch)
 		{
 			gameStart = true;
 			((Player*)o)->attachDisk((Disk*)disk);
 			gameMusic->playCollisionSound("Disk", "Player");
+			
 		}
 	}
 	// Target
-	else if (o->typeName == "Target")
+	else if (o->typeName == "Target" || o->typeName == "Power" || o->typeName == "Speed")
 	{
 		if (((Target*)o)->isHit() == false)
 		{
-			((Target*)o)->targetHit();
-			removeObject(o->getGameObjectName());
 			// The 47.0f value is the x-width and y-height of the disk
-			o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-								,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							   Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-								,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-							   Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
-								,getGameObject("FarWall")->getSceneNode()->getPosition().z));
-			o->addToSimulator();
-			gameMusic->playCollisionSound("Disk", "Target");
+			if (o->typeName == "Target") {
+			    ((Target*)o)->targetHit();
+			    removeObject(o->getGameObjectName());
+			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+							       Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+							       Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
+								    ,getGameObject("FarWall")->getSceneNode()->getPosition().z));
+			    o->addToSimulator();
+			    gameMusic->playCollisionSound("Disk", "Target");
+			}
+			else if (canActivatePowerUp) {
+			    ((Target*)o)->targetHit();
+			    removeObject(o->getGameObjectName());
+			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+							       Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+							       0);
+			    o->addToSimulator();
+			    // new sound effect for power-up
+			}
 		}
 	}
 }
@@ -420,4 +486,10 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 bool Simulator::checkGameStart()
 {
 	return gameStart;
+}
+//-------------------------------------------------------------------------------------
+void Simulator::resetPowerUps()
+{
+    powerUpLimit = 0;
+    speedIncrease = false;
 }

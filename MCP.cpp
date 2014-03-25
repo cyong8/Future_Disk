@@ -61,9 +61,11 @@ void MCP::createSoloModeScene()
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
-    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POINT))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POINT))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POINT))->addToSimulator(); // Create initial Target
+    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(5.0f, 0.01f, 5.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POWER))->addToSimulator(); // Create initial Target
+    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(5.0f, 0.01f, 5.0f), Ogre::Vector3(1.0f, .0f, -19.0f), SPEED))->addToSimulator(); // Create initial Target
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     //trajectory = mSceneMgr->createManualObject("Line");
     
