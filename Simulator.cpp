@@ -9,7 +9,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 {
 	p1 = NULL;
 	p2 = NULL;
-	diskSpeedFactor = diskSpeedFactor;
+	diskSpeedFactor = 15.0;
 
 	score = 0;
 	powerUpLimit = 0;
@@ -179,10 +179,13 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	if (player1Cam)
 		updatePlayerCamera(player1Cam, elapseTime);
 	if (p1->checkHolding() || (p2 != NULL))
-    {
-    	if (p2->checkHolding())
-    		performThrow(p2);
-    	else 
+    {	
+    	if(p2!=NULL)
+    	{
+	    	if (p2->checkHolding())
+	    		performThrow(p2);
+    	}
+    	if (p1->checkHolding())
     		performThrow(p1);
     }
 	else	// Speed disk back up in order to mimic inelasticity
@@ -334,7 +337,17 @@ void Simulator::performThrow(Player* p)
 		d->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
-		player1CanCatch = false;
+		if (p->getGameObjectName() == "Player1")
+		{
+			player1CanCatch = false;
+			player2CanCatch = true;
+		}
+		if (p->getGameObjectName() == "Player2")
+		{
+			player1CanCatch = true;
+			player2CanCatch = false;
+		}
+
     	p->setHolding();
     }
     else // Update position relative to the Player
@@ -382,6 +395,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		}
 		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
+
 		if (p2 != NULL)
 		{
 			if (!player2CanCatch && !p2->checkHolding())
@@ -395,6 +409,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		if (((Player*)o)->checkHolding() == false)
 		{
 			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
+
 			{
 				((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
@@ -405,7 +420,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
-			((Player*)o)->attachDisk((Disk*)disk);
 			gameMusic->playCollisionSound("Disk", "Player");
 			
 		}

@@ -277,9 +277,11 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if(!processUnbufferedInput(evt)) 
                     return false;
 
+                gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
+                gameSimulator->parseCollisions(); // check collisions
+
                 if (sceneRendered)
                 {
-
                     /* wait for packets from client */
                     MCP_Packet pack;
                     pack = gameNetwork->receivePacket();
@@ -298,8 +300,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if (clientPlayer != NULL)
                     restrictPlayerMovement(clientPlayer);
                 */
-                gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
-                gameSimulator->parseCollisions(); // check collisions
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
@@ -546,6 +546,8 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
         pack.sequence = 'v';
     else if (mKeyboard->isKeyDown(OIS::KC_B)) // Speed Boost
         pack.sequence = 'b';
+
+    clientKeyLastSent = pack.sequence;
 
     if (pack.sequence != 'n')
         gameNetwork->sendPacket(pack);
