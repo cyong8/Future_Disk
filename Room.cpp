@@ -42,28 +42,204 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 		posX = -width/2 + tileSize/2;
 		posZ += tileSize;
 	}*/
-	position = Ogre::Vector3(-width/2 + tileSize/2, -(width*heightScalingFactor)/2.0f, -(gapSize/2.0 + floorLength - tileSize/2.0));
-	(new Tile("1", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	// Row 1
+	position = Ogre::Vector3(-width/2 + tileSize/2, -(width*heightScalingFactor)/2.0f, -(gapSize/2.0 + floorLength + tileSize/2.0));
+	(new Tile("client11", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
-	(new Tile("2", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	(new Tile("client12", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
-	(new Tile("3", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	(new Tile("client13", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
-	(new Tile("4", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	(new Tile("client14", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
-	(new Tile("5", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
-	
-	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize);
-	(new Tile("6", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
-	position = Ogre::Vector3(position.x + tileSize, position.y, position.z + tileSize);
-	(new Tile("7", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
-	position = Ogre::Vector3(position.x + tileSize, position.y, position.z + tileSize);
-	(new Tile("8", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	(new Tile("client15", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client16", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 
+	// Row 2
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("client21", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client22", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client23", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client24", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client25", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client26", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 
+	// Row 3
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("client31", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client32", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client33", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client34", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client35", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client36", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 4
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("client41", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client42", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client43", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client44", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client45", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client46", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 5
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("client51", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client52", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client53", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client54", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client55", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client56", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 6
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("client61", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client62", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client63", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client64", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client65", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client66", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 7
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("client71", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client72", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client73", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client74", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client75", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("client76", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 1
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize * 3);
+	(new Tile("host11", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host12", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host13", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host14", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host15", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host16", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 2
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("host21", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host22", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host23", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host24", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host25", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host26", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 3
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("host31", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host32", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host33", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host34", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host35", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host36", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 4
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("host41", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host42", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host43", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host44", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host45", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host46", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 5
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("host51", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host52", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host53", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host54", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host55", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host56", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 6
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("host61", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host62", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host63", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host64", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host65", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host66", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+
+	// Row 7
+	position = Ogre::Vector3(-width/2 + tileSize/2, position.y, position.z + tileSize); // Reset x, increment z
+	(new Tile("host71", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host72", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host73", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host74", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host75", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+	position = Ogre::Vector3(position.x + tileSize, position.y, position.z);
+	(new Tile("host76", mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
 
 	/* Plane for 2nd player Floor */
-	plane.normal = Ogre::Vector3::UNIT_Y;
+/*	plane.normal = Ogre::Vector3::UNIT_Y;
 	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, height/2.0f + width/3.0f - floorLength/2.0f);
 	Ogre::MeshManager::getSingleton().createPlane("Floor2_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	width, floorLength, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Z);
@@ -72,7 +248,7 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 		(new Wall("Floor2", "Floor2_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength)))->addToSimulator();
 	else 
 		new Wall("Floor2", "Floor2_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength));
-
+*/
 	/* Plane for Ceiling */
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Y;
 	position = Ogre::Vector3(0.0f, (width*heightScalingFactor)/2.0f, 0.0f);
