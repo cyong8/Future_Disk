@@ -11,4 +11,4 @@ public:
 	Ogre::Vector3 pos;
 };
 
-#endif // #ifndef __Wall_h_
+#endif // #ifndef __Tile_h_

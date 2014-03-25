@@ -2,10 +2,11 @@
 #define __Room_h_
 
 #include "Wall.h"
+#include "Tile.h"
+
 class Wall;
 
-//#include "Tile.h"
-//class Tile;
+class Tile;
 
 class Room
 {

@@ -14,25 +14,28 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::Real tileSize = 5.0f;
 	Ogre::Real tileNum = (floorLength * width)/tileSize;
 
-
 	// X position of the first tile for player1 is -width/2 + tileSize/2, y is 0 and z is gapsize/2 + floorLength - tileSize/2
-	position = Ogre::Vector3((-width/2.0) + tileSize/2.0, 0.0, gapSize/2.0 + floorLength - tileSize/2.0);
+	position = Ogre::Vector3(-width/2 + tileSize/2, -(width*heightScalingFactor)/2.0f, -(gapSize/2.0 + floorLength - tileSize/2.0));//Ogre::Vector3((-width/2.0) + tileSize/2.0, 0.0, gapSize/2.0 + floorLength - tileSize/2.0);
 
 	/* Instead of a wall the floor is a collection of tiles */
-	int i;
-	//for(i = 0; i < tileNum; i++)
+	for(int j = 0; j < 3; j++)
 	{
-		if(position.x >= width/2)
+		for(int i = 0; i < 5; i++)
 		{
-			// reset x position and increment z position
-			position.x = (-width/2) + tileSize/2;
-			position.y = gapSize/2.0 + floorLength - tileSize/2 + tileSize;
+			/*if(position.x >= 15.0f)
+			{
+				// reset x position and increment z position
+				position.x = (-width/2.0f) + tileSize/2.0f;
+				position.z += tileSize;//gapSize/2.0f + floorLength - tileSize/2 + tileSize;
+			}*/
+			Ogre::String tileName = "tile" + i;
+			(new Tile(tileName, mSceneMgr, game_simulator, position, tileSize))->addToSimulator();
+			// Add tile to simulator
+			//tile1->addToSimulator();
+			// increment x position by tileSize
+			position.x += tileSize;
 		}
-		Tile *tile1 = new Tile("tile" + i, mSceneMgr, game_simulator, position, tileSize);
-		// Add tile to simulator
-		tile1->addToSimulator();
-		// increment x position by tileSize
-		position.x += tileSize;
+		position.z += tileSize;
 	}
 
 	/* Plane for 2nd player Floor */
