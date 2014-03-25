@@ -65,13 +65,11 @@ protected:
 	void updateClientCamera(Ogre::Real elapseTime);
 	bool checkClientInput(const Ogre::FrameEvent& evt);
 	bool interpretPacket(MCP_Packet pack);
-	bool processUnbufferedClientInput(const Ogre::FrameEvent& evt);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
-
 	void togglePause(void);
 	void gameOverScreen(void);
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
