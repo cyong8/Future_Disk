@@ -42,6 +42,7 @@ void MCP::createScene(void)
     hostPlayer = NULL;
     clientPlayer = NULL;
     gameDisk = NULL;
+    gameSimulator = NULL;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -156,6 +157,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 
     createSoloModeScene();
     
+    gameStart = true;
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -286,6 +288,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
                     gameDisk->particleNode->setVisible(true);
                 }
+
                 modifyScore(gameSimulator->tallyScore());
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
@@ -552,11 +555,11 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     if (evt.state.Z.rel)
         sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
     
-    // if (gameSimulator != NULL)
-    // {
-    //     if (!gameSimulator->checkGameStart())
-    //         return false;
-    // }
+    if (gameSimulator != NULL)
+    {
+        if (!gameSimulator->checkGameStart())
+            return false;
+    }
 
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
