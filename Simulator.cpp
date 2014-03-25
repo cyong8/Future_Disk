@@ -7,6 +7,10 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
+	p1 = NULL;
+	p2 = NULL;
+	diskSpeedFactor = 15.0f;
+
 	score = 0;
 	powerUpLimit = 0;
 	soundedJump = false;
@@ -15,6 +19,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	throwFlag = false;
 	gameStart = false;
 	player1CanCatch = true;
+    player2CanCatch = true;
 	canActivatePowerUp = false;
 	speedIncrease = false;
 	particleSystemEstablished = true;
@@ -61,25 +66,31 @@ void Simulator::addObject (GameObject* o)
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
-		setPlayer((Player*)o);
+		if (o->getGameObjectName() == "Player1")
+		{
+			setPlayer((Player*)o);
+			player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
+			player1Cam->setPlayer((Player*)o);
+		}
+		if (o->getGameObjectName() == "Player2")
+			setPlayer((Player*)o);
+
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
-		player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
-		player1Cam->setPlayer((Player*)o);
 	}
 	if(o->typeName == "Disk")
-	{	
+	{
+		Player* iPlayer = (Player*)getGameObject(((Disk*)o)->checkInitialPlayer());
+
 		gameDisk = (Disk*)o;
 		printf("\n\n\n adding game disk\n\n\n");
 		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
 
-		Ogre::Vector3 toPlayerDirection = p1->getSceneNode()->getPosition().normalisedCopy();
+		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
 		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z));
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
-
-		// gameDisk->setThrownVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(15.0f, 15.0f, 15.0f));
 	}
 	if(o->typeName == "Target")
 	{
@@ -158,6 +169,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	if (p1)
 		// keep track of sight node position to reapply it after simulator is stepped 
 		sightPosBeforeSim1 = p1->getPlayerSightNode()->getPosition(); 
+
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 
 	if (p1)
@@ -168,6 +180,11 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		updatePlayerCamera(player1Cam, elapseTime);
 	if (p1->checkHolding())
         performThrow(p1);
+    if (p2 != NULL)
+    {
+    	if (p2->checkHolding())
+    		performThrow(p2);
+    }
 	else	// Speed disk back up in order to mimic inelasticity
 	{	
 		if (gameDisk != NULL)
@@ -229,7 +246,7 @@ void Simulator::parseCollisions(void)
 		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor") ||
 					(gA->typeName == "Player" && gB->getGameObjectName() == "Floor2") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor2"))
 		{
-			if (!groundCheck)
+			if (!groundCheck && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
 				groundCheck = true;
 		}
 		contactManifold->clearManifold();
@@ -303,7 +320,7 @@ void Simulator::performThrow(Player* p)
 
 		d->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		d->getBody()->setRestitution(1.0f);
-		d->getBody()->setLinearVelocity(btVector3(15.0f, 15.0f, 15.0f) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
+		d->getBody()->setLinearVelocity(btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
 
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 
@@ -360,13 +377,28 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		}
 		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
+		if (p2 != NULL)
+		{
+			if (!player2CanCatch && !p2->checkHolding())
+				player2CanCatch = true;
+		}
 	}
 	// Player
 	else if (o->typeName == "Player")
 	{
 	    canActivatePowerUp = false;
-		if (((Player*)o)->checkHolding() == false && player1CanCatch)
+		if (((Player*)o)->checkHolding() == false)
 		{
+			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
+			{
+				((Player*)o)->attachDisk((Disk*)disk);
+				gameMusic->playCollisionSound("Disk", "Player");
+			}
+			if (player2CanCatch && ((Player*)o)->getGameObjectName() == "Player2")
+			{
+				((Player*)o)->attachDisk((Disk*)disk);
+				gameMusic->playCollisionSound("Disk", "Player");
+			}
 			gameStart = true;
 			((Player*)o)->attachDisk((Disk*)disk);
 			gameMusic->playCollisionSound("Disk", "Player");
@@ -449,8 +481,6 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 
 			if(player1Cam->isInAimMode()) // Go into Aim view
 				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			
-
 			else // Return from Aim view
 				player1Cam->initializePosition(p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 		}
@@ -460,25 +490,6 @@ void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTim
 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
 			else
 				player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());			
-		}
-	}
-	if (cam->name == "P2Cam")
-	{
-		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
-		{
-			toggleViewChange(p2->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
-
-			if(player1Cam->isInAimMode()) // Go into Aim view
-				player1Cam->initializePosition(((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
-			else // Return from Aim view
-				player1Cam->initializePosition(p2->getPlayerCameraNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
-		}
-		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
-		{
-			if (player1Cam->isInAimMode())
-				player1Cam->update(elapseTime, ((GameObject*)p2)->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
-			else
-				player1Cam->update(elapseTime,p2->getSceneNode()->_getDerivedPosition(), p2->getPlayerSightNode()->_getDerivedPosition());
 		}
 	}
 }

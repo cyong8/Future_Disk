@@ -180,7 +180,7 @@ void Network::acceptClient(char *data)
 	connectionEstablished = true;
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(MCP_Packet pack, int packetSize)
+void Network::sendPacket(MCP_Packet pack)
 {
 	int numSent;
 	char buff[sizeof(struct MCP_Packet)];
@@ -239,7 +239,7 @@ MCP_Packet Network::receivePacket()
 	char buff[maxPacketSize];
 	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, maxPacketSize) <= 0)
 	{
-		pack.id = 'n';
+		pack.sequence = 'n';
 		return pack;
 	}
 	/* UDP Packet/Sockets not working - Doing TCP for now */

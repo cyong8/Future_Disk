@@ -2,7 +2,11 @@
 #define __Room_h_
 
 #include "Wall.h"
+#include "Tile.h"
+
 class Wall;
+
+class Tile;
 
 class Room
 {
@@ -14,6 +18,7 @@ public:
 protected:
 	Ogre::Real width;
 	Ogre::Real height;
+	Ogre::Real gapSize;
 	Ogre::Real floorLength;
 };
 

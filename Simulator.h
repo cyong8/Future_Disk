@@ -39,11 +39,13 @@ class Simulator
 		bool throwFlag;
 		bool gameStart;
 		bool player1CanCatch;
+	    bool player2CanCatch;
 		bool canActivatePowerUp;
 		bool speedIncrease;
 		bool particleSystemEstablished;
 		Ogre::String previousWallHit;
 		bool giveDisk;
+		Ogre::Real diskSpeedFactor;
 		
 		Music* gameMusic;
 

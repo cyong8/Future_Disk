@@ -27,7 +27,7 @@ MCP::~MCP(void)
 {
     gameMusic->musicDone();
     gameMusic = NULL;
-	delete mRoot;
+    delete mRoot;
 }
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
@@ -41,6 +41,8 @@ void MCP::createScene(void)
 
     hostPlayer = NULL;
     clientPlayer = NULL;
+    gameDisk = NULL;
+    gameSimulator = NULL;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -49,6 +51,7 @@ void MCP::createScene(void)
     vKeyDown = false;    
     mRotate = 0.1f;
     sceneRendered = 0;
+    gameMode = 0;
 }
 //-------------------------------------------------------------------------------------
 void MCP::createSoloModeScene()
@@ -119,6 +122,8 @@ void MCP::createMultiplayerModeScene_client()
 
     hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
     clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
+    pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    pCam->setPlayer(clientPlayer);
 
     mSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     mSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -136,7 +141,6 @@ void MCP::createMultiplayerModeScene_client()
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
-    gameMode = 0;
     CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
@@ -149,13 +153,13 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(objectivePanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameStart = true;
     gameOver = false;
     score = 0;
     time(&initTime);
 
     createSoloModeScene();
     
+    gameStart = true;
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -264,20 +268,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 gameOver = updateTimer(currTime);
                 if (gameOver)
                     gameMusic->playMusic("Pause");
-                else
-                {
-                    time_t pcurrTime;
-                    time(&pcurrTime);
-                    updatePauseTime(pcurrTime);
-                }
             }
             if (clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
             {
                 if(!processUnbufferedInput(evt)) 
                     return false;
+
                 if (sceneRendered)
                     constructAndSendGameState();
-
                 /*
                 if (hostPlayer != NULL)
                     restrictPlayerMovement(hostPlayer);
@@ -289,39 +287,51 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
-                    Disk* d = (Disk*)gameSimulator->getGameObject("Disk");
-                    d->particleNode->setVisible(true);
+                    gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
+                    gameDisk->particleNode->setVisible(true);
                 }
+
                 modifyScore(gameSimulator->tallyScore());
             }
-            else if (clientServerIdentifier = 1)    // Client render loop - Specific processing of inputs
+            else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
             {
-                if(!processUnbufferedClientInput(evt)) 
-                    return false;
-
                 if (sceneRendered)
-                    updateClient(evt);
+                {
+                    if (!updateClient(evt))
+                        return false;
+                    updateClientCamera(evt.timeSinceLastFrame);
+                }
             }     
+        }
+        else
+        {
+                    time_t pcurrTime;
+                    time(&pcurrTime);
+                    updatePauseTime(pcurrTime);
         }
     }
     return ret;
 }
 //-------------------------------------------------------------------------------------
-bool MCP::constructAndSendGameState()
+bool MCP::constructAndSendGameState()   
 {
+    /* Construct/Update/Send Packets containing Position/Orientation of:
+         Disk, 
+         hostPlayer, 
+         clientPlayer
+     */
     MCP_Packet pack;
     int packetSize = 0;
+
     // Update hostPlayer
     pack.sequence = 'i';  // for now
     pack.id = 'h';
     pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.orientationQ = hostPlayer->getSceneNode()->_getDerivedOrientation();
 
-    packetSize = sizeof(pack.sequence) + sizeof(pack.id) + sizeof(pack.x_coordinate)
-                    + sizeof(pack.y_coordinate) + sizeof(pack.z_coordinate);
-
-    gameNetwork->sendPacket(pack, packetSize);    
+    gameNetwork->sendPacket(pack);  // Send Player
 
     // Update clientPlayer
     pack.sequence = 'i';  // for now
@@ -329,11 +339,26 @@ bool MCP::constructAndSendGameState()
     pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
+    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
 
-    packetSize = sizeof(pack.sequence) + sizeof(pack.id) + sizeof(pack.x_coordinate)
-                    + sizeof(pack.y_coordinate) + sizeof(pack.z_coordinate);
+    gameNetwork->sendPacket(pack);  // Send Player
 
-    gameNetwork->sendPacket(pack, packetSize);
+    if (gameDisk != NULL)
+    {
+        pack.sequence = 'i';
+        pack.id = 'd';
+        pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
+        pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+    }
+
+    gameNetwork->sendPacket(pack);  // Send Disk
+
+    /* Signify end of frame data */
+    pack.sequence = 'n';
+
+    gameNetwork->sendPacket(pack);
 }
 //-------------------------------------------------------------------------------------
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
@@ -343,45 +368,78 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
         exit(2);
     // INTERPRETS PACKET
     pack = gameNetwork->receivePacket();
-    while (pack.id != 'n')
+    while (pack.sequence != 'n')
     {
         interpretPacket(pack);
         pack = gameNetwork->receivePacket();
     }
     //INDIVIDUAL INPUT - SEND PACKETS
-    checkClientInput(evt);
+    return checkClientInput(evt);
+}
+//-------------------------------------------------------------------------------------
+void MCP::updateClientCamera(Ogre::Real elapseTime)
+{
+    if (clientViewMode) // View was toggled; now check what view it needs to be changed to
+    {
+        clientViewMode = !clientViewMode;
+        if(pCam->isInAimMode()) // Go into Aim view
+            pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        
+        else // Return from Aim view
+            pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+    {
+        if (pCam->isInAimMode())
+            pCam->update(elapseTime,clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        else
+            pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
+    }
 }
 //-------------------------------------------------------------------------------------
 bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
-{
-    return false;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::interpretPacket(MCP_Packet pack)
-{
-    Ogre::Vector3 newPos;
-    newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
-
-    if (pack.id == 'h')
-        hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
-
-    if (pack.id == 'c')   
-        clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
-
-    hostPlayer->getSceneNode()->needUpdate();
-    clientPlayer->getSceneNode()->needUpdate();
-    printf("INTERPRETTING!!!!\n\n\n");
-
-    return true;
-}
-//-------------------------------------------------------------------------------------
-bool MCP::processUnbufferedClientInput(const Ogre::FrameEvent& evt)
 {
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
         mShutDown = true;
         return false;
     }
+    return true;
+}
+//-------------------------------------------------------------------------------------
+bool MCP::interpretPacket(MCP_Packet pack)
+{
+    Ogre::Vector3 newPos;
+    Ogre::Quaternion newQuat;
+    newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
+    newQuat = pack.orientationQ;
+
+    if (pack.id == 'h')
+    {
+        hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
+        hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
+    if (pack.id == 'c')   
+    {
+        clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
+        // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+    }
+    if (pack.id == 'd')
+    {
+        if (gameDisk == NULL)
+        {
+            gameDisk = new Disk("Disk", mSceneMgr, gameSimulator, -1.0f);
+            gameDisk->particleNode->setVisible(true);
+        }
+
+        gameDisk->getSceneNode()->_setDerivedPosition(newPos);
+        gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
+        gameDisk->getSceneNode()->needUpdate();
+    }
+
+    hostPlayer->getSceneNode()->needUpdate();
+    clientPlayer->getSceneNode()->needUpdate();
+
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -493,13 +551,18 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)
 {
-	CEGUI::System &sys = CEGUI::System::getSingleton();
-  	sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
-  	// Scroll wheel.
-  	if (evt.state.Z.rel){
-    	sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
-  	}
-  	
+    CEGUI::System &sys = CEGUI::System::getSingleton();
+    sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
+    // Scroll wheel.
+    if (evt.state.Z.rel)
+        sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
+    
+    if (gameSimulator != NULL)
+    {
+        if (!gameSimulator->checkGameStart())
+            return false;
+    }
+
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;
 
@@ -573,7 +636,7 @@ bool MCP::mouseReleased(const OIS::MouseEvent &evt, OIS::MouseButtonID id)
 //-------------------------------------------------------------------------------------
 bool MCP::keyPressed(const OIS::KeyEvent &evt)
 {
-	CEGUI::System &sys = CEGUI::System::getSingleton();
+    CEGUI::System &sys = CEGUI::System::getSingleton();
     sys.injectKeyDown(evt.key);
     sys.injectChar(evt.text);
     
@@ -605,10 +668,10 @@ void MCP::togglePause()
 {
     if (gamePause == true)  //leaving pause
     {
-    	CEGUI::MouseCursor::getSingleton().hide();
-    	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    	wmgr.destroyAllWindows();
-    	
+        CEGUI::MouseCursor::getSingleton().hide();
+        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+        wmgr.destroyAllWindows();
+        
         gameMusic->playMusic("Play");
         gamePause = false;
         pauseLabel->hide();
@@ -620,20 +683,20 @@ void MCP::togglePause()
     }
     else //entering Pause
     {
-    	CEGUI::MouseCursor::getSingleton().show();
-    	CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    	CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
-    	
-    	CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/Pause/QuitButton");
-    	quit->setText("Quit Game");
-    	quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    	
-    	sheet->addChildWindow(quit);
-    	
-    	CEGUI::System::getSingleton().setGUISheet(sheet);
+        CEGUI::MouseCursor::getSingleton().show();
+        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+        CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
+        
+        CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/Pause/QuitButton");
+        quit->setText("Quit Game");
+        quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+        sheet->addChildWindow(quit);
+        
+        CEGUI::System::getSingleton().setGUISheet(sheet);
     
-    	quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    	
+        quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+        
         gameMusic->playMusic("Start");
         pauseLabel->setCaption("GAME PAUSED!");
         pauseLabel->show();

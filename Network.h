@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include "OgreQuaternion.h"
 
 struct MCP_Packet
 {
@@ -15,6 +16,7 @@ struct MCP_Packet
 	float x_coordinate;	// Max = 4 Bytes - 32 Bits
 	float y_coordinate;
 	float z_coordinate;
+	Ogre::Quaternion orientationQ;
 };						// Max Total = 16 Bytes - Must alloc at least 16 Bytes for buffer
 
 class Network
@@ -26,7 +28,7 @@ public:
 	bool establishConnection(void);
 	bool waitForPacket(void);
 	void acceptClient(char* data);
-	void sendPacket(MCP_Packet pack, int packetSize);
+	void sendPacket(MCP_Packet pack);
 	MCP_Packet receivePacket(void);
 	bool checkConnection(void);
 
