@@ -205,8 +205,11 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		updatePlayerCamera(player1Cam, elapseTime);
 	if (p1->checkHolding() || (p2 != NULL))
     {
-    	if (p2->checkHolding())
-    		performThrow(p2);
+    	if(p2!=NULL)
+    	{
+	    	if (p2->checkHolding())
+	    		performThrow(p2);
+    	}
     	else 
     		performThrow(p1);
     }
@@ -252,7 +255,7 @@ void Simulator::parseCollisions(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
-	int groundCheck = false; //checking floor taking care of multiple collisions
+	int groundCheck = false; //checking Tile taking care of multiple collisions
 	Player* colP;
 
 	for (i=0;i<numManifolds;i++)
@@ -271,8 +274,7 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gA, gB);
 		else if (gB->typeName == "Disk") // If the second object is a disk
 			handleDiskCollisions(gB, gA);
-		else if ((gA->typeName == "Player" && gB->getGameObjectName() == "Floor") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor") ||
-                 (gA->typeName == "Player" && gB->getGameObjectName() == "Floor2") || (gB->typeName == "Player" && gA->getGameObjectName() == "Floor2"))
+		else if ((gA->typeName == "Player" && gB->typeName == "Tile") || (gB->typeName == "Player" && gA->typeName == "Tile"))
 		{
 			if (!groundCheck && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
 				groundCheck = true;
@@ -395,7 +397,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
-			
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
@@ -403,7 +404,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
-			
 		}
 		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
@@ -446,7 +446,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			    removeObject(o->getGameObjectName());
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+							       Ogre::Math::RangeRandom(getGameObject("Tile")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
 								    ,getGameObject("FarWall")->getSceneNode()->getPosition().z));
@@ -458,7 +458,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			    removeObject(o->getGameObjectName());
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Floor")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+							       Ogre::Math::RangeRandom(getGameObject("Tile")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
 			    o->addToSimulator();
@@ -472,6 +472,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
 		//if(powerup == "removeOneRow")
 		// Remove one row
+		//else if(powerup == "")
 		// Heal one tile
 		// Remove area
 		// Remove gameObject from gameObject list
@@ -501,8 +502,8 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Floor", true) 
-    	|| Ogre::StringUtil::match(wallName, "Floor2", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true) 
+    	|| Ogre::StringUtil::match(wallName, "Tile", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);
