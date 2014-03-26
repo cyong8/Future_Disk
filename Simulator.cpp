@@ -257,6 +257,7 @@ void Simulator::parseCollisions(void)
 	int i;
 	int groundCheck = false; //checking Tile taking care of multiple collisions
 	Player* colP;
+	bool tileHit;
 
 	for (i=0;i<numManifolds;i++)
 	{
@@ -285,6 +286,7 @@ void Simulator::parseCollisions(void)
 		soundedJump = true;
 	else
 		p1->groundConstantSet = false;
+
 	if (groundCheck && gameDisk == NULL)
     	setDisk = true;
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
@@ -457,7 +459,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			    removeObject(o->getGameObjectName());
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Tile")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
 								    ,getGameObject("FarWall")->getSceneNode()->getPosition().z));
@@ -469,7 +471,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			    removeObject(o->getGameObjectName());
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Tile")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
 			    o->addToSimulator();
@@ -477,8 +479,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			}
 		}
 	}
-	//else if (o->typeName == "Tile")
-	//{
+	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit())
+	{
+		printf("COLLIDED WITH TILE!\n\n\n");
 		/* Handle powerups */
 		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
 		//if(powerup == "removeOneRow")
@@ -489,10 +492,11 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		// Remove gameObject from gameObject list
 		// Remove collided tile from simulator
 		// Remove one tile
-		//removeObject(o->getGameObjectName());
-		//o->removeFromSimulator();
-		
-	//}
+		printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
+		((Tile *)o)->markHit(); // Mark that the tile has been hit
+		printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
+		removeObject(((Tile*)o)->getGameObjectName());
+	}
 }
 
 //-------------------------------------------------------------------------------------

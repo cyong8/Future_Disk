@@ -67,6 +67,7 @@ void MCP::createSoloModeScene()
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
+    
     (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
@@ -293,7 +294,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     /* wait for packets from client */
                     MCP_Packet pack;
                     
-                    if (timeSinceLastFrame == 0.01f)
+                    if (timeSinceLastStateUpdate == 0.01f)
                     {
                         // if the timer has been reset, update the clients scene; also done at beginning of program
                     }                        
@@ -306,9 +307,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                         interpretClientPacket(pack);
                         pack = gameNetwork->receivePacket();
                     }
-                    if (timeSinceLastFrame < 0.0f)
-                        timeSinceLastFrame = 0.01f;
-                    timeSinceLastFrame = timeSinceLastFrame - evt.timeSinceLastFrame;
+                    if (timeSinceLastStateUpdate < 0.0f)
+                        timeSinceLastStateUpdate = 0.01f;
+                    timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
                     constructAndSendGameState();
                 }
                 /*

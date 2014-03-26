@@ -2,7 +2,7 @@
 #include "Simulator.h"
 
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, targetType tt)
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, targetType tt, Ogre::Vector3 roomBounds)
 	: GameObject(nym, mgr, sim)
 {
 	/* 
@@ -14,6 +14,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	sceneNode->attachObject(particleSystem); // attach the particle system to a scene node
 */
 
+	//Ogre::Vector3 roomBounds = Ogre::Vector3(room->getWidth()/2, room->getHeight()/2, room->getFloorLength()/2);
+
 	hit = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
@@ -24,19 +26,21 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	
 	//rootNode->setPosition(position);
 	if (tt == POINT) {
-	    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+	    rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-roomBounds.z/2,roomBounds.z/2));
+	    /*rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
+										    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));*/
     }
     else {
-        rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+        rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-5.0f, 5.0f));
+       /* rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									       Ogre::Math::RangeRandom(-5.0f, 5.0f));
+									       Ogre::Math::RangeRandom(-5.0f, 5.0f));*/
     }
     
 	rootNode->pitch(Ogre::Degree(90));
