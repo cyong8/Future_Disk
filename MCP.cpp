@@ -175,6 +175,7 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
     gameMode = 1;
     clientServerIdentifier = 0;
+
     gameNetwork = new Network(clientServerIdentifier, NULL); // Initialize Network
 
     CEGUI::MouseCursor::getSingleton().hide();
@@ -201,6 +202,7 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
     gameMode = 1;
+
     if (termArgs.size() == 2)
     {
         clientServerIdentifier = 1;
@@ -447,7 +449,6 @@ bool MCP::constructAndSendGameState()
          clientPlayer
      */
     MCP_Packet pack;
-    int packetSize = 0;
 
     // Update hostPlayer
     pack.sequence = 'i';  // for now
@@ -477,9 +478,9 @@ bool MCP::constructAndSendGameState()
         pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
         pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
         pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+        gameNetwork->sendPacket(pack);  // Send Disk
     }
 
-    gameNetwork->sendPacket(pack);  // Send Disk
 
     /* Signify end of frame data */
     pack.sequence = 'n';
@@ -490,6 +491,7 @@ bool MCP::constructAndSendGameState()
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack; 
+    
     checkClientInput(evt);
 
     if (mShutDown)
@@ -527,11 +529,15 @@ void MCP::updateClientCamera(Ogre::Real elapseTime)
 //-------------------------------------------------------------------------------------
 bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
 {
-    MCP_Packet pack;    
-    pack.sequence = 'n';
+    MCP_Packet pack;   
 
     static char clientKeyLastSent = 'n';
 
+    pack.sequence = 'o';
+    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+    gameNetwork->sendPacket(pack); 
+    
+    pack.sequence = 'n';
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
         mShutDown = true;
@@ -557,9 +563,7 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
     if (pack.sequence != 'n')
         gameNetwork->sendPacket(pack);
 
-    pack.sequence = 'o';
-    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
-    gameNetwork->sendPacket(pack); 
+
 
     pack.sequence = 'n';
     gameNetwork->sendPacket(pack);  // Send Player
@@ -602,10 +606,10 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
         ;
     if (typeInput == 'b')   //
         ;
-    if (typeInput == 'o')
+    if (typeInput == 'o' && gameSimulator->checkGameStart())
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
 
-    if (movementFlag)
+    if (movementFlag && gameSimulator->checkGameStart())
     {
         Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
         trueVelocity = clientPlayer->getSceneNode()->getOrientation() * trueVelocity; 
@@ -690,7 +694,8 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
         pBody = p->getBody();
         transform = pBody->getCenterOfMassTransform();
     }
-
+    if (clientServerIdentifier == 1 && gameDisk == NULL)
+        return true;
     /* rotation working, but camera not following */
     if (vKeyDown)
     {   
