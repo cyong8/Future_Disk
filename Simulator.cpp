@@ -340,6 +340,7 @@ void Simulator::parseCollisions(void)
 	int i;
 	int groundCheck = false; //checking Tile taking care of multiple collisions
 	Player* colP;
+	bool tileHit;
 
 	for (i=0;i<numManifolds;i++)
 	{
@@ -368,6 +369,7 @@ void Simulator::parseCollisions(void)
 		soundedJump = true;
 	else
 		p1->groundConstantSet = false;
+
 	if (groundCheck && gameDisk == NULL)
     	setDisk = true;
 	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
@@ -558,8 +560,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	//else if (o->typeName == "Tile")
-	//{
+	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit())
+	{
+		printf("COLLIDED WITH TILE!\n\n\n");
 		/* Handle powerups */
 		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
 		//if(powerup == "removeOneRow")
@@ -570,10 +573,11 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		// Remove gameObject from gameObject list
 		// Remove collided tile from simulator
 		// Remove one tile
-		//removeObject(o->getGameObjectName());
-		//o->removeFromSimulator();
-		
-	//}
+		printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
+		((Tile *)o)->markHit(); // Mark that the tile has been hit
+		printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
+		removeObject(((Tile*)o)->getGameObjectName());
+	}
 }
 
 //-------------------------------------------------------------------------------------

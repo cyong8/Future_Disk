@@ -4,6 +4,7 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Tile";
+	hit = false;
 	pos = position;
  	Ogre::Vector3 tile_dimensions = Ogre::Vector3(tileSize, 0.01f, tileSize);
 
@@ -17,5 +18,16 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 
 	mass = 0.0f;
 
-	shape = new btBoxShape(btVector3(tileSize/2.0f, 0.01f/2.0f, tileSize/2.0f));
+	shape = new btBoxShape(btVector3(tile_dimensions.x/2.0f, tile_dimensions.y/2.0f, tile_dimensions.z/2.0f));
+}
+
+void Tile::markHit()
+{
+	hit = true;
+	this->rootNode->setVisible(false);
+}
+
+bool Tile::isHit()
+{
+	return hit;
 }

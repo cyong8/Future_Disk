@@ -67,16 +67,17 @@ void MCP::createSoloModeScene()
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
-    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    
+    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
-    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Shield", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Boost", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
-    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f)))->addToSimulator(); // Create initial Target
+    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POWER, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), SPEED, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Shield", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), SHIELD, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Boost", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), BOOST, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), RESTORE, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+
 
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     //trajectory = mSceneMgr->createManualObject("Line");
@@ -291,6 +292,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
+
                     /* wait for packets from client */                    
                     if (timeSinceLastStateUpdate == 0.01f)
                         constructAndSendGameState();
@@ -307,7 +309,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                             interpretClientPacket(pack);
                         }
                     }
-                    
+                   
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
 

@@ -12,6 +12,7 @@ class Room
 {
 public:
 	Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident);
+	Ogre::Vector3 getBounds(void);
 	Ogre::Real getWidth(void);
 	Ogre::Real getHeight(void);
 	Ogre::Real getFloorLength(void);

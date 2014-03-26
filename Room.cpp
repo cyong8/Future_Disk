@@ -566,3 +566,7 @@ Ogre::Real Room::getFloorLength()
 	return floorLength;
 }
 //-------------------------------------------------------------------------------------
+Ogre::Vector3 Room::getBounds()
+{
+	return Ogre::Vector3(width, height, floorLength);
+}
