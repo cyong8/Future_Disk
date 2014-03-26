@@ -13,6 +13,9 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
+	
+	tailParticle[0] = mgr->createParticleSystem("CyanSun", "Examples/CyanSun");
+	tailParticle[1] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
@@ -114,7 +117,21 @@ bool Player::performJump()
 	}
 	return false;
 }
+//-------------------------------------------------------------------------------------
+void Player::applyPowerUp(Ogre::String type)
+{
+    
+}
+//-------------------------------------------------------------------------------------
 Ogre::String Player::checkPlayerSide()
 {
 
+}
+//-------------------------------------------------------------------------------------
+void Player::increaseJump() {
+    jumpFactor = 12.0f;
+}
+//-------------------------------------------------------------------------------------
+void Player::decreaseJump() {
+    jumpFactor = 8.0f;
 }

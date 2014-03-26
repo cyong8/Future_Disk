@@ -52,9 +52,6 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     else if (nym == "Shield") {
         ent->setMaterialName("Examples/CyanChrome");
     }
-    else if (nym == "Boost") {
-        ent->setMaterialName("Examples/YellowChrome");
-    }
     else if (nym == "Jump") {
         ent->setMaterialName("Examples/MagentaChrome");
     }

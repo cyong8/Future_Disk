@@ -6,6 +6,9 @@
 #include "Target.h"
 #include "Music.h"
 
+#define RESET_STATE 0
+#define RESET_ALL 1
+
 using namespace std;
 
 class GameObject;
@@ -72,7 +75,8 @@ class Simulator
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
-		void resetPowerUps(void);
+		void resetPowerUps(int resetFactor);
+		void resetSpeed(void);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;

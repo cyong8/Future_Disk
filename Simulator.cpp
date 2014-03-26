@@ -20,6 +20,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	gameStart = false;
 	player1CanCatch = true;
     player2CanCatch = true;
+    playerLastThrew = "";
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	setDisk = false;
@@ -100,16 +101,12 @@ void Simulator::addObject (GameObject* o)
 			    currentPower = POWER;
 			}
 			else if (o->getGameObjectName() == "Speed") {
-			    powerUpLimit = 15000;
+			    powerUpLimit = 1500;
 			    currentPower = SPEED;
 			}
 			else if (o->getGameObjectName() == "Shield") {
 			    powerUpLimit = 1800;
 			    currentPower = SHIELD;
-			}
-			else if (o->getGameObjectName() == "Boost") {
-			    powerUpLimit = 3000;
-			    currentPower = BOOST;
 			}
 			else if (o->getGameObjectName() == "Jump") {
 			    powerUpLimit = 3000;
@@ -121,7 +118,7 @@ void Simulator::addObject (GameObject* o)
 			} 
 			else {
 			    score = 10;
-			    resetPowerUps();
+			    resetPowerUps(RESET_ALL);
 		    }
 		}
 		targetList.push_back((Target*)o);
@@ -260,8 +257,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		{
 		    btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
 		    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-		    if (--powerUpLimit <= 0) {
-		        resetPowerUps();
+		    if (powerUpLimit-- <= 0) {
+		        resetPowerUps(RESET_ALL);
 		        if (gameDisk->previousParticleSystem != 0) {
 		            gameDisk->createNewParticleSystem(0);
 		        }
@@ -285,16 +282,18 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
                                       gameDisk->createNewParticleSystem(3);
                                   }
                                   break;
-                    case BOOST:   if (gameDisk->previousParticleSystem != 4) {
+                    case JUMP:    if (gameDisk->previousParticleSystem != 4) {
+                                      if (p1->getGameObjectName() == playerLastThrew) {
+                                          p1->increaseJump();
+                                      }
+                                      else if (p2->getGameObjectName() == playerLastThrew) {
+                                          p2->increaseJump();
+                                      }
                                       gameDisk->createNewParticleSystem(4);
                                   }
                                   break;
-                    case JUMP:    if (gameDisk->previousParticleSystem != 5) {
+                    case RESTORE: if (gameDisk->previousParticleSystem != 5) {
                                       gameDisk->createNewParticleSystem(5);
-                                  }
-                                  break;
-                    case RESTORE: if (gameDisk->previousParticleSystem != 6) {
-                                      gameDisk->createNewParticleSystem(6);
                                   }
                                   break;
 		        }
@@ -539,7 +538,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    ((Target*)o)->targetHit();
 			removeObject(o->getGameObjectName());
 			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Shield" ||
-			    o->getGameObjectName() == "Boost" || o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") {
+			    o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") {
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
@@ -639,9 +638,15 @@ bool Simulator::checkGameStart()
 	return gameStart;
 }
 //-------------------------------------------------------------------------------------
-void Simulator::resetPowerUps()
+void Simulator::resetPowerUps(int resetFactor)
 {
-    powerUpLimit = 0;
-    currentPower = NONE;
+    if (resetFactor == RESET_ALL) {
+        powerUpLimit = 0;
+        currentPower = NONE;
+    }
     diskSpeedFactor = 15.0f;
+    if (p1 != NULL)
+        p1->decreaseJump();
+    if (p2 != NULL)
+        p2->decreaseJump();
 }
