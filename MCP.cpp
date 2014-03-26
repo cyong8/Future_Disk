@@ -308,9 +308,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                             pack = gameNetwork->receivePacket();
                             interpretClientPacket(pack);
                         }
-                    }+
+                    }
                     timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-                    printf
+                    printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
                 }
