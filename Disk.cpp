@@ -12,7 +12,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	tailParticle[0] = mgr->createParticleSystem("Sun", "Examples/Sun");
 	tailParticle[1] = mgr->createParticleSystem("RedSun", "Examples/RedSun");
 	tailParticle[2] = mgr->createParticleSystem("GreenSun", "Examples/GreenSun");
-	tailParticle[3] = mgr->createParticleSystem("BlueSun", "Examples/CyanSun");
+	tailParticle[3] = mgr->createParticleSystem("CyanSun", "Examples/CyanSun");
 	tailParticle[4] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
 	tailParticle[5] = mgr->createParticleSystem("WhiteSun", "Examples/WhiteSun");
 	particleNode = rootNode->createChildSceneNode("Particle");
@@ -27,7 +27,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);
 
-	particleNode->setVisible(false);
+	particleNode->setVisible(true);
 	
 	typeName = "Disk";
 
