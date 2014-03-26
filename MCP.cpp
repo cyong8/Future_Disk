@@ -173,6 +173,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
+    timeSinceLastStateUpdate = 0.01f;
     gameMode = 1;
     clientServerIdentifier = 0;
 
@@ -291,6 +292,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 {
                     /* wait for packets from client */
                     MCP_Packet pack;
+                    
+                    if (timeSinceLastFrame == 0.01f)
+                    {
+                        // if the timer has been reset, update the clients scene; also done at beginning of program
+                    }                        
+
                     pack = gameNetwork->receivePacket();
                     while (pack.sequence != 'n')
                     {
@@ -299,6 +306,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                         interpretClientPacket(pack);
                         pack = gameNetwork->receivePacket();
                     }
+                    if (timeSinceLastFrame < 0.0f)
+                        timeSinceLastFrame = 0.01f;
+                    timeSinceLastFrame = timeSinceLastFrame - evt.timeSinceLastFrame;
                     constructAndSendGameState();
                 }
                 /*
