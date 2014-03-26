@@ -479,20 +479,21 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			}
 		}
 	}
-	//else if (o->typeName == "Tile")
-	//{
+	else if (o->typeName == "Tile")
+	{
 		/* Handle powerups */
-		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
-		//if(powerup == "removeOneRow")
+		// Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
+		// if(powerup == "removeOneRow")
 		// Remove one row
-		//else if(powerup == "")
+		// else if(powerup == "")
 		// Heal one tile
 		// Remove area
 		// Remove gameObject from gameObject list
 		// Remove collided tile from simulator
 		// Remove one tile
-		//removeObject(o->getGameObjectName());
-		//o->removeFromSimulator();
+		getGameObject(playerLastThrew)->attachDisk((Disk*)disk);
+		removeObject(o->getGameObjectName());
+		o->removeFromSimulator();
 		
 	//}
 }
@@ -528,7 +529,6 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 //-------------------------------------------------------------------------------------
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
 {
-
 }
 //-------------------------------------------------------------------------------------
 void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime)

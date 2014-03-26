@@ -306,11 +306,10 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                             interpretClientPacket(pack);
                         }
                     }
-                    
+                    timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
+                                        
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
-
-                    timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
                 }
                 /*
                 if (hostPlayer != NULL)
