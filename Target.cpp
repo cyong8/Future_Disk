@@ -2,7 +2,11 @@
 #include "Simulator.h"
 
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, targetType tt)
+<<<<<<< HEAD
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, targetType tt, Ogre::Vector3 roomBounds)
+=======
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position)
+>>>>>>> db56838525a784dd04a01464d38e679920442369
 	: GameObject(nym, mgr, sim)
 {
 	/* 
@@ -14,6 +18,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	sceneNode->attachObject(particleSystem); // attach the particle system to a scene node
 */
 
+	//Ogre::Vector3 roomBounds = Ogre::Vector3(room->getWidth()/2, room->getHeight()/2, room->getFloorLength()/2);
+
 	hit = false;
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
@@ -23,47 +29,50 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/47.0f, dimensions.y/442.0f, dimensions.z/47.0f);
 	
 	//rootNode->setPosition(position);
+<<<<<<< HEAD
 	if (tt == POINT) {
+	    rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-roomBounds.z/2,roomBounds.z/2));
+	    /*rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+=======
+	if (nym != "Power" && nym != "Speed" && nym != "Shield" && nym != "Boost" && nym != "Jump" && nym != "Restore") {
 	    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+>>>>>>> db56838525a784dd04a01464d38e679920442369
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
+										    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));*/
     }
     else {
-        rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+        rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-5.0f, 5.0f));
+       /* rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									       Ogre::Math::RangeRandom(-5.0f, 5.0f));
+									       Ogre::Math::RangeRandom(-5.0f, 5.0f));*/
     }
     
 	rootNode->pitch(Ogre::Degree(90));
 
-    if (tt == POINT) {
-    	typeName = "Target";
-    	ent->setMaterialName("Examples/BlueChrome");
-	}
-	else if (tt == POWER) {
-	    typeName = "Power";
+    typeName = "Target";
+
+	if (nym == "Power") {
 	    ent->setMaterialName("Examples/RedChrome");
     }
-    else if (tt == SPEED) {
-        typeName = "Speed";
+    else if (nym == "Speed") {
         ent->setMaterialName("Examples/GreenChrome");
     }
-    else if (tt == SHIELD) {
-        typeName = "Shield";
+    else if (nym == "Shield") {
         ent->setMaterialName("Examples/CyanChrome");
     }
-    else if (tt == BOOST) {
-        typeName = "Boost";
-        ent->setMaterialName("Examples/YellowChrome");
+    else if (nym == "Jump") {
+        ent->setMaterialName("Examples/MagentaChrome");
     }
-    else if (tt == RESTORE) {
-        typeName = "Restore";
+    else if (nym == "Restore") {
         ent->setMaterialName("Examples/WhiteChrome");
+    }
+    else {
+        ent->setMaterialName("Examples/BlueChrome");
     }
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));

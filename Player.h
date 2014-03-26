@@ -26,6 +26,9 @@ public:
 	Ogre::String checkPlayerSide(void);
 	bool groundConstantSet;
 	Ogre::Real jumpFactor;
+	void applyPowerUp(Ogre::String type);
+	void increaseJump(void);
+	void decreaseJump(void);
 
 protected:
 	bool isHolding;		
@@ -35,7 +38,9 @@ protected:
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
 	Ogre::Real groundY;
 	Ogre::Real prevGroundY;
-	Ogre::String playerSide;	
+	Ogre::String playerSide;
+	Ogre::ParticleSystem* tailParticle[2];
+	Ogre::SceneNode* particleNode;	
 };
 
 #endif // #ifndef __Player_h_

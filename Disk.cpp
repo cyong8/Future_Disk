@@ -12,12 +12,9 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	tailParticle[0] = mgr->createParticleSystem("Sun", "Examples/Sun");
 	tailParticle[1] = mgr->createParticleSystem("RedSun", "Examples/RedSun");
 	tailParticle[2] = mgr->createParticleSystem("GreenSun", "Examples/GreenSun");
-	tailParticle[3] = mgr->createParticleSystem("BlueSun", "Examples/BlueSun");
-	tailParticle[4] = mgr->createParticleSystem("YellowSun", "Examples/YellowSun");
-	tailParticle[5] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
-	tailParticle[6] = mgr->createParticleSystem("CyanSun", "Examples/CyanSun");
-	tailParticle[7] = mgr->createParticleSystem("WhiteSun", "Examples/WhiteSun");
-	tailParticle[8] = mgr->createParticleSystem("BlackSun", "Examples/BlackSun");
+	tailParticle[3] = mgr->createParticleSystem("BlueSun", "Examples/CyanSun");
+	tailParticle[4] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
+	tailParticle[5] = mgr->createParticleSystem("WhiteSun", "Examples/WhiteSun");
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle[0]);
 	previousParticleSystem = 0;
@@ -82,8 +79,16 @@ btVector3 Disk::getOldVelocity()
 {
 	return oldVelocity;
 }
-
+//-------------------------------------------------------------------------------------
 Ogre::String Disk::checkInitialPlayer()
 {
 	return initialPlayer;
+}
+//-------------------------------------------------------------------------------------
+void Disk::createNewParticleSystem(int index)
+{
+    this->tailParticle[this->previousParticleSystem]->clear();
+    this->particleNode->detachObject(this->tailParticle[this->previousParticleSystem]);
+	this->particleNode->attachObject(this->tailParticle[index]);
+	this->previousParticleSystem = index;
 }

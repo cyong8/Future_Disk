@@ -67,15 +67,17 @@ void MCP::createSoloModeScene()
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
-    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POINT))->addToSimulator(); // Create initial Target
-    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POINT))->addToSimulator(); // Create initial Target
-    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, .0f, -19.0f), POINT))->addToSimulator(); // Create initial Target
+    
+    (new Target("Target1", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POINT, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
-    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f), POWER))->addToSimulator(); // Create initial Target
-    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f), SPEED))->addToSimulator(); // Create initial Target
-    (new Target("Shield", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f), SHIELD))->addToSimulator(); // Create initial Target
-    (new Target("Boost", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f), BOOST))->addToSimulator(); // Create initial Target
-    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, .0f, -19.0f), RESTORE))->addToSimulator(); // Create initial Target
+    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), POWER, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), SPEED, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Shield", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), SHIELD, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Boost", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), BOOST, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), RESTORE, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+
 
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     //trajectory = mSceneMgr->createManualObject("Line");
@@ -290,6 +292,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
+
                     /* wait for packets from client */                    
                     if (timeSinceLastStateUpdate == 0.01f)
                         constructAndSendGameState();
@@ -305,9 +308,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                             pack = gameNetwork->receivePacket();
                             interpretClientPacket(pack);
                         }
-                    }
-                    timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
-                                        
+                    }+
+                    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
+                    printf
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
                 }
@@ -321,7 +324,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
                     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
-                    gameDisk->particleNode->setVisible(true);
+                    //gameDisk->particleNode->setVisible(true);
                 }
                 modifyScore(gameSimulator->tallyScore());
             }
@@ -361,7 +364,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     Player *p = (Player *)gameSimulator->getGameObject("Player1");    // Get the player object from the simulator
 
     float fx = 0.0f;                                                   // Force x-component
-    float fz = 0.0f;                                                   // Force z- component
+    float fz = 0.0f;                                                   // Force z-component
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
     
     float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down

@@ -6,6 +6,9 @@
 #include "Target.h"
 #include "Music.h"
 
+#define RESET_STATE 0
+#define RESET_ALL 1
+
 using namespace std;
 
 class GameObject;
@@ -13,6 +16,8 @@ class Player;
 class PlayerCamera;
 class Disk;
 class Music;
+
+enum powerUp{NONE, POWER, SPEED, SHIELD, BOOST, JUMP, RESTORE};
 
 class Simulator
 {
@@ -41,12 +46,10 @@ class Simulator
 		bool gameStart;
 		bool player1CanCatch;
 	    bool player2CanCatch;
-		bool canActivatePowerUp;
-		bool speedIncrease;
-		bool particleSystemEstablished;
 		Ogre::String previousWallHit;
 		bool giveDisk;
 		Ogre::Real diskSpeedFactor;
+		powerUp currentPower;
 		
 		Music* gameMusic;
 
@@ -72,7 +75,8 @@ class Simulator
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
-		void resetPowerUps(void);
+		void resetPowerUps(int resetFactor);
+		void resetSpeed(void);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
