@@ -39,6 +39,7 @@ public:
 	bool jumpFlag;
 	bool allowJumping;
 	int clientServerIdentifier;
+	float timeSinceLastStateUpdate;
 	vector<char*> termArgs;
 
 	// NETWORK OBJECT
