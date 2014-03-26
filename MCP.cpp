@@ -290,26 +290,27 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
-                    /* wait for packets from client */
-                    MCP_Packet pack;
-                    
-                    if (timeSinceLastFrame == 0.01f)
+                    /* wait for packets from client */                    
+                    if (timeSinceLastStateUpdate == 0.01f)
+                        constructAndSendGameState();
+                    if (mShutDown)
+                       exit(2);
+                    if (gameNetwork->checkSockets())
                     {
-                        // if the timer has been reset, update the clients scene; also done at beginning of program
-                    }                        
+                        MCP_Packet pack;
 
-                    pack = gameNetwork->receivePacket();
-                    while (pack.sequence != 'n')
-                    {
-                        if (mShutDown)
-                           exit(2);
-                        interpretClientPacket(pack);
                         pack = gameNetwork->receivePacket();
+                        while (pack.sequence != 'n')
+                        {
+                            pack = gameNetwork->receivePacket();
+                            interpretClientPacket(pack);
+                        }
                     }
-                    if (timeSinceLastFrame < 0.0f)
-                        timeSinceLastFrame = 0.01f;
-                    timeSinceLastFrame = timeSinceLastFrame - evt.timeSinceLastFrame;
-                    constructAndSendGameState();
+                    
+                    if (timeSinceLastStateUpdate < 0.0f)
+                        timeSinceLastStateUpdate = 0.01f;
+
+                    timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
                 }
                 /*
                 if (hostPlayer != NULL)
@@ -329,7 +330,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if (sceneRendered)
                 {
-                    updateClient(evt);
+                    checkClientInput(evt);
+                    if (gameNetwork->checkSockets())
+                        updateClient(evt);
                     if (mShutDown)
                         exit(2);
                     updateClientCamera(evt.timeSinceLastFrame);
@@ -453,11 +456,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::constructAndSendGameState()   
 {
-    /* Construct/Update/Send Packets containing Position/Orientation of:
-         Disk, 
-         hostPlayer, 
-         clientPlayer
-     */
     MCP_Packet pack;
 
     // Update hostPlayer
@@ -501,11 +499,7 @@ bool MCP::constructAndSendGameState()
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack; 
-    
-    checkClientInput(evt);
 
-    if (mShutDown)
-        exit(2);
     // INTERPRETS PACKET
     pack = gameNetwork->receivePacket();
     while (pack.sequence != 'n')
