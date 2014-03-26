@@ -100,7 +100,7 @@ void Simulator::addObject (GameObject* o)
 			    currentPower = POWER;
 			}
 			else if (o->getGameObjectName() == "Speed") {
-			    powerUpLimit = 1500;
+			    powerUpLimit = 15000;
 			    currentPower = SPEED;
 			}
 			else if (o->getGameObjectName() == "Shield") {
@@ -259,10 +259,10 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		if (gameDisk != NULL)
 		{
 		    btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+		    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 		    if (--powerUpLimit <= 0) {
 		        resetPowerUps();
 		        if (gameDisk->previousParticleSystem != 0) {
-		            gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 		            gameDisk->createNewParticleSystem(0);
 		        }
 		    }
@@ -276,7 +276,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
                                   }
                                   break;
                     case SPEED:   if (gameDisk->previousParticleSystem != 2) {
-                                      gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
+                                      diskSpeedFactor = 15.0f * 2.0f;
+                                      gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
                                       gameDisk->createNewParticleSystem(2);
                                   }
                                   break;
@@ -424,7 +425,7 @@ void Simulator::performThrow(Player* p)
 
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
-        resetPowerUps();
+        //resetPowerUps();
     	Ogre::Vector3 toParentPosition = d->getSceneNode()->_getDerivedPosition();
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
@@ -640,4 +641,5 @@ void Simulator::resetPowerUps()
 {
     powerUpLimit = 0;
     currentPower = NONE;
+    diskSpeedFactor = 15.0f;
 }
