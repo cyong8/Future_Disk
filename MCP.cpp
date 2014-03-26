@@ -78,6 +78,7 @@ void MCP::createSoloModeScene()
     (new Target("Boost", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), BOOST, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), RESTORE, gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
+
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     //trajectory = mSceneMgr->createManualObject("Line");
     
@@ -291,26 +292,28 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
-                    /* wait for packets from client */
-                    MCP_Packet pack;
-                    
-                    if (timeSinceLastStateUpdate == 0.01f)
-                    {
-                        // if the timer has been reset, update the clients scene; also done at beginning of program
-                    }                        
 
-                    pack = gameNetwork->receivePacket();
-                    while (pack.sequence != 'n')
+                    /* wait for packets from client */                    
+                    if (timeSinceLastStateUpdate == 0.01f)
+                        constructAndSendGameState();
+                    if (mShutDown)
+                       exit(2);
+                    if (gameNetwork->checkSockets())
                     {
-                        if (mShutDown)
-                           exit(2);
-                        interpretClientPacket(pack);
+                        MCP_Packet pack;
+
                         pack = gameNetwork->receivePacket();
+                        while (pack.sequence != 'n')
+                        {
+                            pack = gameNetwork->receivePacket();
+                            interpretClientPacket(pack);
+                        }
                     }
+                   
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
+
                     timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
-                    constructAndSendGameState();
                 }
                 /*
                 if (hostPlayer != NULL)
@@ -330,7 +333,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if (sceneRendered)
                 {
-                    updateClient(evt);
+                    checkClientInput(evt);
+                    if (gameNetwork->checkSockets())
+                        updateClient(evt);
                     if (mShutDown)
                         exit(2);
                     updateClientCamera(evt.timeSinceLastFrame);
@@ -454,11 +459,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::constructAndSendGameState()   
 {
-    /* Construct/Update/Send Packets containing Position/Orientation of:
-         Disk, 
-         hostPlayer, 
-         clientPlayer
-     */
     MCP_Packet pack;
 
     // Update hostPlayer
@@ -502,11 +502,7 @@ bool MCP::constructAndSendGameState()
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack; 
-    
-    checkClientInput(evt);
 
-    if (mShutDown)
-        exit(2);
     // INTERPRETS PACKET
     pack = gameNetwork->receivePacket();
     while (pack.sequence != 'n')
