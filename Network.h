@@ -31,6 +31,7 @@ public:
 	void sendPacket(MCP_Packet pack);
 	MCP_Packet receivePacket(void);
 	bool checkConnection(void);
+	bool checkSockets(void);
 
 private:
 	SDLNet_SocketSet i_set;

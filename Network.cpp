@@ -58,22 +58,22 @@ void Network::initializeSockets()	// initialize the TCPsocket and Open the UDPso
 	}
 
 	//---------------Opening UDP Socket -----------------------------------------
-	for (int i = 49152; (UDP_gameSocket == NULL) && i < 65536; ++i) // Look thru Dynamic/Private ports and open socket at first available
-	{
-		/* Open UDP socket with the free port above */
-		UDP_gameSocket = SDLNet_UDP_Open(i);		// Socket does not need to be binded to a channel; Open does this for UDP
-		if (UDP_gameSocket != NULL)				// Store the channel associated with the Socket; the player needs this
-		{
-			UDP_portNum = i;
-			break;
-		}
-	}
-	/* Check if the socket was opened correctly */
-	if(!UDP_gameSocket) 
-	{
-	    printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
-	    exit(2);
-	}	
+	// for (int i = 49152; (UDP_gameSocket == NULL) && i < 65536; ++i) // Look thru Dynamic/Private ports and open socket at first available
+	// {
+	// 	/* Open UDP socket with the free port above */
+	// 	UDP_gameSocket = SDLNet_UDP_Open(i);		// Socket does not need to be binded to a channel; Open does this for UDP
+	// 	if (UDP_gameSocket != NULL)				// Store the channel associated with the Socket; the player needs this
+	// 	{
+	// 		UDP_portNum = i;
+	// 		break;
+	// 	}
+	// }
+	// /* Check if the socket was opened correctly */
+	// if(!UDP_gameSocket) 
+	// {
+	//     printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+	//     exit(2);
+	// }	
 
 	/* Add the socket to the socket i_set so we can use CheckSockets() later */
 	int numused = SDLNet_TCP_AddSocket(i_set, init_serverSocket);
@@ -93,8 +93,6 @@ bool Network::establishConnection()
 		portData_ss << UDP_portNum;
 		char portData[portData_ss.str().length()];
 		strcpy(portData, portData_ss.str().c_str());
-
-		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", portData);
 				
 		int clientReady = SDLNet_CheckSockets(i_set, 0);
 
@@ -110,9 +108,7 @@ bool Network::establishConnection()
 		}
 	}
 	if (client)
-	{
-		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %s\n\n\n", serverIP_c);
-		
+	{	
 		if (SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum) < 0) // Connects to the listening host
 		{
 	    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
@@ -131,17 +127,23 @@ bool Network::establishConnection()
 		SDLNet_TCP_Recv(TCP_gameSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
-		printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
+		int numused = SDLNet_TCP_AddSocket(i_set, init_serverSocket);
+
+		if (numused == -1 || numused == 0) 
+		{
+	    	printf("\n\n\n\n\nSDLNet_AddSocket: %s\n", SDLNet_GetError());
+	    	exit(2);
+		}
+		// printf("\n\n\n**********UDP Port Number that will facilitate game transactions: %d\n\n\n", UDP_portNum);
 
 		//---------------Opening UDP Socket -----------------------------------------
-		UDP_gameSocket = SDLNet_UDP_Open(0);				// Socket does not need to be binded to a channel; Open does this for UDP
-		/************************************* HUGE CHANGE WITH UDP SOCKETS ON DIFFERENT PORTS *****************************************/
+		// UDP_gameSocket = SDLNet_UDP_Open(0);				// Socket does not need to be binded to a channel; Open does this for UDP
 
-		if (UDP_gameSocket == NULL)							// Store the channel associated with the Socket; the player needs this
-		{
-		    printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
-		    exit(2);
-		}
+		// if (UDP_gameSocket == NULL)							// Store the channel associated with the Socket; the player needs this
+		// {
+		//     printf("SDLNet_UDP_Open: %s\n", SDLNet_GetError());
+		//     exit(2);
+		// }
 		// UDP_channel = SDLNet_UDP_Bind(UDP_gameSocket, -1, &serverIP);
 		// if(UDP_channel == -1) 
 		// {
@@ -267,4 +269,20 @@ MCP_Packet Network::receivePacket()
 bool Network::checkConnection()
 {
 	return connectionEstablished;
+}
+bool Network::checkSockets()
+{
+	int clientReady = SDLNet_CheckSockets(i_set, 0);
+	
+	if (clientReady == -1)
+	{
+		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
+		perror("SDLNet_CheckSockets");
+		return false;
+	}
+	else if (clientReady)
+	{
+		printf("ACTIVITY!!!!\n\n\n\n");
+		return true;
+	}
 }

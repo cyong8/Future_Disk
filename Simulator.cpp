@@ -449,11 +449,13 @@ void Simulator::performThrow(Player* p)
 		{
 			player1CanCatch = false;
 			player2CanCatch = true;
+			playerLastThrew = p->getGameObjectName();
 		}
 		if (p->getGameObjectName() == "Player2")
 		{
 			player1CanCatch = true;
 			player2CanCatch = false;
+			playerLastThrew = p->getGameObjectName();
 		}
 
     	p->setHolding();

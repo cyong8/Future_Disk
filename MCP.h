@@ -34,12 +34,12 @@ public:
 	Ogre::Real mMove; // Move Constant
 	bool vKeyDown;
 	bool gameStart;
-	bool clientGameStart;
 	bool gamePause;
 	bool gameOver;
 	bool jumpFlag;
 	bool allowJumping;
 	int clientServerIdentifier;
+	float timeSinceLastStateUpdate;
 	vector<char*> termArgs;
 
 	// NETWORK OBJECT

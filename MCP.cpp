@@ -174,7 +174,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
-    clientGameStart = false;
+    timeSinceLastStateUpdate = 0.01f;
     gameMode = 1;
     clientServerIdentifier = 0;
 
@@ -203,7 +203,6 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
-    clientGameStart = false;
     gameMode = 1;
 
     if (termArgs.size() == 2)
@@ -292,17 +291,27 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
-                    /* wait for packets from client */
-                    MCP_Packet pack;
-                    pack = gameNetwork->receivePacket();
-                    while (pack.sequence != 'n')
+                    /* wait for packets from client */                    
+                    if (timeSinceLastStateUpdate == 0.01f)
+                        constructAndSendGameState();
+                    if (mShutDown)
+                       exit(2);
+                    if (gameNetwork->checkSockets())
                     {
-                        if (mShutDown)
-                           exit(2);
-                        interpretClientPacket(pack);
+                        MCP_Packet pack;
+
                         pack = gameNetwork->receivePacket();
+                        while (pack.sequence != 'n')
+                        {
+                            pack = gameNetwork->receivePacket();
+                            interpretClientPacket(pack);
+                        }
                     }
-                    constructAndSendGameState();
+                    
+                    if (timeSinceLastStateUpdate < 0.0f)
+                        timeSinceLastStateUpdate = 0.01f;
+
+                    timeSinceLastStateUpdate = timeSinceLastStateUpdate - evt.timeSinceLastFrame;
                 }
                 /*
                 if (hostPlayer != NULL)
@@ -322,7 +331,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if (sceneRendered)
                 {
-                    updateClient(evt);
+                    checkClientInput(evt);
+                    if (gameNetwork->checkSockets())
+                        updateClient(evt);
                     if (mShutDown)
                         exit(2);
                     updateClientCamera(evt.timeSinceLastFrame);
@@ -446,19 +457,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::constructAndSendGameState()   
 {
-    /* Construct/Update/Send Packets containing Position/Orientation of:
-         Disk, 
-         hostPlayer, 
-         clientPlayer
-     */
     MCP_Packet pack;
-    int packetSize = 0;
-    if (gameSimulator->checkGameStart() && !clientGameStart)
-    {
-        pack.id = 's';
-        gameNetwork->sendPacket(pack); 
-        clientGameStart = true;
-    }
 
     // Update hostPlayer
     pack.sequence = 'i';  // for now
@@ -488,9 +487,9 @@ bool MCP::constructAndSendGameState()
         pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
         pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
         pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+        gameNetwork->sendPacket(pack);  // Send Disk
     }
 
-    gameNetwork->sendPacket(pack);  // Send Disk
 
     /* Signify end of frame data */
     pack.sequence = 'n';
@@ -501,11 +500,7 @@ bool MCP::constructAndSendGameState()
 bool MCP::updateClient(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack; 
-    if (clientGameStart)
-        checkClientInput(evt);
 
-    if (mShutDown)
-        exit(2);
     // INTERPRETS PACKET
     pack = gameNetwork->receivePacket();
     while (pack.sequence != 'n')
@@ -616,10 +611,10 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
         ;
     if (typeInput == 'b')   //
         ;
-    if (typeInput == 'o')
+    if (typeInput == 'o' && gameSimulator->checkGameStart())
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
 
-    if (movementFlag)
+    if (movementFlag && gameSimulator->checkGameStart())
     {
         Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
         trueVelocity = clientPlayer->getSceneNode()->getOrientation() * trueVelocity; 
@@ -638,8 +633,6 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
     newQuat = pack.orientationQ;
 
-    if (pack.id == 's')
-        clientGameStart = true;
     if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
@@ -706,7 +699,8 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
         pBody = p->getBody();
         transform = pBody->getCenterOfMassTransform();
     }
-
+    if (clientServerIdentifier == 1 && gameDisk == NULL)
+        return true;
     /* rotation working, but camera not following */
     if (vKeyDown)
     {   

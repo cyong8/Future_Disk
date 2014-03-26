@@ -34,6 +34,7 @@ class Simulator
 		Player* p2;
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
+		Ogre::String playerLastThrew;
 		int score;
 		int powerUpLimit;
 		bool viewChangeP1;
