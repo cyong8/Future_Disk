@@ -535,16 +535,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	}
 }
 
-void Simulator::checkHostTile(int index)
-{
-	if (!(hostTileList[index]->checkHitFlag())) 
-	{
-        hostTileList[index]->toggleHitFlag();
-        hostRemoveIndexes.push_back(index);
-        removeObject(hostTileList[index]->getGameObjectName());
-    }
-}
-
 //-------------------------------------------------------------------------------------
 void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::String wallName)
 {
