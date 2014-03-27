@@ -4,6 +4,38 @@
 #include "Player.h"
 #include "PlayerCamera.h"
 #include "Disk.h"
+/*
+ 	// POWER 
+    if ((index >= 0 && index <= 5) || (index >= 37 && index <= 42)) // in top or bottom row
+    {
+        if (col != 0) // in left column
+        {
+            // remove left
+        }
+        if (col != 5) // in right row
+        {
+            // remove right
+        }
+    }
+    else if (col == 0 || col == 5) // in left or right column
+    {
+        if (index >= 0 && index <= 5) // in top row
+        {
+            // remove top
+        }
+        if (index >= 37 && index <= 42) // in bottom row
+        {
+            // remove bottom
+        }
+    }
+    else
+    {
+        // remove top
+        // remove bottom
+        // remove left
+        // remove right
+    }
+*/
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
@@ -203,10 +235,11 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
     	if(p2 != NULL)
     	{
 	    	if (p2->checkHolding())
+	    	{
 	    		performThrow(p2);
-	    	printf("p2 throwing!\n\n");
+	    	}
     	}
-    	else
+    	if (p1->checkHolding())
     		performThrow(p1);
     }
 	else	// Speed disk back up in order to mimic inelasticity
@@ -495,32 +528,18 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-
 	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->checkHitFlag())
 	{
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
-
+		
 		printf("COLLIDED WITH TILE!\n\n\n");
 		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName()) {
-		    int index = ((Tile *)o)->indexIntoTileArray;
-		    hostRemoveIndexes.push_back(index);
-		    if (currentPower == POWER) {
-                int col = index % 6;
-                if (index >= 0 && index <= 5) 
-                {
-                    if (col == 0) {
-                        ((Tile*)hostTileList[index+1])->markHit();
-                    }
-                    else if (col == 5) {
-                    
-                    }
-                }
-                
-		    }
-		    removeObject(hostTileList[index]->getGameObjectName());
+		    hostRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
+		    removeObject(hostTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
 		}
-		else {		 
+		else 
+		{		 
 		    clientRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
 		    removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
 		}
