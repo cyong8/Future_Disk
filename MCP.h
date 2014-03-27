@@ -38,6 +38,8 @@ public:
 	bool gameOver;
 	bool jumpFlag;
 	bool allowJumping;
+	bool cViewModeToggle;
+    bool clientVKeyDown;
 	int clientServerIdentifier;
 	float timeSinceLastStateUpdate;
 	vector<char*> termArgs;
@@ -89,7 +91,6 @@ protected:
 	PlayerCamera* pCam;
 	int gameMode;
 	int sceneRendered;
-	bool clientViewMode;
 };
 
 #endif // #ifndef __MCP_h_

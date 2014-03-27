@@ -10,7 +10,7 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	//create entity for plane
 	Ogre::Entity* ent = mgr->createEntity(nym+"Entity", "cube.mesh");
 	rootNode->attachObject(ent);
-	rootNode->scale(tile_dimensions.x/100, tile_dimensions.y/100, tile_dimensions.z/100);
+	rootNode->scale(tile_dimensions.x/100.0f, tile_dimensions.y/100.0f, tile_dimensions.z/100.0f);
 	ent->setMaterialName("2 - Default");
 	ent->setCastShadows(false);
 	rootNode->setPosition(position);

@@ -51,7 +51,9 @@ void MCP::createScene(void)
     gamePause = false;
     gameStart = false;
     gameOver = false;
-    vKeyDown = false;    
+    vKeyDown = false;
+    cViewModeToggle = false;    
+    clientVKeyDown = false;
     mRotate = 0.1f;
     sceneRendered = 0;
     gameMode = 0;
@@ -513,12 +515,12 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 void MCP::updateClientCamera(Ogre::Real elapseTime)
 {
-    if (clientViewMode) // View was toggled; now check what view it needs to be changed to
+    if (cViewModeToggle) // View was toggled; now check what view it needs to be changed to
     {
-        clientViewMode = !clientViewMode;
+        cViewModeToggle = !cViewModeToggle;
+
         if(pCam->isInAimMode()) // Go into Aim view
             pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-        
         else // Return from Aim view
             pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
@@ -547,19 +549,32 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
         mShutDown = true;
         return false;
     }
-    if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
+    if (mKeyboard->isKeyDown(OIS::KC_W))                                    // Forward - implemented
         pack.sequence = 'w';
-    else if (mKeyboard->isKeyDown(OIS::KC_A)) // Left
+    else if (mKeyboard->isKeyDown(OIS::KC_A))                               // Left - implemented
         pack.sequence = 'a';
-    else if (mKeyboard->isKeyDown(OIS::KC_S)) // Backwards
+    else if (mKeyboard->isKeyDown(OIS::KC_S))                               // Backwards - implemented
         pack.sequence = 's';
-    else if (mKeyboard->isKeyDown(OIS::KC_D)) // Right
+    else if (mKeyboard->isKeyDown(OIS::KC_D))                               // Right - implemented
         pack.sequence = 'd';
-    else if (mKeyboard->isKeyDown(OIS::KC_J) && clientKeyLastSent != 'j') // Jump
+    else if (mKeyboard->isKeyDown(OIS::KC_J) && clientKeyLastSent != 'j')   // Jump - implemented
         pack.sequence = 'j';
-    else if (mKeyboard->isKeyDown(OIS::KC_V) && clientKeyLastSent != 'v') // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    else if (mKeyboard->isKeyDown(OIS::KC_V) && !clientVKeyDown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    {
+        cViewModeToggle = true;  // toggle - always true
+        pCam->toggleThirdPersonView();
+        clientVKeyDown = true;
         pack.sequence = 'v';
-    else if (mKeyboard->isKeyDown(OIS::KC_B)) // Speed Boost
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_V) && clientVKeyDown)        
+    {
+        cViewModeToggle = true;  // toggle - always true
+        pCam->toggleThirdPersonView();
+        clientVKeyDown = false;
+        pack.sequence = 'v';
+    }    
+
+    else if (mKeyboard->isKeyDown(OIS::KC_LSHIFT))                          // Speed Boost
         pack.sequence = 'b';
 
     clientKeyLastSent = pack.sequence;
@@ -583,37 +598,38 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
     float sprintFactor = 3.0f;
     bool movementFlag = false;
 
-    if (typeInput == 'w')   // Forward
+    if (typeInput == 'w')                                       // Forward
     {
         velocityVector = velocityVector + btVector3(0.0f, 0.0f, -mMove);
         movementFlag = true;
     }
-    if (typeInput == 'a')   // Left
+    if (typeInput == 'a')                                       // Left
     {
         velocityVector = velocityVector + btVector3(-mMove, 0.0f, 0.0f);
         movementFlag = true;
     }
-    if (typeInput == 's')   // Backwards
+    if (typeInput == 's')                                       // Backwards
     {
         velocityVector = velocityVector + btVector3(0.0f, 0.0f, mMove);
         movementFlag = true;
     }
-    if (typeInput == 'd')   // Right
+    if (typeInput == 'd')                                       // Right
     {
         velocityVector = velocityVector + btVector3(mMove, 0.0f, 0.0f);
         movementFlag = true;
     }
-    if (typeInput == 'j')   // Jump
+    if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
+        clientPlayer->performJump();
+    if (typeInput == 'v')                                       // View Mode Toggle
+        clientVKeyDown = !clientVKeyDown;
+    if (typeInput == 'b')   // speed boost
         ;
-    if (typeInput == 'v')   // View Mode Toggle
-    //    gameSimulator->setThrowFlag();
-        ;
-    if (typeInput == 'b')   //
-        ;
+    if (typeInput == 't')
+        gameSimulator->setThrowFlag();
     if (typeInput == 'o' && gameSimulator->checkGameStart())
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
 
-    if (movementFlag && gameSimulator->checkGameStart())
+    if (movementFlag && gameSimulator->checkGameStart() && !clientVKeyDown)
     {
         Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
         trueVelocity = clientPlayer->getSceneNode()->getOrientation() * trueVelocity; 
@@ -700,7 +716,6 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     }
     if (clientServerIdentifier == 1 && gameDisk == NULL)
         return true;
-    /* rotation working, but camera not following */
     if (vKeyDown)
     {   
         pSceneNode->yaw(Ogre::Degree((-mRotate/2) * evt.state.X.rel), Ogre::Node::TS_WORLD);

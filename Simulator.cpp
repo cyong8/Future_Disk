@@ -307,7 +307,8 @@ void Simulator::parseCollisions(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
-	int groundCheck = false; //checking Tile taking care of multiple collisions
+	int groundCheck1 = false; //checking Tile taking care of multiple collisions
+	int groundCheck2 = false;
 	Player* colP;
 
 	for (i=0;i<numManifolds;i++)
@@ -328,19 +329,26 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gB, gA);
 		else if ((gA->typeName == "Player" && gB->typeName == "Tile") || (gB->typeName == "Player" && gA->typeName == "Tile"))
 		{
-			if (!groundCheck && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
-				groundCheck = true;
+			if (!groundCheck1 && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
+				groundCheck1 = true;
+			if (!groundCheck2 && ((gA->getGameObjectName() == "Player2") || (gB->getGameObjectName() == "Player2")))
+				groundCheck2 = true;
 		}
 		contactManifold->clearManifold();
 	}
-	if (!groundCheck)
+	if (!groundCheck1)
 		soundedJump = true;
 	else
 		p1->groundConstantSet = false;
 
-	if (groundCheck && gameDisk == NULL)
+	if (!groundCheck2)
+		soundedJump = true;
+	else
+		p2->groundConstantSet = false;
+
+	if ((groundCheck1 || groundCheck2) && gameDisk == NULL)
     	setDisk = true;
-	if (soundedJump && groundCheck)	// played jumping sound, now check if he has hit the ground(landed)
+	if (soundedJump && groundCheck1)	// played jumping sound, now check if he has hit the ground(landed)
 	{
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
 		soundedJump = false;
