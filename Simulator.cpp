@@ -510,19 +510,155 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
                 if (index >= 0 && index <= 5) 
                 {
                     if (col == 0) {
-                        ((Tile*)hostTileList[index+1])->markHit();
+                        if (!(hostTileList[index+1]->checkHitFlag())) {
+                            hostTileList[index+1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index+1);
+                            removeObject(hostTileList[index+1]->getGameObjectName());
+                        }
+                        
+                        if (!(hostTileList[index+6]->checkHitFlag())) {
+                            hostTileList[index+6]->toggleHitFlag(); 
+                            hostRemoveIndexes.push_back(index+6);                        
+                            removeObject(hostTileList[index+6]->getGameObjectName());
+                        }
                     }
                     else if (col == 5) {
-                    
+                        if (!(hostTileList[index-1]->checkHitFlag())) {
+                            hostTileList[index-1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index-1);
+                            removeObject(hostTileList[index-1]->getGameObjectName());
+                        }
+                        
+                        if (!(hostTileList[index+6]->checkHitFlag())) {
+                            hostTileList[index+6]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index+6);
+                            removeObject(hostTileList[index+6]->getGameObjectName());
+                        }
+                    }
+                    else {
+                        if (!(hostTileList[index-1]->checkHitFlag())) {
+                            hostTileList[index-1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index-1);
+                            removeObject(hostTileList[index-1]->getGameObjectName());
+                        }
+                        if (!(hostTileList[index+1]->checkHitFlag())) {
+                            hostTileList[index+1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index+1);
+                            removeObject(hostTileList[index+1]->getGameObjectName());
+                        }
+                        if (!(hostTileList[index+6]->checkHitFlag())) {
+                            hostTileList[index+6]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index+6);
+                            removeObject(hostTileList[index+6]->getGameObjectName());
+                        }
                     }
                 }
-                
+                else if (index >= 36 && index <= 41) {
+                    if (col == 0) {
+                        if (!(hostTileList[index+1]->checkHitFlag())) {
+                            hostTileList[index+1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index+1);
+                            removeObject(hostTileList[index+1]->getGameObjectName());
+                        }
+                        
+                        if (!(hostTileList[index-6]->checkHitFlag())) {
+                            hostTileList[index-6]->toggleHitFlag(); 
+                            hostRemoveIndexes.push_back(index-6);                        
+                            removeObject(hostTileList[index-6]->getGameObjectName());
+                        }
+                    }
+                    else if (col == 5) {
+                        if (!(hostTileList[index-1]->checkHitFlag())) {
+                            hostTileList[index-1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index-1);
+                            removeObject(hostTileList[index-1]->getGameObjectName());
+                        }
+                        
+                        if (!(hostTileList[index-6]->checkHitFlag())) {
+                            hostTileList[index-6]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index-6);
+                            removeObject(hostTileList[index-6]->getGameObjectName());
+                        }
+                    }
+                    else {
+                        if (!(hostTileList[index-1]->checkHitFlag())) {
+                            hostTileList[index-1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index-1);
+                            removeObject(hostTileList[index-1]->getGameObjectName());
+                        }
+                        if (!(hostTileList[index+1]->checkHitFlag())) {
+                            hostTileList[index+1]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index+1);
+                            removeObject(hostTileList[index+1]->getGameObjectName());
+                        }
+                        if (!(hostTileList[index-6]->checkHitFlag())) {
+                            hostTileList[index-6]->toggleHitFlag();
+                            hostRemoveIndexes.push_back(index-6);
+                            removeObject(hostTileList[index-6]->getGameObjectName());
+                        }
+                    }
+                }
+                else if (col == 0) {
+                    if (!(hostTileList[index+1]->checkHitFlag())) {
+                        hostTileList[index+1]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index+1);
+                        removeObject(hostTileList[index+1]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index+6]->checkHitFlag())) {
+                        hostTileList[index+6]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index+6);
+                        removeObject(hostTileList[index+6]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index-6]->checkHitFlag())) {
+                        hostTileList[index-6]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index-6);
+                        removeObject(hostTileList[index-6]->getGameObjectName());
+                    }
+                }
+                else if (col == 5) {
+                    if (!(hostTileList[index-1]->checkHitFlag())) {
+                        hostTileList[index-1]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index-1);
+                        removeObject(hostTileList[index-1]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index+6]->checkHitFlag())) {
+                        hostTileList[index+6]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index+6);
+                        removeObject(hostTileList[index+6]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index-6]->checkHitFlag())) {
+                        hostTileList[index-6]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index-6);
+                        removeObject(hostTileList[index-6]->getGameObjectName());
+                    }
+                }
+                else {
+                    if (!(hostTileList[index-1]->checkHitFlag())) {
+                        hostTileList[index-1]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index-1);
+                        removeObject(hostTileList[index-1]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index+1]->checkHitFlag())) {
+                        hostTileList[index+1]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index+1);
+                        removeObject(hostTileList[index+1]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index+6]->checkHitFlag())) {
+                        hostTileList[index+6]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index+6);
+                        removeObject(hostTileList[index+6]->getGameObjectName());
+                    }
+                    if (!(hostTileList[index-6]->checkHitFlag())) {
+                        hostTileList[index-6]->toggleHitFlag();
+                        hostRemoveIndexes.push_back(index-6);
+                        removeObject(hostTileList[index-6]->getGameObjectName());
+                    }
+                }
 		    }
-		    removeObject(hostTileList[index]->getGameObjectName());
 		}
 		else {		 
 		    clientRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
-		    removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
+		    //removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
 		}
 		/* Handle powerups */
 		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!

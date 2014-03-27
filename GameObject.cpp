@@ -94,4 +94,5 @@ bool GameObject::checkHitFlag()
 void GameObject::toggleHitFlag()
 {
 	hit = !hit;
+	this->rootNode->setVisible(!hit);
 }
