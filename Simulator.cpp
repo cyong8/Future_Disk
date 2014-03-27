@@ -4,38 +4,7 @@
 #include "Player.h"
 #include "PlayerCamera.h"
 #include "Disk.h"
-/*
- 	// POWER 
-    if ((index >= 0 && index <= 5) || (index >= 37 && index <= 42)) // in top or bottom row
-    {
-        if (col != 0) // in left column
-        {
-            // remove left
-        }
-        if (col != 5) // in right row
-        {
-            // remove right
-        }
-    }
-    else if (col == 0 || col == 5) // in left or right column
-    {
-        if (index >= 0 && index <= 5) // in top row
-        {
-            // remove top
-        }
-        if (index >= 37 && index <= 42) // in bottom row
-        {
-            // remove bottom
-        }
-    }
-    else
-    {
-        // remove top
-        // remove bottom
-        // remove left
-        // remove right
-    }
-*/
+
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
@@ -44,7 +13,6 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	diskSpeedFactor = 15.0f;
 
 	score = 0;
-	powerUpLimit = 0;
 	soundedJump = false;
 	viewChangeP1 = false;
 	viewChangeP2 = false;
@@ -119,7 +87,7 @@ void Simulator::addObject (GameObject* o)
 		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
-
+		//gameDisk->getSceneNode()->roll(90);
 		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
 		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
@@ -130,29 +98,8 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 		{
 			((Target*)o)->toggleHitFlag();
-			if (o->getGameObjectName() == "Power") {
-			    powerUpLimit = 1500;
-			    currentPower = POWER;
-			}
-			else if (o->getGameObjectName() == "Speed") {
-			    powerUpLimit = 1500;
-			    currentPower = SPEED;
-			}
-			else if (o->getGameObjectName() == "Shield") {
-			    powerUpLimit = 1800;
-			    currentPower = SHIELD;
-			}
-			else if (o->getGameObjectName() == "Jump") {
-			    powerUpLimit = 3000;
-			    currentPower = JUMP;
-			}
-			else if (o->getGameObjectName() == "Restore") {
-			    powerUpLimit = 1;
-			    currentPower = RESTORE;
-			} 
-			else {
+			if (o->getGameObjectName() != "Power" || o->getGameObjectName() != "Speed" || o->getGameObjectName() != "Jump" || o->getGameObjectName() != "Restore") {
 			    score = 10;
-			    resetPowerUps(RESET_ALL);
 		    }
 		}
 		targetList.push_back((Target*)o);
@@ -231,6 +178,30 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
 		updatePlayerCamera(player1Cam, elapseTime);
+	        
+    /*if (powerUpLimit <= 0) {
+        resetPowerUps(RESET_ALL);
+        if (gameDisk->previousParticleSystem != 0) {
+            gameDisk->createNewParticleSystem(0);
+        }
+    }
+    else {
+        switch(powerUpLimit) {
+            case POWER:   if (gameDisk->previousParticleSystem != 1) {
+                              gameDisk->createNewParticleSystem(1);
+                          }
+                          powerUpLimit++;
+                          break;
+            case SPEED:   if (gameDisk->previousParticleSystem != 2) {
+                              diskSpeedFactor = 15.0f * 2.0f;
+                              btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+                              gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+                              gameDisk->createNewParticleSystem(2);
+                          }
+                          powerUpLimit++;
+                          break;
+          }
+    }*/
 	if (p1->checkHolding() || (p2 != NULL))
     {
     	if(p2 != NULL)
@@ -247,61 +218,33 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	{	
 		if (gameDisk != NULL)
 		{
-		    btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-		    gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-		    if (powerUpLimit-- <= 0) {
-		        resetPowerUps(RESET_ALL);
-		        if (gameDisk->previousParticleSystem != 0) {
-		            gameDisk->createNewParticleSystem(0);
-		        }
-		    }
-		    else {
-		        switch (currentPower) {
-		            case NONE:    printf("THIS SHOULD NEVER RUN!\n");
-		                          assert(false);
-		                          break;
-                    case POWER:   if (gameDisk->previousParticleSystem != 1) {
-                                      gameDisk->createNewParticleSystem(1);
-                                  }
-                                  break;
-                    case SPEED:   if (gameDisk->previousParticleSystem != 2) {
-                                      diskSpeedFactor = 15.0f * 2.0f;
-                                      gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-                                      gameDisk->createNewParticleSystem(2);
-                                  }
-                                  break;
-                    case SHIELD:  if (gameDisk->previousParticleSystem != 3) {
-                                      gameDisk->createNewParticleSystem(3);
-                                  }
-                                  break;
-                    case JUMP:    if (gameDisk->previousParticleSystem != 4) {
-                                      if (p1->getGameObjectName() == playerLastThrew) {
-                                          p1->increaseJump();
-                                      }
-                                      else if (p2->getGameObjectName() == playerLastThrew) {
-                                          p2->increaseJump();
-                                      }
-                                      gameDisk->createNewParticleSystem(4);
-                                  }
-                                  break;
-                    case RESTORE: if (gameDisk->previousParticleSystem != 5) {
-                                      if (p1->getGameObjectName() == playerLastThrew) {
-                                          hostTileList[hostRemoveIndexes.back()]->addToSimulator();
-                                          hostRemoveIndexes.pop_back();
-                                      }
-                                      else if (p2->getGameObjectName() == playerLastThrew) {
-                                          clientTileList[clientRemoveIndexes.back()]->addToSimulator();
-                                          clientRemoveIndexes.pop_back();
-                                      }
-                                      gameDisk->createNewParticleSystem(5);
-                                  }
-                                  break;
-		        }
-		    }
+	        btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
+            if (gameDisk->powerUp == "Speed")
+                gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
+            else    
+                gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+            
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
+			{
+				if (p2 != NULL)
+					;
+
+				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
+			}
 		}
 	}
+    if (p1 != NULL && p1->jumpPowerActive) {
+        p1->jumpTimer--;
+        if (p1->jumpTimer <= 0)
+            p1->decreaseJump();
+    }
+    if (p2 != NULL && p2->jumpPowerActive) {
+        p2->jumpTimer--;
+        if (p2->jumpTimer <= 0)
+            p2->decreaseJump();
+    }
 }
 //-------------------------------------------------------------------------------------
 void Simulator::parseCollisions(void)
@@ -473,13 +416,11 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		if (previousWallHit == "NULL")
 		{
 			previousWallHit = o->getGameObjectName();
-			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
 			gameDisk->needsOrientationUpdate = true;
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
@@ -520,17 +461,18 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			// The 47.0f value is the x-width and y-height of the disk
 		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());
-			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Shield" ||
-			    o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
+			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
 			{
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
+			    if (gameDisk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(playerLastThrew)))
+			        restoreTile();
                 // play power up sound effect
 			}
-			else 
+			else
 			{		    
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
@@ -543,174 +485,18 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->checkHitFlag())
-	{
-		if (!wallHitAfterThrow)
-			return;
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !p1->checkHolding())
+	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
+
+		int index = ((Tile *)o)->indexIntoTileArray;
 		
 		printf("COLLIDED WITH TILE!\n\n\n");
-		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName()) {
-		    int index = ((Tile *)o)->indexIntoTileArray;
-		    hostRemoveIndexes.push_back(index);
-		    /* When removing from client - add to clientRemoveIndexes */
-		    if (currentPower == POWER) {
-                int col = index % 6;
-                if (index >= 0 && index <= 5) 
-                {
-                    if (col == 0) {
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index+6]->checkHitFlag())) {
-                            hostTileList[index+6]->toggleHitFlag(); 
-                            hostRemoveIndexes.push_back(index+6);                        
-                            removeObject(hostTileList[index+6]->getGameObjectName());
-                        }
-                    }
-                    else if (col == 5) {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index+6]->checkHitFlag())) {
-                            hostTileList[index+6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+6);
-                            removeObject(hostTileList[index+6]->getGameObjectName());
-                        }
-                    }
-                    else {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index+6]->checkHitFlag())) {
-                            hostTileList[index+6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+6);
-                            removeObject(hostTileList[index+6]->getGameObjectName());
-                        }
-                    }
-                }
-                else if (index >= 36 && index <= 41) {
-                    if (col == 0) {
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index-6]->checkHitFlag())) {
-                            hostTileList[index-6]->toggleHitFlag(); 
-                            hostRemoveIndexes.push_back(index-6);                        
-                            removeObject(hostTileList[index-6]->getGameObjectName());
-                        }
-                    }
-                    else if (col == 5) {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index-6]->checkHitFlag())) {
-                            hostTileList[index-6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-6);
-                            removeObject(hostTileList[index-6]->getGameObjectName());
-                        }
-                    }
-                    else {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index-6]->checkHitFlag())) {
-                            hostTileList[index-6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-6);
-                            removeObject(hostTileList[index-6]->getGameObjectName());
-                        }
-                    }
-                }
-                else if (col == 0) {
-                    if (!(hostTileList[index+1]->checkHitFlag())) {
-                        hostTileList[index+1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+1);
-                        removeObject(hostTileList[index+1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+6]->checkHitFlag())) {
-                        hostTileList[index+6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+6);
-                        removeObject(hostTileList[index+6]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index-6]->checkHitFlag())) {
-                        hostTileList[index-6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-6);
-                        removeObject(hostTileList[index-6]->getGameObjectName());
-                    }
-                }
-                else if (col == 5) {
-                    if (!(hostTileList[index-1]->checkHitFlag())) {
-                        hostTileList[index-1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-1);
-                        removeObject(hostTileList[index-1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+6]->checkHitFlag())) {
-                        hostTileList[index+6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+6);
-                        removeObject(hostTileList[index+6]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index-6]->checkHitFlag())) {
-                        hostTileList[index-6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-6);
-                        removeObject(hostTileList[index-6]->getGameObjectName());
-                    }
-                }
-                else {
-                    if (!(hostTileList[index-1]->checkHitFlag())) {
-                        hostTileList[index-1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-1);
-                        removeObject(hostTileList[index-1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+1]->checkHitFlag())) {
-                        hostTileList[index+1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+1);
-                        removeObject(hostTileList[index+1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+6]->checkHitFlag())) {
-                        hostTileList[index+6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+6);
-                        removeObject(hostTileList[index+6]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index-6]->checkHitFlag())) {
-                        hostTileList[index-6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-6);
-                        removeObject(hostTileList[index-6]->getGameObjectName());
-                    }
-                }
-		    }
-		}
-		else 
-		{		 
-		    clientRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
-		    //removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
-		}
+		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName())
+		    destroyTiles(hostTileList, hostRemoveIndexes, index);
+		else
+		    destroyTiles(clientTileList, clientRemoveIndexes, index);
 		/* Handle powerups */
 		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
 		//if(powerup == "removeOneRow")
@@ -725,6 +511,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		//((Tile *)o)->markHit(); // Mark that the tile has been hit
 		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
 		//removeObject(((Tile*)o)->getGameObjectName());
+		gameDisk->resetPowerUp();
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
 	}
 }
@@ -747,7 +534,7 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Floor", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);
@@ -814,17 +601,50 @@ bool Simulator::checkGameStart()
 {
 	return gameStart;
 }
-//-------------------------------------------------------------------------------------
-void Simulator::resetPowerUps(int resetFactor)
-{
-    if (resetFactor == RESET_ALL) 
-    {
-        powerUpLimit = 0;
-        currentPower = NONE;
+//---------------------------------------------------------------------------------------
+void Simulator::restoreTile() {
+    if (p1 != NULL && p1->getGameObjectName() == playerLastThrew && hostRemoveIndexes.size() > 0) {
+        hostTileList[hostRemoveIndexes.back()]->addToSimulator();
+        hostRemoveIndexes.pop_back();
     }
-    diskSpeedFactor = 15.0f;
-    if (p1 != NULL)
-        p1->decreaseJump();
-    if (p2 != NULL)
-        p2->decreaseJump();
+    else if (p2 != NULL && p2->getGameObjectName() == playerLastThrew && clientRemoveIndexes.size() > 0) {
+        clientTileList[clientRemoveIndexes.back()]->addToSimulator();
+        clientRemoveIndexes.pop_back();
+    }
+}
+//-------------------------------------------------------------------------------------
+void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index) {
+    removeIndexes.push_back(index);
+    /* When removing from client - add to clientRemoveIndexes */
+    if (gameDisk->powerUp == "Power") {
+        int col = index % 6;
+        if (col != 0) { // remove left - not in far left column
+            if (!(tileList[index-1]->checkHitFlag())) {
+                tileList[index-1]->toggleHitFlag();
+                removeIndexes.push_back(index-1);
+                removeObject(tileList[index-1]->getGameObjectName());
+            }
+        }
+        if (col != 5) { // remove right - not in far right column
+            if (!(tileList[index+1]->checkHitFlag())) {
+                tileList[index+1]->toggleHitFlag();
+                removeIndexes.push_back(index+1);
+                removeObject(tileList[index+1]->getGameObjectName());
+            }
+        }
+        if (index > 5) { // remove top - not in top row
+            if (!(tileList[index-6]->checkHitFlag())) {
+                tileList[index-6]->toggleHitFlag();
+                removeIndexes.push_back(index-6);
+                removeObject(tileList[index-6]->getGameObjectName());
+            }
+        }
+        if (index < 36) { // remove bottom - not in bottom row
+            if (!(tileList[index+6]->checkHitFlag())) {
+                tileList[index+6]->toggleHitFlag();
+                removeIndexes.push_back(index+6);
+                removeObject(tileList[index+6]->getGameObjectName());
+            }
+        }
+    }
 }

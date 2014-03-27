@@ -11,12 +11,22 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	prevGroundY = -99999.0f;
 	jumpFactor = 8.0f;
 	playerSide = side;
+	jumpTimer = 0;
+	jumpPowerActive = false;
 
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
 	
-	//tailParticle[0] = mgr->createParticleSystem("CyanSun", "Examples/CyanSun");
-	//tailParticle[1] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
+	if (nym == "Player1") {
+	    tailParticle = mgr->createParticleSystem("CyanSun1", "Examples/CyanSun");
+	    particleNode = rootNode->createChildSceneNode("PlayerParticle1");
+    }
+    else {
+        tailParticle = mgr->createParticleSystem("CyanSun2", "Examples/CyanSun");
+        particleNode = rootNode->createChildSceneNode("PlayerParticle2");
+    }
+    particleNode->attachObject(tailParticle);
+    particleNode->setVisible(false);
 
 	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
@@ -127,11 +137,6 @@ bool Player::performJump()
 	return false;
 }
 //-------------------------------------------------------------------------------------
-void Player::applyPowerUp(Ogre::String type)
-{
-    
-}
-//-------------------------------------------------------------------------------------
 Ogre::String Player::checkPlayerSide()
 {
 
@@ -140,11 +145,16 @@ Ogre::String Player::checkPlayerSide()
 void Player::increaseJump() 
 {
     jumpFactor = 12.0f;
+    jumpTimer = 3000;
+    jumpPowerActive = true;
+    particleNode->setVisible(true);
 }
 //-------------------------------------------------------------------------------------
 void Player::decreaseJump() 
 {
     jumpFactor = 8.0f;
+    jumpPowerActive = false;
+    particleNode->setVisible(false);
 }
 //-------------------------------------------------------------------------------------
 void Player::initializeStates()
@@ -181,7 +191,7 @@ void Player::resetPlayerState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeybo
     if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && this->checkState(Boost))
     	this->toggleState(Boost);
 }
-Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, Ogre::Real sprintFactor)
+Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 {
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 

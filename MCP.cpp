@@ -77,7 +77,6 @@ void MCP::createSoloModeScene()
 
     (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
-    (new Target("Shield", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
@@ -364,12 +363,12 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
 
-    Player *p = (Player *)gameSimulator->getGameObject("Player1");    // Get the player object from the simulator
+    Player *p = (Player *)gameSimulator->getGameObject("Player1");     // Get the player object from the simulator
 
     float fx = 0.0f;                                                   // Force x-component
     float fz = 0.0f;                                                   // Force z-component
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
-    
+
     timeSinceLastJump += evt.timeSinceLastFrame;
 
     /********************     MOVEMENT   ********************/
@@ -451,9 +450,11 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
                 btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
 
-                p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
                 if (turboMode)
-                    p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), p->getBody()->getLinearVelocity().getZ()) * sprintFactor);
+                    p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                else
+                    p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                   
             }
         }
     }

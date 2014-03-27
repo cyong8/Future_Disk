@@ -43,6 +43,7 @@ void PlayerCamera::toggleThirdPersonView()
         overlay2->show();
         p->getSceneNode()->setVisible(false);
     }
+    p->particleNode->setVisible(p->jumpPowerActive);
 }
 //-------------------------------------------------------------------------------------
 void PlayerCamera::initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition)

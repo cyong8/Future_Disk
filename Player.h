@@ -28,14 +28,17 @@ public:
 	Ogre::String checkPlayerSide(void);
 	bool groundConstantSet;
 	Ogre::Real jumpFactor;
-	void applyPowerUp(Ogre::String type);
 	void increaseJump(void);
 	void decreaseJump(void);
 	void initializeStates(void);
 	bool checkState(int index);
 	void toggleState(int index);
 	void resetPlayerState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard);
-	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, Ogre::Real sprintFactor);
+	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
+	int jumpTimer;
+	bool jumpPowerActive;
+    Ogre::ParticleSystem* tailParticle;	
+	Ogre::SceneNode* particleNode;
 
 protected:
 	vector<bool> states;
@@ -47,8 +50,6 @@ protected:
 	Ogre::Real groundY;
 	Ogre::Real prevGroundY;
 	Ogre::String playerSide;
-	Ogre::ParticleSystem* tailParticle[2];
-	Ogre::SceneNode* particleNode;	
 };
 
 #endif // #ifndef __Player_h_

@@ -13,8 +13,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	tailParticle[1] = mgr->createParticleSystem("RedSun", "Examples/RedSun");
 	tailParticle[2] = mgr->createParticleSystem("GreenSun", "Examples/GreenSun");
 	tailParticle[3] = mgr->createParticleSystem("CyanSun", "Examples/CyanSun");
-	tailParticle[4] = mgr->createParticleSystem("MagentaSun", "Examples/MagentaSun");
-	tailParticle[5] = mgr->createParticleSystem("WhiteSun", "Examples/WhiteSun");
+	tailParticle[4] = mgr->createParticleSystem("WhiteSun", "Examples/WhiteSun");
 	particleNode = rootNode->createChildSceneNode("Particle");
 	particleNode->attachObject(tailParticle[0]);
 	previousParticleSystem = 0;
@@ -23,6 +22,8 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 		initialPlayer = "Player1";
 	if (dropToPlayer == 1.0f)
 		initialPlayer = "Player2";
+		
+	powerUp = "";
 
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);
@@ -91,4 +92,29 @@ void Disk::createNewParticleSystem(int index)
     this->particleNode->detachObject(this->tailParticle[this->previousParticleSystem]);
 	this->particleNode->attachObject(this->tailParticle[index]);
 	this->previousParticleSystem = index;
+}
+//-------------------------------------------------------------------------------------
+bool Disk::activatePowerUp(Ogre::String name, Player* p)
+{
+    if (name == "Power" || name == "Speed") {
+        powerUp = name;
+        if (powerUp == "Power" && previousParticleSystem != 1)
+            createNewParticleSystem(1);
+        else if (powerUp == "Speed" && previousParticleSystem != 2)
+            createNewParticleSystem(2);
+    }
+    else if (name == "Jump") {
+        p->increaseJump();
+    }
+    else if (name == "Restore") {
+        return true;
+    }
+    return false;
+}
+//-------------------------------------------------------------------------------------
+void Disk::resetPowerUp()
+{
+    powerUp = "";
+    if (previousParticleSystem != 0)
+        createNewParticleSystem(0);
 }

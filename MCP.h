@@ -91,7 +91,7 @@ protected:
 	int gameMode;
 	int sceneRendered;
 	Ogre::Real mMove; 			// Move Constant
-	Ogre::Real sprintFactor;	// Sprint Constant
+	float sprintFactor;	// Sprint Constant
 };
 
 #endif // #ifndef __MCP_h_
