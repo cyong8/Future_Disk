@@ -3,6 +3,7 @@
 
 #include "BaseApplication.h"
 #include <vector>
+#include <iostream>
 #include "Target.h"
 #include "Music.h"
 
@@ -17,7 +18,7 @@ class PlayerCamera;
 class Disk;
 class Music;
 
-enum powerUp{NONE, POWER, SPEED, SHIELD, BOOST, JUMP, RESTORE};
+enum powerUp{NONE, POWER, SPEED, SHIELD, JUMP, RESTORE};
 
 class Simulator
 {
@@ -38,6 +39,10 @@ class Simulator
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
 		Ogre::String playerLastThrew;
+		vector<GameObject*> hostTileList;
+		vector<int> hostRemoveIndexes;
+		vector<GameObject*> clientTileList;
+		vector<int> clientRemoveIndexes;
 		int score;
 		int powerUpLimit;
 		bool viewChangeP1;

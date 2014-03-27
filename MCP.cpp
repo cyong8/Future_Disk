@@ -101,7 +101,6 @@ void MCP::createMultiplayerModeScene_host()
     gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
 
     gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
-
     /********************  OBJECT CREATION  ********************/
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 

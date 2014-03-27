@@ -58,6 +58,7 @@ Simulator::~Simulator()
 //-------------------------------------------------------------------------------------
 void Simulator::addObject (GameObject* o) 
 {
+    static int tileNumber = 0;
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);	
 	objList.push_back(o); // Add the object to the list of object
 
@@ -188,6 +189,23 @@ void Simulator::addObject (GameObject* o)
 	{
 		o->getBody()->setRestitution(0.8f);
 	}
+	if(o->typeName == "Tile")
+	{
+	    if (!(o->checkReAddFlag())) {
+	        if (tileNumber < 42) {
+	            clientTileList.push_back(o);
+	            ((Tile*)clientTileList[tileNumber])->indexIntoTileArray = tileNumber;
+            }
+            else {
+                hostTileList.push_back(o);
+                ((Tile*)hostTileList[tileNumber-42])->indexIntoTileArray = tileNumber-42;
+            }
+        }
+        else {
+            o->getSceneNode()->setVisible(true);
+        }
+        tileNumber++;
+	}
 }
 //-------------------------------------------------------------------------------------
 GameObject* Simulator::getGameObject(Ogre::String name)
@@ -293,6 +311,14 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
                                   }
                                   break;
                     case RESTORE: if (gameDisk->previousParticleSystem != 5) {
+                                      if (p1->getGameObjectName() == playerLastThrew) {
+                                          hostTileList[hostRemoveIndexes.back()]->addToSimulator();
+                                          hostRemoveIndexes.pop_back();
+                                      }
+                                      else if (p2->getGameObjectName() == playerLastThrew) {
+                                          clientTileList[clientRemoveIndexes.back()]->addToSimulator();
+                                          clientRemoveIndexes.pop_back();
+                                      }
                                       gameDisk->createNewParticleSystem(5);
                                   }
                                   break;
@@ -418,8 +444,6 @@ void Simulator::setThrowFlag()
 //-------------------------------------------------------------------------------------
 void Simulator::performThrow(Player* p)
 {
-	printf("INSIDE PERFORM THROW!\n\n\n");
-
    	Disk *d = p->getPlayerDisk();	
   	btQuaternion diskOrientation;
  	btTransform transform;
@@ -560,9 +584,19 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit())
+	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit() && currentPower != SHIELD)
 	{
 		printf("COLLIDED WITH TILE!\n\n\n");
+		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName()) {
+		    ((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->markHit();
+		    hostRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
+		    removeObject(hostTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
+		}
+		else {
+		    ((Tile*)clientTileList[((Tile *)o)->indexIntoTileArray])->markHit();
+		    clientRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
+		    removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
+		}
 		/* Handle powerups */
 		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
 		//if(powerup == "removeOneRow")
@@ -573,10 +607,10 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		// Remove gameObject from gameObject list
 		// Remove collided tile from simulator
 		// Remove one tile
-		printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		((Tile *)o)->markHit(); // Mark that the tile has been hit
-		printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		removeObject(((Tile*)o)->getGameObjectName());
+		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
+		//((Tile *)o)->markHit(); // Mark that the tile has been hit
+		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
+		//removeObject(((Tile*)o)->getGameObjectName());
 	}
 }
 
