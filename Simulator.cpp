@@ -52,6 +52,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	gameStart = false;
 	player1CanCatch = true;
     player2CanCatch = true;
+    wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
 	gameDisk = NULL;
@@ -156,7 +157,7 @@ void Simulator::addObject (GameObject* o)
 		}
 		targetList.push_back((Target*)o);
 	}
-	if(o->typeName == "Wall")
+	if(o->typeName == "Wall" || o->typeName == "Tile")
 	{
 		o->getBody()->setRestitution(0.8f);
 	}
@@ -402,6 +403,7 @@ void Simulator::performThrow(Player* p)
 
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
+    	wallHitAfterThrow = false;
         //resetPowerUps();
     	Ogre::Vector3 toParentPosition = gameDisk->getSceneNode()->_getDerivedPosition();
 
@@ -462,12 +464,17 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
 	// Wall
 	if (o->typeName == "Wall")
-	{
+	{	
+		if (!p1->checkHolding())
+			wallHitAfterThrow = true;
+		if (p2 != NULL)
+			if (p2->checkHolding())
+				wallHitAfterThrow = true;
 		if (previousWallHit == "NULL")
 		{
+			previousWallHit = o->getGameObjectName();
 			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
 			gameDisk->needsOrientationUpdate = true;
-			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
@@ -477,9 +484,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
+
 		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
-
 		if (p2 != NULL)
 		{
 			if (!player2CanCatch && !p2->checkHolding())
@@ -538,6 +545,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	}
 	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->checkHitFlag())
 	{
+		if (!wallHitAfterThrow)
+			return;
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
 		
@@ -738,8 +747,7 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true) 
-    	|| Ogre::StringUtil::match(wallName, "Tile", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Floor", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);
@@ -747,6 +755,32 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 	d->getBody()->setCenterOfMassTransform(trans);
 	d->setOldVelocity(currVelocity);
 	d->needsOrientationUpdate = false;
+
+	
+	// if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
+	// 	return;
+
+	// int changePitch = 0;
+	// int changeRoll = 0;
+	// btTransform trans = d->getBody()->getCenterOfMassTransform();
+	// btQuaternion quat;
+
+	// if (Ogre::StringUtil::match(wallName, "FarLeftWall", true) || Ogre::StringUtil::match(wallName, "FarRightWall", true) 
+	// 			|| Ogre::StringUtil::match(wallName, "NearRightWall", true) || Ogre::StringUtil::match(wallName, "NearLeftWall", true))	
+	// 	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), -d->getSceneNode()->getOrientation().getRoll().valueRadians());
+ //    if (Ogre::StringUtil::match(wallName, "LeftWall", true) || Ogre::StringUtil::match(wallName, "RightWall", true))	
+ //    	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
+ //    if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
+ //    	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
+ //    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true) 
+ //    	|| Ogre::StringUtil::match(wallName, "Tile", true))
+ //    	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
+
+ //    trans.setRotation(quat);
+
+	// d->getBody()->setCenterOfMassTransform(trans);
+	// d->setOldVelocity(currVelocity);
+	// d->needsOrientationUpdate = false;
 }
 //-------------------------------------------------------------------------------------
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)

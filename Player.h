@@ -3,6 +3,8 @@
 
 #include "GameObject.h"
 
+enum stateIndex{Left, Right, Back, Forward, Jump, Boost};
+
 class Disk;
 
 class Player : public GameObject
@@ -29,8 +31,14 @@ public:
 	void applyPowerUp(Ogre::String type);
 	void increaseJump(void);
 	void decreaseJump(void);
+	void initializeStates(void);
+	bool checkState(int index);
+	void toggleState(int index);
+	void resetPlayerState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard);
+	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, Ogre::Real sprintFactor);
 
 protected:
+	vector<bool> states;
 	bool isHolding;		
 	Disk* playerDisk;
 	Ogre::Vector3 dimensions;

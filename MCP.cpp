@@ -46,6 +46,7 @@ void MCP::createScene(void)
 
     /******************** Movement Constants ******************/
     mMove = 3.0f;
+    sprintFactor = 3.0f;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -282,6 +283,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 gameOver = updateTimer(currTime);
                 if (gameOver)
                     gameMusic->playMusic("Pause");
+                modifyScore(gameSimulator->tallyScore());
             }
             if (clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
             {
@@ -306,11 +308,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                         while (pack.sequence != 'n')
                         {
                             pack = gameNetwork->receivePacket();
+                            printf("\t\treceived from client packet of sequence %c\n\n", pack.sequence);
                             interpretClientPacket(pack);
                         }
                     }
                     timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-                    printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
+                    //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
                 }
@@ -326,13 +329,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
                     //gameDisk->particleNode->setVisible(true);
                 }
-                modifyScore(gameSimulator->tallyScore());
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
             {
                 if (sceneRendered)
                 {
-                    checkClientInput(evt);
+                    processAndSendClientInput(evt);
                     if (gameNetwork->checkSockets())
                         updateClient(evt);
                     if (mShutDown)
@@ -358,6 +360,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     static bool pausePressedLast = false;                              // Was pause pressed last frame
     static bool spacePressedLast = false;
     static Ogre::Real timeSinceLastJump = 0.0f;
+    bool turboMode = false;
     bool keyWasPressed = false;                                        // Was a key pressed in current frame
     bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
 
@@ -367,7 +370,6 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
     float fz = 0.0f;                                                   // Force z-component
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
     
-    float sprintFactor = 1.0f;                                         // How fast the character moves when Left Shift is held down
     timeSinceLastJump += evt.timeSinceLastFrame;
 
     /********************     MOVEMENT   ********************/
@@ -402,7 +404,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         }
         if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Move into Boost mode
         {
-            sprintFactor = 3.0f;
+            turboMode = true;
         }
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
@@ -449,7 +451,9 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
                 btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
 
-                p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
+                p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                if (turboMode)
+                    p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), p->getBody()->getLinearVelocity().getZ()) * sprintFactor);
             }
         }
     }
@@ -490,7 +494,6 @@ bool MCP::constructAndSendGameState()
         pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
         gameNetwork->sendPacket(pack);  // Send Disk
     }
-
 
     /* Signify end of frame data */
     pack.sequence = 'n';
@@ -533,11 +536,9 @@ void MCP::updateClientCamera(Ogre::Real elapseTime)
     }
 }
 //-------------------------------------------------------------------------------------
-bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
+bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
 {
-    MCP_Packet pack;   
-
-    static char clientKeyLastSent = 'n';
+    MCP_Packet pack;
 
     pack.sequence = 'o';
     pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
@@ -549,93 +550,97 @@ bool MCP::checkClientInput(const Ogre::FrameEvent& evt)
         mShutDown = true;
         return false;
     }
-    if (mKeyboard->isKeyDown(OIS::KC_W))                                    // Forward - implemented
+    if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(Forward))                              // Forward - implemented
+    {
+        clientPlayer->toggleState(Forward);
         pack.sequence = 'w';
-    else if (mKeyboard->isKeyDown(OIS::KC_A))                               // Left - implemented
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
+    {
+        clientPlayer->toggleState(Left);
         pack.sequence = 'a';
-    else if (mKeyboard->isKeyDown(OIS::KC_S))                               // Backwards - implemented
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
+    {
+        clientPlayer->toggleState(Back);
         pack.sequence = 's';
-    else if (mKeyboard->isKeyDown(OIS::KC_D))                               // Right - implemented
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
+    {
+        clientPlayer->toggleState(Right);
         pack.sequence = 'd';
-    else if (mKeyboard->isKeyDown(OIS::KC_J) && clientKeyLastSent != 'j')   // Jump - implemented
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_J) && !clientPlayer->checkState(Jump))   // Jump - implemented
+    {
+        clientPlayer->toggleState(Jump);
         pack.sequence = 'j';
-    else if (mKeyboard->isKeyDown(OIS::KC_V) && !clientVKeyDown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_V) && !clientVKeyDown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
     {
         cViewModeToggle = true;  // toggle - always true
         pCam->toggleThirdPersonView();
         clientVKeyDown = true;
         pack.sequence = 'v';
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_V) && clientVKeyDown)        
+    if (!mKeyboard->isKeyDown(OIS::KC_V) && clientVKeyDown)        
     {
         cViewModeToggle = true;  // toggle - always true
         pCam->toggleThirdPersonView();
         clientVKeyDown = false;
         pack.sequence = 'v';
     }    
-
-    else if (mKeyboard->isKeyDown(OIS::KC_LSHIFT))                          // Speed Boost
+    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
+    {
+        clientPlayer->toggleState(Boost); 
         pack.sequence = 'b';
-
-    clientKeyLastSent = pack.sequence;
-
+    }
     if (pack.sequence != 'n')
+    {
+        printf("\t\t*****Client sending sequence %c\n\n", pack.sequence);
         gameNetwork->sendPacket(pack);
-
-
+    }
 
     pack.sequence = 'n';
     gameNetwork->sendPacket(pack);  // Send Player
+
+    clientPlayer->resetPlayerState(evt, mKeyboard);
 
     return true;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::interpretClientPacket(MCP_Packet pack)
 {
-    // Update the player rigid body and scenenode
+    // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
     char typeInput = pack.sequence;
-    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);
-    float sprintFactor = 3.0f;
-    bool movementFlag = false;
+    Ogre::Vector3 velocityVector;
 
     if (typeInput == 'w')                                       // Forward
-    {
-        velocityVector = velocityVector + btVector3(0.0f, 0.0f, -mMove);
-        movementFlag = true;
-    }
+        hostPlayer->toggleState(Forward);
     if (typeInput == 'a')                                       // Left
-    {
-        velocityVector = velocityVector + btVector3(-mMove, 0.0f, 0.0f);
-        movementFlag = true;
-    }
+        hostPlayer->toggleState(Left);
     if (typeInput == 's')                                       // Backwards
-    {
-        velocityVector = velocityVector + btVector3(0.0f, 0.0f, mMove);
-        movementFlag = true;
-    }
+        hostPlayer->toggleState(Back);
     if (typeInput == 'd')                                       // Right
-    {
-        velocityVector = velocityVector + btVector3(mMove, 0.0f, 0.0f);
-        movementFlag = true;
-    }
+        hostPlayer->toggleState(Right);
     if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
         clientPlayer->performJump();
     if (typeInput == 'v')                                       // View Mode Toggle
         clientVKeyDown = !clientVKeyDown;
-    if (typeInput == 'b')   // speed boost
-        ;
-    if (typeInput == 't')
+    if (typeInput == 'b')                                       // speed boost
+        hostPlayer->toggleState(Boost);
+    if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
         gameSimulator->setThrowFlag();
     if (typeInput == 'o' && gameSimulator->checkGameStart())
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
+    
+    velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
 
-    if (movementFlag && gameSimulator->checkGameStart() && !clientVKeyDown)
+    if (gameSimulator->checkGameStart() && !clientVKeyDown)
     {
-        Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
-        trueVelocity = clientPlayer->getSceneNode()->getOrientation() * trueVelocity; 
-        btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
+        velocityVector = clientPlayer->getSceneNode()->getOrientation() * velocityVector; 
+        btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
 
-        clientPlayer->getBody()->setLinearVelocity((btTrueVelocity /* sprintFactor*/) + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
+        clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
     }
 
     return false;

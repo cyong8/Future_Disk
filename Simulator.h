@@ -51,8 +51,9 @@ class Simulator
 		bool gameStart;
 		bool player1CanCatch;
 	    bool player2CanCatch;
-		Ogre::String previousWallHit;
 		bool giveDisk;
+	   	bool wallHitAfterThrow;
+		Ogre::String previousWallHit;
 		Ogre::Real diskSpeedFactor;
 		powerUp currentPower;
 		

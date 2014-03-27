@@ -31,7 +31,6 @@ public:
 	vector<Wall*> wallList;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
-	Ogre::Real mMove; // Move Constant
 	bool vKeyDown;
 	bool gameStart;
 	bool gamePause;
@@ -67,7 +66,7 @@ protected:
 	bool constructAndSendGameState(void);
 	bool updateClient(const Ogre::FrameEvent& evt);
 	void updateClientCamera(Ogre::Real elapseTime);
-	bool checkClientInput(const Ogre::FrameEvent& evt);
+	bool processAndSendClientInput(const Ogre::FrameEvent& evt);
 	bool interpretClientPacket(MCP_Packet pack);
 	bool interpretServerPacket(MCP_Packet pack);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
@@ -91,6 +90,8 @@ protected:
 	PlayerCamera* pCam;
 	int gameMode;
 	int sceneRendered;
+	Ogre::Real mMove; 			// Move Constant
+	Ogre::Real sprintFactor;	// Sprint Constant
 };
 
 #endif // #ifndef __MCP_h_
