@@ -82,9 +82,11 @@ class Simulator
 		bool checkGameStart(void);
 		void resetPowerUps(int resetFactor);
 		void resetSpeed(void);
+		void checkHostTile(int index);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
+		bool wallHit;
 };
 
 #endif // #ifndef __Simulator_h_

@@ -54,6 +54,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
     player2CanCatch = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
+	wallHit = false;
 	gameDisk = NULL;
 	setDisk = false;
 	currentPower = NONE;
@@ -118,7 +119,7 @@ void Simulator::addObject (GameObject* o)
 		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
-
+		//gameDisk->getSceneNode()->roll(90);
 		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
 		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
@@ -299,6 +300,12 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		    }
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
+			{
+				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
+				wallHit = false;
+				printf("DOWN IT GOES");
+			}
 		}
 	}
 }
@@ -463,16 +470,18 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Wall
 	if (o->typeName == "Wall")
 	{
+		wallHit = true;
+		
 		if (previousWallHit == "NULL")
 		{
-			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity(), "");
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity(), o->getGameObjectName());
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
@@ -502,6 +511,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
+			wallHit = false;
+			
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
 	}
@@ -523,7 +534,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
                 // play power up sound effect
 			}
-			else 
+			else
 			{		    
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
@@ -536,12 +547,13 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->checkHitFlag())
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHit && !p1->checkHolding())
 	{
+		wallHit = false;
+		
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
-		
-		printf("COLLIDED WITH TILE!\n\n\n");
+
 		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName()) {
 		    int index = ((Tile *)o)->indexIntoTileArray;
 		    hostRemoveIndexes.push_back(index);
@@ -551,149 +563,64 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
                 if (index >= 0 && index <= 5) 
                 {
                     if (col == 0) {
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index+6]->checkHitFlag())) {
-                            hostTileList[index+6]->toggleHitFlag(); 
-                            hostRemoveIndexes.push_back(index+6);                        
-                            removeObject(hostTileList[index+6]->getGameObjectName());
-                        }
+                    	checkHostTile(index+1);
+
+                        checkHostTile(index+6);
                     }
                     else if (col == 5) {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index+6]->checkHitFlag())) {
-                            hostTileList[index+6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+6);
-                            removeObject(hostTileList[index+6]->getGameObjectName());
-                        }
+                    	checkHostTile(index-1);
+
+                        checkHostTile(index+6);
                     }
                     else {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index+6]->checkHitFlag())) {
-                            hostTileList[index+6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+6);
-                            removeObject(hostTileList[index+6]->getGameObjectName());
-                        }
+                    	checkHostTile(index-1);
+
+                        checkHostTile(index+1);
+
+                        checkHostTile(index+6);
                     }
                 }
                 else if (index >= 36 && index <= 41) {
                     if (col == 0) {
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index-6]->checkHitFlag())) {
-                            hostTileList[index-6]->toggleHitFlag(); 
-                            hostRemoveIndexes.push_back(index-6);                        
-                            removeObject(hostTileList[index-6]->getGameObjectName());
-                        }
+                    	checkHostTile(index+1);
+
+                        checkHostTile(index-6);
                     }
                     else if (col == 5) {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        
-                        if (!(hostTileList[index-6]->checkHitFlag())) {
-                            hostTileList[index-6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-6);
-                            removeObject(hostTileList[index-6]->getGameObjectName());
-                        }
+                    	checkHostTile(index-1);
+
+                        checkHostTile(index-6);
                     }
                     else {
-                        if (!(hostTileList[index-1]->checkHitFlag())) {
-                            hostTileList[index-1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-1);
-                            removeObject(hostTileList[index-1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index+1]->checkHitFlag())) {
-                            hostTileList[index+1]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index+1);
-                            removeObject(hostTileList[index+1]->getGameObjectName());
-                        }
-                        if (!(hostTileList[index-6]->checkHitFlag())) {
-                            hostTileList[index-6]->toggleHitFlag();
-                            hostRemoveIndexes.push_back(index-6);
-                            removeObject(hostTileList[index-6]->getGameObjectName());
-                        }
+                    	checkHostTile(index-1);
+
+                        checkHostTile(index+1);
+
+                        checkHostTile(index-6);
                     }
                 }
                 else if (col == 0) {
-                    if (!(hostTileList[index+1]->checkHitFlag())) {
-                        hostTileList[index+1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+1);
-                        removeObject(hostTileList[index+1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+6]->checkHitFlag())) {
-                        hostTileList[index+6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+6);
-                        removeObject(hostTileList[index+6]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index-6]->checkHitFlag())) {
-                        hostTileList[index-6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-6);
-                        removeObject(hostTileList[index-6]->getGameObjectName());
-                    }
+                	checkHostTile(index+1);
+
+                    checkHostTile(index+6);
+
+                    checkHostTile(index-6);
                 }
                 else if (col == 5) {
-                    if (!(hostTileList[index-1]->checkHitFlag())) {
-                        hostTileList[index-1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-1);
-                        removeObject(hostTileList[index-1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+6]->checkHitFlag())) {
-                        hostTileList[index+6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+6);
-                        removeObject(hostTileList[index+6]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index-6]->checkHitFlag())) {
-                        hostTileList[index-6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-6);
-                        removeObject(hostTileList[index-6]->getGameObjectName());
-                    }
+                	checkHostTile(index-1);
+
+                    checkHostTile(index+6);
+
+                    checkHostTile(index-6);
                 }
                 else {
-                    if (!(hostTileList[index-1]->checkHitFlag())) {
-                        hostTileList[index-1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-1);
-                        removeObject(hostTileList[index-1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+1]->checkHitFlag())) {
-                        hostTileList[index+1]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+1);
-                        removeObject(hostTileList[index+1]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index+6]->checkHitFlag())) {
-                        hostTileList[index+6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index+6);
-                        removeObject(hostTileList[index+6]->getGameObjectName());
-                    }
-                    if (!(hostTileList[index-6]->checkHitFlag())) {
-                        hostTileList[index-6]->toggleHitFlag();
-                        hostRemoveIndexes.push_back(index-6);
-                        removeObject(hostTileList[index-6]->getGameObjectName());
-                    }
+                	checkHostTile(index-1);
+
+                    checkHostTile(index+1);
+
+                    checkHostTile(index+6);
+
+                    checkHostTile(index-6);
                 }
 		    }
 		}
@@ -702,22 +629,21 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    clientRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
 		    //removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
 		}
-		/* Handle powerups */
-		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
-		//if(powerup == "removeOneRow")
-		// Remove one row
-		//else if(powerup == "")
-		// Heal one tile
-		// Remove area
-		// Remove gameObject from gameObject list
-		// Remove collided tile from simulator
-		// Remove one tile
-		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		//((Tile *)o)->markHit(); // Mark that the tile has been hit
-		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		//removeObject(((Tile*)o)->getGameObjectName());
+
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
+		wallHit = false;
+		
 	}
+}
+
+void Simulator::checkHostTile(int index)
+{
+	if (!(hostTileList[index]->checkHitFlag())) 
+	{
+        hostTileList[index]->toggleHitFlag();
+        hostRemoveIndexes.push_back(index);
+        removeObject(hostTileList[index]->getGameObjectName());
+    }
 }
 
 //-------------------------------------------------------------------------------------
@@ -725,7 +651,8 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 {
 	if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
 		return;
-
+	if(wallName == "")
+		return;
 	int changePitch = 0;
 	int changeRoll = 0;
 	btTransform trans = d->getBody()->getCenterOfMassTransform();
@@ -738,8 +665,7 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true) 
-    	|| Ogre::StringUtil::match(wallName, "Tile", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);
