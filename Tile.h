@@ -11,6 +11,7 @@ public:
 	Ogre::Vector3 pos;
 	void markHit();
 	bool isHit();
+	int indexIntoTileArray;
 };
 
 #endif // #ifndef __Tile_h_

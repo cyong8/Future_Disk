@@ -1,4 +1,5 @@
 #include "Room.h"
+#include <vector>
 
 Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 {
