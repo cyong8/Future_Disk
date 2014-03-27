@@ -2,6 +2,7 @@
 #define __Disk_h_
 
 #include "GameObject.h"
+#include "Player.h"
 
 class Player;
 
@@ -20,12 +21,15 @@ public:
 	btVector3 getOldVelocity(void);
 	void setOldVelocity(btVector3 v);
 	Ogre::Vector3 diskDirection;
-	Ogre::ParticleSystem* tailParticle[6];
+	Ogre::ParticleSystem* tailParticle[5];
 	Ogre::SceneNode* particleNode;
 	bool needsOrientationUpdate;
 	int previousParticleSystem;
 	Ogre::String checkInitialPlayer(void);
 	void createNewParticleSystem(int index);
+	bool activatePowerUp(Ogre::String name, Player* p);
+	Ogre::String powerUp;
+	void resetPowerUp();
 };
 
 #endif // #ifndef __Disk_h_
