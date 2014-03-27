@@ -176,21 +176,6 @@ void Player::toggleState(int index)
 {
 	states[index] = !states[index];
 }
-void Player::resetPlayerState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard)
-{
-	if (!mKeyboard->isKeyDown(OIS::KC_W) && this->checkState(Forward))
-        this->toggleState(Forward);
-    if (!mKeyboard->isKeyDown(OIS::KC_A) && this->checkState(Left))
-        this->toggleState(Left);
-    if (!mKeyboard->isKeyDown(OIS::KC_S) && this->checkState(Back))
-        this->toggleState(Back);
-    if (!mKeyboard->isKeyDown(OIS::KC_D) && this->checkState(Right))
-        this->toggleState(Right);
-    if (!mKeyboard->isKeyDown(OIS::KC_J) && this->checkState(Jump))
-    	this->toggleState(Jump);
-    if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && this->checkState(Boost))
-    	this->toggleState(Boost);
-}
 Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 {
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);

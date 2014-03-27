@@ -33,7 +33,6 @@ public:
 	void initializeStates(void);
 	bool checkState(int index);
 	void toggleState(int index);
-	void resetPlayerState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard);
 	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
 	int jumpTimer;
 	bool jumpPowerActive;

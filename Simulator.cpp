@@ -177,31 +177,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
-		updatePlayerCamera(player1Cam, elapseTime);
-	        
-    /*if (powerUpLimit <= 0) {
-        resetPowerUps(RESET_ALL);
-        if (gameDisk->previousParticleSystem != 0) {
-            gameDisk->createNewParticleSystem(0);
-        }
-    }
-    else {
-        switch(powerUpLimit) {
-            case POWER:   if (gameDisk->previousParticleSystem != 1) {
-                              gameDisk->createNewParticleSystem(1);
-                          }
-                          powerUpLimit++;
-                          break;
-            case SPEED:   if (gameDisk->previousParticleSystem != 2) {
-                              diskSpeedFactor = 15.0f * 2.0f;
-                              btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-                              gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-                              gameDisk->createNewParticleSystem(2);
-                          }
-                          powerUpLimit++;
-                          break;
-          }
-    }*/
+		updatePlayerCamera(player1Cam, elapseTime);	      
 	if (p1->checkHolding() || (p2 != NULL))
     {
     	if(p2 != NULL)
@@ -223,9 +199,9 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
             else    
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-            
-			if (gameDisk->needsOrientationUpdate)
-				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+
+			// if (gameDisk->needsOrientationUpdate)
+			// 	adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
 			{
 				if (p2 != NULL)
@@ -415,14 +391,16 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				wallHitAfterThrow = true;
 		if (previousWallHit == "NULL")
 		{
+			// gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
-			gameDisk->needsOrientationUpdate = true;
+			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			gameDisk->needsOrientationUpdate = true;
-			previousWallHit = o->getGameObjectName();	
+			// gameDisk->needsOrientationUpdate = true;
+			previousWallHit = o->getGameObjectName();
+			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 
@@ -497,20 +475,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    destroyTiles(hostTileList, hostRemoveIndexes, index);
 		else
 		    destroyTiles(clientTileList, clientRemoveIndexes, index);
-		/* Handle powerups */
-		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
-		//if(powerup == "removeOneRow")
-		// Remove one row
-		//else if(powerup == "")
-		// Heal one tile
-		// Remove area
-		// Remove gameObject from gameObject list
-		// Remove collided tile from simulator
-		// Remove one tile
-		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		//((Tile *)o)->markHit(); // Mark that the tile has been hit
-		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		//removeObject(((Tile*)o)->getGameObjectName());
 		gameDisk->resetPowerUp();
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
 	}
@@ -519,9 +483,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 //-------------------------------------------------------------------------------------
 void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::String wallName)
 {
-	if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
-		return;
-
 	int changePitch = 0;
 	int changeRoll = 0;
 	btTransform trans = d->getBody()->getCenterOfMassTransform();
@@ -540,34 +501,7 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     trans.setRotation(quat);
 
 	d->getBody()->setCenterOfMassTransform(trans);
-	d->setOldVelocity(currVelocity);
 	d->needsOrientationUpdate = false;
-
-	
-	// if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
-	// 	return;
-
-	// int changePitch = 0;
-	// int changeRoll = 0;
-	// btTransform trans = d->getBody()->getCenterOfMassTransform();
-	// btQuaternion quat;
-
-	// if (Ogre::StringUtil::match(wallName, "FarLeftWall", true) || Ogre::StringUtil::match(wallName, "FarRightWall", true) 
-	// 			|| Ogre::StringUtil::match(wallName, "NearRightWall", true) || Ogre::StringUtil::match(wallName, "NearLeftWall", true))	
-	// 	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), -d->getSceneNode()->getOrientation().getRoll().valueRadians());
- //    if (Ogre::StringUtil::match(wallName, "LeftWall", true) || Ogre::StringUtil::match(wallName, "RightWall", true))	
- //    	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
- //    if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
- //    	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
- //    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true) 
- //    	|| Ogre::StringUtil::match(wallName, "Tile", true))
- //    	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
-
- //    trans.setRotation(quat);
-
-	// d->getBody()->setCenterOfMassTransform(trans);
-	// d->setOldVelocity(currVelocity);
-	// d->needsOrientationUpdate = false;
 }
 //-------------------------------------------------------------------------------------
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)

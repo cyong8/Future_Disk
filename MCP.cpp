@@ -571,7 +571,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         clientPlayer->toggleState(Right);
         pack.sequence = 'd';
     }
-    if (mKeyboard->isKeyDown(OIS::KC_J) && !clientPlayer->checkState(Jump))   // Jump - implemented
+    if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
     {
         clientPlayer->toggleState(Jump);
         pack.sequence = 'j';
@@ -601,12 +601,53 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         gameNetwork->sendPacket(pack);
     }
 
-    pack.sequence = 'n';
-    gameNetwork->sendPacket(pack);  // Send Player
-
-    clientPlayer->resetPlayerState(evt, mKeyboard);
+    resetClientState(evt);
 
     return true;
+}
+//-------------------------------------------------------------------------------------
+void MCP::resetClientState(const Ogre::FrameEvent& evt)
+{
+    MCP_Packet pack;
+
+    if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
+    {
+        clientPlayer->toggleState(Forward);
+        pack.sequence = 'w';
+        gameNetwork->sendPacket(pack);
+    }
+    if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
+    {
+        clientPlayer->toggleState(Left);
+        pack.sequence = 'a';
+        gameNetwork->sendPacket(pack);
+    }
+    if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
+    {
+        clientPlayer->toggleState(Back);
+        pack.sequence = 's';
+        gameNetwork->sendPacket(pack);
+    }
+    if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
+    {   
+        clientPlayer->toggleState(Right);
+        pack.sequence = 'd';
+        gameNetwork->sendPacket(pack);
+    }
+    if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
+    {
+        clientPlayer->toggleState(Jump);
+        pack.sequence = 'j';
+        gameNetwork->sendPacket(pack);
+    }   
+    if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
+    {
+        clientPlayer->toggleState(Boost);
+        pack.sequence = 'b';
+        gameNetwork->sendPacket(pack);
+    }
+    pack.sequence = 'n';
+    gameNetwork->sendPacket(pack);  // Send Player
 }
 //-------------------------------------------------------------------------------------
 bool MCP::interpretClientPacket(MCP_Packet pack)

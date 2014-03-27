@@ -11,7 +11,6 @@ class Disk : public GameObject
 protected:
 	bool offWallRotation;
 	btVector3 thrownVelocity;
-	btVector3 oldVelocity;
 	Ogre::String initialPlayer;
 
 public:
