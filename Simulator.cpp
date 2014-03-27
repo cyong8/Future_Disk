@@ -540,7 +540,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		if (((Player*)o)->checkHolding() == false)
 		{
 			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
-
 			{
 				((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
@@ -552,7 +551,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			}
 			gameStart = true;
 			gameMusic->playCollisionSound("Disk", "Player");
-			
 		}
 	}
 	// Target
@@ -564,7 +562,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    ((Target*)o)->targetHit();
 			removeObject(o->getGameObjectName());
 			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Shield" ||
-			    o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") {
+			    o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
+			{
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
@@ -572,7 +571,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
                 // play power up sound effect
 			}
-			else {		    
+			else 
+			{		    
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
@@ -611,6 +611,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		//((Tile *)o)->markHit(); // Mark that the tile has been hit
 		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
 		//removeObject(((Tile*)o)->getGameObjectName());
+		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
 	}
 }
 
@@ -645,7 +646,6 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 //-------------------------------------------------------------------------------------
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
 {
-
 }
 //-------------------------------------------------------------------------------------
 void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime)
@@ -678,7 +678,8 @@ bool Simulator::checkGameStart()
 //-------------------------------------------------------------------------------------
 void Simulator::resetPowerUps(int resetFactor)
 {
-    if (resetFactor == RESET_ALL) {
+    if (resetFactor == RESET_ALL) 
+    {
         powerUpLimit = 0;
         currentPower = NONE;
     }

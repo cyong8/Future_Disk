@@ -114,7 +114,7 @@ bool Network::establishConnection()
 	    	printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 	    	return false;
 		}
-		
+
 		TCP_gameSocket = SDLNet_TCP_Open(&serverIP);
 
 		if(!TCP_gameSocket) 
@@ -127,7 +127,7 @@ bool Network::establishConnection()
 		SDLNet_TCP_Recv(TCP_gameSocket, portData, 512);
 		UDP_portNum = atoi(portData);
 
-		int numused = SDLNet_TCP_AddSocket(i_set, init_serverSocket);
+		int numused = SDLNet_TCP_AddSocket(i_set, TCP_gameSocket);
 
 		if (numused == -1 || numused == 0) 
 		{
@@ -273,7 +273,7 @@ bool Network::checkConnection()
 bool Network::checkSockets()
 {
 	int clientReady = SDLNet_CheckSockets(i_set, 0);
-	
+
 	if (clientReady == -1)
 	{
 		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
