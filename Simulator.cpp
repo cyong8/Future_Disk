@@ -584,12 +584,26 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit() && currentPower != SHIELD)
+	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit())
 	{
 		printf("COLLIDED WITH TILE!\n\n\n");
 		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName()) {
-		    ((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->markHit();
-		    hostRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
+		    int index = ((Tile *)o)->indexIntoTileArray;
+		    ((Tile*)hostTileList[index])->markHit();
+		    hostRemoveIndexes.push_back(index);
+		    if (currentPower == POWER) {
+                int col = index % 6;
+                if (index >= 0 && index <= 5) 
+                {
+                    if (col == 0) {
+                        ((Tile*)hostTileList[index+1])->markHit();
+                    }
+                    else if (col == 5) {
+                    
+                    }
+                }
+                
+		    }
 		    removeObject(hostTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
 		}
 		else {
