@@ -7,7 +7,6 @@ class Tile : public GameObject
 {
 public:
 	Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 position, Ogre::Real tileSize);
-	bool hit;
 	Ogre::Vector3 dims;
 	Ogre::Vector3 pos;
 	void markHit();

@@ -292,7 +292,6 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
-
                     /* wait for packets from client */                    
                     if (timeSinceLastStateUpdate == 0.01f)
                         constructAndSendGameState();

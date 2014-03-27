@@ -37,6 +37,8 @@ public:
 	Ogre::SceneNode* getSceneNode(void);
 	OgreMotionState* getOgreMotionState(void);
 	bool checkReAddFlag(void);
+	bool checkHitFlag(void);
+	void toggleHitFlag(void);
 	string typeName;
 	btTransform tr;
 };
