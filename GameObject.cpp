@@ -85,3 +85,13 @@ bool GameObject::checkReAddFlag()
 {
 	return this->ReAddFlag;
 }
+//-------------------------------------------------------------------------------------
+bool GameObject::checkHitFlag()
+{
+	return hit;
+}
+//-------------------------------------------------------------------------------------
+void GameObject::toggleHitFlag()
+{
+	hit = !hit;
+}

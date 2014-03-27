@@ -27,8 +27,16 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	mass = 0.5f; // Set mass of player
 
 	// initialize Cameras
-	this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
-	this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
+	if (playerSide == "Negative Side")
+	{
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
+	}
+	else
+	{	
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
+	}
 
  	// DEBUGGING 
 /*	Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");

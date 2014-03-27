@@ -185,16 +185,16 @@ void Network::acceptClient(char *data)
 void Network::sendPacket(MCP_Packet pack)
 {
 	int numSent;
-	char buff[sizeof(struct MCP_Packet)];
+	char buff[sizeof(MCP_Packet)];
 	memcpy(buff, &pack, sizeof(pack));
 
-	numSent = SDLNet_TCP_Send(TCP_gameSocket, buff, maxPacketSize);	
+	numSent = SDLNet_TCP_Send(TCP_gameSocket, buff, sizeof(MCP_Packet));	
 	if (!numSent)
 	{
 		printf("*****Failed to send packet; Packet ID: %c\n\n", pack.id);
 	}
-	else
-		printf ("Size of packet sent: %d\n\n\n", numSent);
+	// else
+		// printf ("Size of packet sent: %d\n\n\n", numSent);
 
 	/* UDP Packet/Sockets not working - Doing TCP for now */
 	// UDPpacket *p;
@@ -238,8 +238,8 @@ void Network::sendPacket(MCP_Packet pack)
 MCP_Packet Network::receivePacket()
 {
 	MCP_Packet pack;
-	char buff[maxPacketSize];
-	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, maxPacketSize) <= 0)
+	char buff[sizeof(MCP_Packet)];
+	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, sizeof(MCP_Packet)) <= 0)
 	{
 		pack.sequence = 'n';
 		return pack;
@@ -276,13 +276,12 @@ bool Network::checkSockets()
 
 	if (clientReady == -1)
 	{
-		printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
-		perror("SDLNet_CheckSockets");
+		printf("No Activity; Chiiiiiill!\n\n");
 		return false;
 	}
 	else if (clientReady)
 	{
-		printf("ACTIVITY!!!!\n\n\n\n");
+		printf("ACTIVITY!!!!\n\n");
 		return true;
 	}
 }

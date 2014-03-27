@@ -15,8 +15,6 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	//Ogre::Vector3 roomBounds = Ogre::Vector3(room->getWidth()/2, room->getHeight()/2, room->getFloorLength()/2);
 
-	hit = false;
-
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
 
 	rootNode->attachObject(ent);
@@ -68,19 +66,4 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     }
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
-}
-//-------------------------------------------------------------------------------------
-void Target::targetHit()
-{
-	hit = true;
-}
-//-------------------------------------------------------------------------------------
-void Target::resetHit()
-{
-	hit = false;
-}
-//-------------------------------------------------------------------------------------
-bool Target::isHit()
-{
-	return hit;
 }

@@ -96,7 +96,7 @@ void Simulator::addObject (GameObject* o)
 	{
 		if (o->checkReAddFlag())
 		{
-			((Target*)o)->resetHit();
+			((Target*)o)->toggleHitFlag();
 			if (o->getGameObjectName() == "Power") {
 			    powerUpLimit = 1500;
 			    currentPower = POWER;
@@ -124,67 +124,6 @@ void Simulator::addObject (GameObject* o)
 		}
 		targetList.push_back((Target*)o);
 	}
-	/*if(o->typeName == "Power")
-	{
-		if (o->checkReAddFlag())
-		{
-			((Target*)o)->resetHit();
-			powerUpLimit = 1500;
-			currentPower = POWER;
-			// knock out many tiles
-		}
-		targetList.push_back((Target*)o);
-	}
-	if(o->typeName == "Speed")
-	{
-		if (o->checkReAddFlag())
-		{
-			((Target*)o)->resetHit();
-            powerUpLimit = 1500;
-            currentPower = SPEED;
-		}
-		targetList.push_back((Target*)o);
-	}
-	if(o->typeName == "Shield")
-	{
-		if (o->checkReAddFlag())
-		{
-			((Target*)o)->resetHit();
-			powerUpLimit = 1800;
-			currentPower = SHIELD;
-		}
-		targetList.push_back((Target*)o);
-	}
-	if(o->typeName == "Boost")
-	{
-		if (o->checkReAddFlag())
-		{
-			((Target*)o)->resetHit();
-			powerUpLimit = 3000;
-			currentPower = BOOST;
-		}
-		targetList.push_back((Target*)o);
-	}
-	if(o->typeName == "Jump")
-	{
-	    if (o->checkReAddFlag())
-		{
-			((Target*)o)->resetHit();
-			powerUpLimit = 3000;
-			currentPower = JUMP;
-		}
-		targetList.push_back((Target*)o);
-	}
-	if(o->typeName == "Restore")
-	{
-		if (o->checkReAddFlag())
-		{
-			((Target*)o)->resetHit();
-			powerUpLimit = 1;
-			currentPower = RESTORE;
-		}
-		targetList.push_back((Target*)o);
-	}*/
 	if(o->typeName == "Wall")
 	{
 		o->getBody()->setRestitution(0.8f);
@@ -261,12 +200,13 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		updatePlayerCamera(player1Cam, elapseTime);
 	if (p1->checkHolding() || (p2 != NULL))
     {
-    	if(p2!=NULL)
+    	if(p2 != NULL)
     	{
 	    	if (p2->checkHolding())
 	    		performThrow(p2);
+	    	printf("p2 throwing!\n\n");
     	}
-    	else 
+    	else
     		performThrow(p1);
     }
 	else	// Speed disk back up in order to mimic inelasticity
@@ -324,36 +264,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
                                   break;
 		        }
 		    }
-		    /*if (powerUpLimit.sum() > 0) {
-			    btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-			    if (!speedIncrease)
-			        gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-		        else if (speedIncrease && powerUpLimit > 0) 
-		        {
-		            gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
-		            if (!particleSystemEstablished) 
-		            {
-		                gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
-		                gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
-	                    gameDisk->particleNode->attachObject(gameDisk->tailParticle[2]);
-	                    gameDisk->previousParticleSystem = 2;
-	                    particleSystemEstablished = true;
-		            }
-		            if (--powerUpLimit <= 0)
-		                particleSystemEstablished = false;
-	            }
-            }
-	        else {
-	            resetPowerUps();
-	            if (!particleSystemEstablished) {
-	                gameDisk->tailParticle[gameDisk->previousParticleSystem]->clear();
-	                gameDisk->particleNode->detachObject(gameDisk->tailParticle[gameDisk->previousParticleSystem]);
-	                gameDisk->particleNode->attachObject(gameDisk->tailParticle[0]);
-	                gameDisk->previousParticleSystem = 0;
-	                particleSystemEstablished = true;
-	            }
-	        }*/
-	        
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 		}
@@ -366,7 +276,6 @@ void Simulator::parseCollisions(void)
 	int i;
 	int groundCheck = false; //checking Tile taking care of multiple collisions
 	Player* colP;
-	bool tileHit;
 
 	for (i=0;i<numManifolds;i++)
 	{
@@ -444,14 +353,16 @@ void Simulator::setThrowFlag()
 //-------------------------------------------------------------------------------------
 void Simulator::performThrow(Player* p)
 {
-   	Disk *d = p->getPlayerDisk();	
   	btQuaternion diskOrientation;
  	btTransform transform;
+
+ 	if (throwFlag)
+ 		printf("p1 throwing!\n\n");
 
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
         //resetPowerUps();
-    	Ogre::Vector3 toParentPosition = d->getSceneNode()->_getDerivedPosition();
+    	Ogre::Vector3 toParentPosition = gameDisk->getSceneNode()->_getDerivedPosition();
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
 		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
@@ -459,15 +370,15 @@ void Simulator::performThrow(Player* p)
 		/* The new disk direction is along player's orientation */
 		diskDirection = p->getSceneNode()->getOrientation() * diskDirection;
 
-		d->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
-		d->getBody()->setRestitution(1.0f);
-		d->getBody()->setLinearVelocity(btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
+		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+		gameDisk->getBody()->setRestitution(1.0f);
+		gameDisk->getBody()->setLinearVelocity(btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor) * btVector3(diskDirection.x*1.3f, diskDirection.y*1.3f, diskDirection.z*1.3f));
 
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 
-		p->getSceneNode()->removeChild(d->getSceneNode()); // detach disk from parent
-		sceneMgr->getRootSceneNode()->addChild(d->getSceneNode()); // attach disk to world (root)
-		d->getSceneNode()->setPosition(toParentPosition); // retain the same global position
+		p->getSceneNode()->removeChild(gameDisk->getSceneNode()); // detach disk from parent
+		sceneMgr->getRootSceneNode()->addChild(gameDisk->getSceneNode()); // attach disk to world (root)
+		gameDisk->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
 		if (p->getGameObjectName() == "Player1")
@@ -490,12 +401,12 @@ void Simulator::performThrow(Player* p)
     	Ogre::Vector3 dpos;
     	float newDiskZ = -p->getPlayerDimensions().z;
     	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
-		d->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
+		gameDisk->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
 
-		Ogre::Vector3 dpos_derived = d->getSceneNode()->_getDerivedPosition();
+		Ogre::Vector3 dpos_derived = gameDisk->getSceneNode()->_getDerivedPosition();
 		diskOrientation = btQuaternion(0, 0, 0);
 		transform = btTransform(diskOrientation, btVector3(dpos_derived.x, dpos_derived.y, dpos_derived.z));
-		d->getBody()->setCenterOfMassTransform(transform);
+		gameDisk->getBody()->setCenterOfMassTransform(transform);
     }
 }
 //-------------------------------------------------------------------------------------
@@ -556,10 +467,10 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Target
 	else if (o->typeName == "Target")
 	{
-		if (((Target*)o)->isHit() == false)
+		if (((Target*)o)->checkHitFlag() == false)
 		{
 			// The 47.0f value is the x-width and y-height of the disk
-		    ((Target*)o)->targetHit();
+		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());
 			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Shield" ||
 			    o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
@@ -584,12 +495,15 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->isHit())
+
+	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->checkHitFlag())
 	{
+		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
+		removeObject(((Tile*)o)->getGameObjectName());
+
 		printf("COLLIDED WITH TILE!\n\n\n");
 		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName()) {
 		    int index = ((Tile *)o)->indexIntoTileArray;
-		    ((Tile*)hostTileList[index])->markHit();
 		    hostRemoveIndexes.push_back(index);
 		    if (currentPower == POWER) {
                 int col = index % 6;
@@ -604,10 +518,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
                 }
                 
 		    }
-		    removeObject(hostTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
+		    removeObject(hostTileList[index]->getGameObjectName());
 		}
-		else {
-		    ((Tile*)clientTileList[((Tile *)o)->indexIntoTileArray])->markHit();
+		else {		 
 		    clientRemoveIndexes.push_back(((Tile *)o)->indexIntoTileArray);
 		    removeObject(clientTileList[((Tile *)o)->indexIntoTileArray]->getGameObjectName());
 		}

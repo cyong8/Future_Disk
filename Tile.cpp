@@ -4,7 +4,6 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Tile";
-	hit = false;
 	pos = position;
  	Ogre::Vector3 tile_dimensions = Ogre::Vector3(tileSize, 0.01f, tileSize);
 
