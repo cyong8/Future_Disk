@@ -26,9 +26,12 @@ public:
 	Ogre::String checkPlayerSide(void);
 	bool groundConstantSet;
 	Ogre::Real jumpFactor;
-	void applyPowerUp(Ogre::String type);
 	void increaseJump(void);
 	void decreaseJump(void);
+	int jumpTimer;
+	bool jumpPowerActive;
+    Ogre::ParticleSystem* tailParticle;	
+	Ogre::SceneNode* particleNode;
 
 protected:
 	bool isHolding;		
@@ -39,8 +42,6 @@ protected:
 	Ogre::Real groundY;
 	Ogre::Real prevGroundY;
 	Ogre::String playerSide;
-	Ogre::ParticleSystem* tailParticle[2];
-	Ogre::SceneNode* particleNode;	
 };
 
 #endif // #ifndef __Player_h_

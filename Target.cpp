@@ -25,7 +25,7 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	//if (nym != "Power" && nym != "Speed" && nym != "Shield" && nym != "Jump" && nym != "Restore") {
 	    //rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-roomBounds.z/2,roomBounds.z/2));
 	    /*rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)*/
-	if (nym != "Power" && nym != "Speed" && nym != "Shield" && nym != "Jump" && nym != "Restore") {
+	if (nym != "Power" && nym != "Speed" && nym != "Jump" && nym != "Restore") {
 	    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
 									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
@@ -52,11 +52,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     else if (nym == "Speed") {
         ent->setMaterialName("Examples/GreenChrome");
     }
-    else if (nym == "Shield") {
-        ent->setMaterialName("Examples/CyanChrome");
-    }
     else if (nym == "Jump") {
-        ent->setMaterialName("Examples/MagentaChrome");
+        ent->setMaterialName("Examples/CyanChrome");
     }
     else if (nym == "Restore") {
         ent->setMaterialName("Examples/WhiteChrome");

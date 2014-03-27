@@ -7,9 +7,6 @@
 #include "Target.h"
 #include "Music.h"
 
-#define RESET_STATE 0
-#define RESET_ALL 1
-
 using namespace std;
 
 class GameObject;
@@ -44,7 +41,6 @@ class Simulator
 		vector<GameObject*> clientTileList;
 		vector<int> clientRemoveIndexes;
 		int score;
-		int powerUpLimit;
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
@@ -80,9 +76,8 @@ class Simulator
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
-		void resetPowerUps(int resetFactor);
-		void resetSpeed(void);
-		void checkHostTile(int index);
+		void restoreTile();
+		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
