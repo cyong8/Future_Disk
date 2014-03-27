@@ -178,29 +178,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	if (player1Cam)
 		updatePlayerCamera(player1Cam, elapseTime);
 	        
-    /*if (powerUpLimit <= 0) {
-        resetPowerUps(RESET_ALL);
-        if (gameDisk->previousParticleSystem != 0) {
-            gameDisk->createNewParticleSystem(0);
-        }
-    }
-    else {
-        switch(powerUpLimit) {
-            case POWER:   if (gameDisk->previousParticleSystem != 1) {
-                              gameDisk->createNewParticleSystem(1);
-                          }
-                          powerUpLimit++;
-                          break;
-            case SPEED:   if (gameDisk->previousParticleSystem != 2) {
-                              diskSpeedFactor = 15.0f * 2.0f;
-                              btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-                              gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-                              gameDisk->createNewParticleSystem(2);
-                          }
-                          powerUpLimit++;
-                          break;
-          }
-    }*/
 	if (p1->checkHolding() || (p2 != NULL))
     {
     	if(p2 != NULL)
@@ -222,23 +199,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
             else    
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-		    /*if (powerUpLimit > 0) {
-		        switch (currentPower) {
-		            case NONE:    printf("THIS SHOULD NEVER RUN!\n");
-		                          assert(false);
-		                          break;
-                    case JUMP:    if (gameDisk->previousParticleSystem != 3) {
-                                      if (p1->getGameObjectName() == playerLastThrew) {
-                                          p1->increaseJump();
-                                      }
-                                      else if (p2->getGameObjectName() == playerLastThrew) {
-                                          p2->increaseJump();
-                                      }
-                                      gameDisk->createNewParticleSystem(3);
-                                  }
-                                  break;
-		        }
-		    }*/
+
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 		}
