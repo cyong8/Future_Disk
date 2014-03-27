@@ -81,6 +81,7 @@ class Simulator
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
+		bool wallHit;
 };
 
 #endif // #ifndef __Simulator_h_

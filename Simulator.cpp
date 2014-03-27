@@ -22,6 +22,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
     player2CanCatch = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
+	wallHit = false;
 	gameDisk = NULL;
 	setDisk = false;
 	currentPower = NONE;
@@ -86,7 +87,7 @@ void Simulator::addObject (GameObject* o)
 		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
-
+		//gameDisk->getSceneNode()->roll(90);
 		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
 		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
@@ -202,6 +203,12 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
+			{
+				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
+				wallHit = false;
+				printf("DOWN IT GOES");
+			}
 		}
 	}
     if (p1 != NULL && p1->jumpPowerActive) {
@@ -376,16 +383,18 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	// Wall
 	if (o->typeName == "Wall")
 	{
+		wallHit = true;
+		
 		if (previousWallHit == "NULL")
 		{
-			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity(), "");
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			//adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity());
+			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity(), o->getGameObjectName());
 			gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();	
 			gameMusic->playCollisionSound("Disk", "Wall");
@@ -415,6 +424,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
+			wallHit = false;
+			
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
 	}
@@ -437,7 +448,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			        restoreTile();
                 // play power up sound effect
 			}
-			else 
+			else
 			{		    
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
@@ -450,10 +461,13 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !p1->checkHolding() && !((Tile *)o)->checkHitFlag())
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHit && !p1->checkHolding())
 	{
+		wallHit = false;
+		
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
+
 		int index = ((Tile *)o)->indexIntoTileArray;
 		
 		printf("COLLIDED WITH TILE!\n\n\n");
@@ -477,6 +491,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		//removeObject(((Tile*)o)->getGameObjectName());
 		gameDisk->resetPowerUp();
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
+		wallHit = false;
+		
 	}
 }
 
@@ -485,7 +501,8 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 {
 	if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
 		return;
-
+	if(wallName == "")
+		return;
 	int changePitch = 0;
 	int changeRoll = 0;
 	btTransform trans = d->getBody()->getCenterOfMassTransform();
@@ -498,8 +515,7 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true) 
-    	|| Ogre::StringUtil::match(wallName, "Tile", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);
