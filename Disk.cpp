@@ -71,16 +71,6 @@ btVector3 Disk::getThrownVelocity()
 	return thrownVelocity;
 }
 //-------------------------------------------------------------------------------------
-void Disk::setOldVelocity(btVector3 v)
-{
-	oldVelocity = v;
-}
-//-------------------------------------------------------------------------------------
-btVector3 Disk::getOldVelocity()
-{
-	return oldVelocity;
-}
-//-------------------------------------------------------------------------------------
 Ogre::String Disk::checkInitialPlayer()
 {
 	return initialPlayer;

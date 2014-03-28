@@ -3,6 +3,8 @@
 
 #include "GameObject.h"
 
+enum stateIndex{Left, Right, Back, Forward, Jump, Boost};
+
 class Disk;
 
 class Player : public GameObject
@@ -28,12 +30,17 @@ public:
 	Ogre::Real jumpFactor;
 	void increaseJump(void);
 	void decreaseJump(void);
+	void initializeStates(void);
+	bool checkState(int index);
+	void toggleState(int index);
+	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
 	int jumpTimer;
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
 
 protected:
+	vector<bool> states;
 	bool isHolding;		
 	Disk* playerDisk;
 	Ogre::Vector3 dimensions;

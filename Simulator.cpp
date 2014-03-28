@@ -20,9 +20,9 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	gameStart = false;
 	player1CanCatch = true;
     player2CanCatch = true;
+    wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
-	wallHit = false;
 	gameDisk = NULL;
 	setDisk = false;
 	currentPower = NONE;
@@ -104,7 +104,7 @@ void Simulator::addObject (GameObject* o)
 		}
 		targetList.push_back((Target*)o);
 	}
-	if(o->typeName == "Wall")
+	if(o->typeName == "Wall" || o->typeName == "Tile")
 	{
 		o->getBody()->setRestitution(0.8f);
 	}
@@ -178,7 +178,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
 		updatePlayerCamera(player1Cam, elapseTime);
-	        
+
 	if (p1->checkHolding() || (p2 != NULL))
     {
     	if(p2 != NULL)
@@ -203,11 +203,13 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+
 			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
 			{
+				if (p2 != NULL)
+					;
+
 				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
-				wallHit = false;
-				printf("DOWN IT GOES");
 			}
 		}
 	}
@@ -322,6 +324,7 @@ void Simulator::performThrow(Player* p)
 
 	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
     {	
+    	wallHitAfterThrow = false;
         //resetPowerUps();
     	Ogre::Vector3 toParentPosition = gameDisk->getSceneNode()->_getDerivedPosition();
 
@@ -382,26 +385,29 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
 	// Wall
 	if (o->typeName == "Wall")
-	{
-		wallHit = true;
-		
+	{	
+		if (!p1->checkHolding())
+			wallHitAfterThrow = true;
+		if (p2 != NULL)
+			if (p2->checkHolding())
+				wallHitAfterThrow = true;
 		if (previousWallHit == "NULL")
 		{
-			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity(), "");
-			gameDisk->needsOrientationUpdate = true;
+			// gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
+			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			adjustDiskOrientation(gameDisk, disk->getBody()->getLinearVelocity(), o->getGameObjectName());
-			gameDisk->needsOrientationUpdate = true;
-			previousWallHit = o->getGameObjectName();	
+			// gameDisk->needsOrientationUpdate = true;
+			previousWallHit = o->getGameObjectName();
+			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
+
 		if (!player1CanCatch && !p1->checkHolding())
 			player1CanCatch = true;
-
 		if (p2 != NULL)
 		{
 			if (!player2CanCatch && !p2->checkHolding())
@@ -424,8 +430,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
-			wallHit = false;
-			
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
 	}
@@ -461,10 +465,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHit && !p1->checkHolding())
-	{
-		wallHit = false;
-		
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !p1->checkHolding())
+	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
 
@@ -475,34 +477,14 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    destroyTiles(hostTileList, hostRemoveIndexes, index);
 		else
 		    destroyTiles(clientTileList, clientRemoveIndexes, index);
-		/* Handle powerups */
-		//Ogre::String powerup = (Disk*)disk->getPowerUp(); //TODO: Fix this!!!!
-		//if(powerup == "removeOneRow")
-		// Remove one row
-		//else if(powerup == "")
-		// Heal one tile
-		// Remove area
-		// Remove gameObject from gameObject list
-		// Remove collided tile from simulator
-		// Remove one tile
-		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		//((Tile *)o)->markHit(); // Mark that the tile has been hit
-		//printf("TILE HIT %d\n\n", ((Tile *)o)->isHit());
-		//removeObject(((Tile*)o)->getGameObjectName());
 		gameDisk->resetPowerUp();
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
-		wallHit = false;
-		
 	}
 }
 
 //-------------------------------------------------------------------------------------
 void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::String wallName)
 {
-	if ((d->getOldVelocity().getY() == currVelocity.getY()) && (d->getOldVelocity().getZ() == currVelocity.getZ()))
-		return;
-	if(wallName == "")
-		return;
 	int changePitch = 0;
 	int changeRoll = 0;
 	btTransform trans = d->getBody()->getCenterOfMassTransform();
@@ -515,13 +497,12 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
     if (Ogre::StringUtil::match(wallName, "FarWall", true) || Ogre::StringUtil::match(wallName, "NearWall", true))
     	quat = btQuaternion(0.0f, -d->getSceneNode()->getOrientation().getPitch().valueRadians(), 0.0f);
-    if (Ogre::StringUtil::match(wallName, "Ceiling", true) || Ogre::StringUtil::match(wallName, "Tile", true))
+    if (Ogre::StringUtil::match(wallName, "Ceiling", true))
     	quat = btQuaternion(0.0f, 0.0f, -d->getSceneNode()->getOrientation().getRoll().valueRadians());
 
     trans.setRotation(quat);
 
 	d->getBody()->setCenterOfMassTransform(trans);
-	d->setOldVelocity(currVelocity);
 	d->needsOrientationUpdate = false;
 }
 //-------------------------------------------------------------------------------------

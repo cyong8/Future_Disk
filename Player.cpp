@@ -4,6 +4,7 @@
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, Ogre::String side) 
 	: GameObject(nym, mgr, sim)
 {
+	initializeStates();
 	this->dimensions = dimensions;
 	typeName = "Player";
 	groundY = -99999.0f;
@@ -141,15 +142,54 @@ Ogre::String Player::checkPlayerSide()
 
 }
 //-------------------------------------------------------------------------------------
-void Player::increaseJump() {
+void Player::increaseJump() 
+{
     jumpFactor = 12.0f;
     jumpTimer = 3000;
     jumpPowerActive = true;
     particleNode->setVisible(true);
 }
 //-------------------------------------------------------------------------------------
-void Player::decreaseJump() {
+void Player::decreaseJump() 
+{
     jumpFactor = 8.0f;
     jumpPowerActive = false;
     particleNode->setVisible(false);
+}
+//-------------------------------------------------------------------------------------
+void Player::initializeStates()
+{
+	int i = Forward;
+	while (i > 0)
+	{
+		states.push_back(false);
+		i--;
+	}
+}
+//-------------------------------------------------------------------------------------
+bool Player::checkState(int index)
+{
+	return states[index];
+}
+//-------------------------------------------------------------------------------------
+void Player::toggleState(int index)
+{
+	states[index] = !states[index];
+}
+Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
+{
+    Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);
+
+	if (states[Left])
+		velocityVector += Ogre::Vector3(m, 0.0f, 0.0f);
+	if (states[Right])
+		velocityVector += Ogre::Vector3(-m, 0.0f, 0.0f);
+	if (states[Back])
+		velocityVector += Ogre::Vector3(0.0f, 0.0f, -m);
+	if (states[Forward])
+		velocityVector += Ogre::Vector3(0.0f, 0.0f, m);
+	if (states[Boost])
+		velocityVector *= sprintFactor;
+
+	return velocityVector;
 }
