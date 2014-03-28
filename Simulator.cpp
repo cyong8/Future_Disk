@@ -177,7 +177,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
 	if (player1Cam)
-		updatePlayerCamera(player1Cam, elapseTime);	      
+		updatePlayerCamera(player1Cam, elapseTime);
+
 	if (p1->checkHolding() || (p2 != NULL))
     {
     	if(p2 != NULL)
@@ -200,8 +201,9 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
             else    
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 
-			// if (gameDisk->needsOrientationUpdate)
-			// 	adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			if (gameDisk->needsOrientationUpdate)
+				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+
 			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
 			{
 				if (p2 != NULL)

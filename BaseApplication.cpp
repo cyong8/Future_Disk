@@ -118,15 +118,22 @@ void BaseApplication::createFrameListener(void)
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
     score = 0;
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    initMinutes = 2;
+    initMinutes = 0;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
+    scorePanel->hide();
+    mTrayMgr->removeWidgetFromTray(scorePanel);
 
     //startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
 
     Ogre::StringVector objectiveDetails;
-    objectiveDetails.push_back("Target Blaster 3000X");
-    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_LEFT, "objectivePanel", 500, objectiveDetails);    
-    objectivePanel->setParamValue(0, "Time Attack! Break the targets!");
+    objectiveDetails.push_back("Literal Air Hockey");
+    objectiveDetails.push_back("Single Player");
+    objectiveDetails.push_back("Multiplayer");
+    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_LEFT, "objectivePanel", 500, objectiveDetails); 
+    objectivePanel->setParamValue(0, "");   
+    objectivePanel->setParamValue(1, "Time Attack! Break the targets!");
+    objectivePanel->setParamValue(2, "Knock your opponent down into the abyss by bouncing disks off walls!");
+                                    /* "Indirectly hit tiles in order to remove them and force your opponent into the void" */
 
     Ogre::StringVector instructions;
     instructions.push_back("GAME CONTROLS");
@@ -165,6 +172,21 @@ void BaseApplication::createFrameListener(void)
     gameOverPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOver", 400, gOverText);
     gameOverPanel->setParamValue(0, "");
     gameOverPanel->setParamValue(1, "");
+    
+    Ogre::StringVector powerUps;
+    powerUps.push_back("MULTIPLAYER POWER-UPS");
+    powerUps.push_back("Red Target");
+    powerUps.push_back("Green Target");
+    powerUps.push_back("Cyan Target");
+    powerUps.push_back("White Target");
+    powerUpPanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMLEFT, "powerUpPanel", 500, powerUps);
+    powerUpPanel->setParamValue(0, "");
+    powerUpPanel->setParamValue(1, "Shots knock out more tiles at once!");
+    powerUpPanel->setParamValue(2, "Disk doubles its speed!");
+    powerUpPanel->setParamValue(3, "Jump higher!");
+    powerUpPanel->setParamValue(4, "Restore one of your tiles!");
+    powerUpPanel->hide();
+    mTrayMgr->removeWidgetFromTray(powerUpPanel);
     
     mRoot->addFrameListener(this);
 }

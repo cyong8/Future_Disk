@@ -78,8 +78,11 @@ protected:
 	void togglePause(void);
 	void gameOverScreen(void);
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
-	void createGUI(void);
+	void initializeGUI(void);
+	void createMainMenu(void);
+	bool activateMainMenuSolo(const CEGUI::EventArgs &e);
 	bool quit(const CEGUI::EventArgs &e);
+	bool enterIPAddress(const CEGUI::EventArgs &e);
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement(Player* p);
 	void showTrajectory(PlayerCamera* playCam);
@@ -91,6 +94,7 @@ protected:
 	PlayerCamera* pCam;
 	int gameMode;
 	int sceneRendered;
+	bool resetFlag;
 	Ogre::Real mMove; 			// Move Constant
 	float sprintFactor;	// Sprint Constant
 	bool clientGameStart;
