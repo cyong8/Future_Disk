@@ -472,6 +472,12 @@ bool MCP::constructAndSendGameState()
 {
     MCP_Packet pack;
 
+    if(gameSimulator->checkGameStart())
+    {
+        pack.id = 's';
+        gameNetwork->sendPacket(pack);
+    }
+
     // Update hostPlayer
     pack.sequence = 'i';  // for now
     pack.id = 'h';
@@ -740,6 +746,11 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
     newQuat = pack.orientationQ;
 
+    if(pack.id == 's')
+    {
+        clientGameStart = true;
+    }
+
     if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
@@ -818,6 +829,8 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
             transform.setRotation(rotationQ);
             pBody->setCenterOfMassTransform(transform);
         }
+        else
+            clientOrientationChange = true;
         /*if (p->checkHolding()) {
             mSceneMgr->getRootSceneNode()->detachObject(trajectory);
             trajectory->clear();
@@ -834,6 +847,8 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
             transform.setRotation(rotationQ);
             pBody->setCenterOfMassTransform(transform);
         }
+        else
+            clientOrientationChange = true;
     }
     // p->getPlayerCameraNode()->setPosition(p->getPlayerCameraNode()->getPosition() + Ogre::Vector3(0.0f, 0.0f, 12.5f));
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);

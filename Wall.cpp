@@ -10,7 +10,7 @@ Wall::Wall(Ogre::String nym, Ogre::String planeNym, Ogre::SceneManager *mgr, Sim
 	//create entity for plane
 	Ogre::Entity* ent = mgr->createEntity(planeNym+"Entity", planeNym);
 	rootNode->attachObject(ent);
-	ent->setMaterialName("2 - Default");
+	ent->setMaterialName("Examples/TEST");
 	ent->setCastShadows(false);
 	rootNode->setPosition(position);
 
