@@ -16,11 +16,13 @@ public:
 	Ogre::Real getWidth(void);
 	Ogre::Real getHeight(void);
 	Ogre::Real getFloorLength(void);
+	Ogre::Real getFloorPositionY(void);
 protected:
 	Ogre::Real width;
 	Ogre::Real height;
 	Ogre::Real gapSize;
 	Ogre::Real floorLength;
+	Ogre::Real floorPosition;
 };
 
 #endif // #ifndef __Room_h_

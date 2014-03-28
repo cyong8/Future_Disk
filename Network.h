@@ -11,9 +11,8 @@
 
 struct MCP_Packet
 {
-	char sequence;		// Max = 2 Bytes - 16 Bits
-	char id;			// Max = 2 Bytes - 16 Bits
-	float x_coordinate;	// Max = 4 Bytes - 32 Bits
+	char id;
+	float x_coordinate;
 	float y_coordinate;
 	float z_coordinate;
 	Ogre::Quaternion orientationQ;
