@@ -166,6 +166,7 @@ MCP_Packet Network::receivePacket()
 {
 	MCP_Packet pack;
 	char buff[sizeof(MCP_Packet)];
+	memset(buff, 0, sizeof(MCP_Packet));
 	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, sizeof(MCP_Packet)) <= 0)
 	{
 		pack.sequence = 'n';

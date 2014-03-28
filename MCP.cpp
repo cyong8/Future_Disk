@@ -471,6 +471,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 bool MCP::constructAndSendGameState()   
 {
     MCP_Packet pack;
+    memset(&pack, 0, sizeof(MCP_Packet));
 
     if(gameSimulator->checkGameStart())
     {
@@ -560,6 +561,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack;
     bool result = false;
+    memset(&pack, 0, sizeof(MCP_Packet));
 
     if (clientOrientationChange)
     {
@@ -655,6 +657,7 @@ bool MCP::resetClientState(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack;
     bool result = false;
+    memset(&pack, 0, sizeof(MCP_Packet));
 
     if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
     {
