@@ -38,6 +38,23 @@ fragment_program explodeFragmentProgram unified
 	delegate explodeFragmentProgramHLSL
 	delegate explodeFragmentProgramGLSL
 }
+
+material Examples/TEST
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture test2.jpg
+			}
+		}
+	}
+}
  
 material explosionMaterial
 {

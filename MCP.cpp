@@ -720,6 +720,7 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
     char typeInput = pack.sequence;
     Ogre::Vector3 velocityVector;
 
+
     if (typeInput == 'w')                                       // Forward
         hostPlayer->toggleState(Forward);
     if (typeInput == 'a')                                       // Left

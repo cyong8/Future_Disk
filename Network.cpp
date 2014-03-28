@@ -153,7 +153,7 @@ void Network::sendPacket(MCP_Packet pack)
 {
 	int numSent;
 	char buff[sizeof(MCP_Packet)];
-	memcpy(buff, &pack, sizeof(pack));
+	memcpy(buff, &pack, sizeof(MCP_Packet));
 
 	numSent = SDLNet_TCP_Send(TCP_gameSocket, buff, sizeof(MCP_Packet));
 	if (!numSent)
