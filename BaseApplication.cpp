@@ -118,7 +118,7 @@ void BaseApplication::createFrameListener(void)
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
     score = 0;
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    initMinutes = 0;
+    initMinutes = 2;
     scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
     scorePanel->hide();
     mTrayMgr->removeWidgetFromTray(scorePanel);
@@ -129,10 +129,10 @@ void BaseApplication::createFrameListener(void)
     objectiveDetails.push_back("Literal Air Hockey");
     objectiveDetails.push_back("Single Player");
     objectiveDetails.push_back("Multiplayer");
-    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_LEFT, "objectivePanel", 500, objectiveDetails); 
+    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOP, "objectivePanel", 650, objectiveDetails); 
     objectivePanel->setParamValue(0, "");   
     objectivePanel->setParamValue(1, "Time Attack! Break the targets!");
-    objectivePanel->setParamValue(2, "Knock your opponent down into the abyss by bouncing disks off walls!");
+    objectivePanel->setParamValue(2, "Knock your opponent down into the abyss by ricocheting disks off walls!");
                                     /* "Indirectly hit tiles in order to remove them and force your opponent into the void" */
 
     Ogre::StringVector instructions;
@@ -168,10 +168,22 @@ void BaseApplication::createFrameListener(void)
     Ogre::StringVector gOverText;
 
     gOverText.push_back("GAME OVER!");
-    gOverText.push_back("Your Score ");
+    gOverText.push_back("Your Score");
     gameOverPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOver", 400, gOverText);
     gameOverPanel->setParamValue(0, "");
     gameOverPanel->setParamValue(1, "");
+    
+    Ogre::StringVector gOverTextWin;
+    
+    gOverTextWin.push_back("GAME OVER");
+    gameOverWinPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOverWin", 400, gOverTextWin);
+    gameOverWinPanel->setParamValue(0, "YOU WIN!");
+    
+    Ogre::StringVector gOverTextLoss;
+    
+    gOverTextLoss.push_back("GAME OVER");
+    gameOverLossPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOverLose", 400, gOverTextLoss);
+    gameOverLossPanel->setParamValue(0, "YOU LOSE...");
     
     Ogre::StringVector powerUps;
     powerUps.push_back("MULTIPLAYER POWER-UPS");

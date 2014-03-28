@@ -115,6 +115,8 @@ protected:
     OgreBites::Label* startLabel;
     OgreBites::Label* pauseLabel;
     OgreBites::ParamsPanel* gameOverPanel;
+    OgreBites::ParamsPanel* gameOverWinPanel;
+    OgreBites::ParamsPanel* gameOverLossPanel;
     int initMinutes;
     time_t initTime;
     double pTimePassed;

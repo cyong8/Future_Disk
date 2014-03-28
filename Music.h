@@ -26,14 +26,20 @@ private:
 	Mix_Chunk *playScreen;
 	Mix_Chunk *throwSound;
 	Mix_Chunk *playerJump;
+	Mix_Chunk *superJump;
+	Mix_Chunk *speedUp;
+	Mix_Chunk *blast;
+	Mix_Chunk *bigBlast;
 
 	// Collision Sounds
 	Mix_Chunk *diskToWall;
 	Mix_Chunk *diskToTarget;
 	Mix_Chunk *catchSound;
 	Mix_Chunk *playerLand;
+	Mix_Chunk *restoreSound;
 	
-	int currentChunkChannel;
+	int currentWallChannel;
+	int currentJumpChannel;
 	int currentMusicChannel;
 
 	Mix_Chunk* currentMusic;

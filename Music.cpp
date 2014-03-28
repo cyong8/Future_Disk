@@ -57,6 +57,46 @@ Music::Music()
         // Set Volume
         Mix_VolumeChunk(playerJump, 70);
     }
+    superJump = Mix_LoadWAV("music/superJump.wav"); //http://www.freesound.org/people/coby12388/sounds/222571/
+    if (superJump == NULL)
+    {
+        printf("\n\n\n\n\nNOT LOADING SUPER JUMP MUSIC FILE\n\n\n\n\n");
+    }
+    else
+    {
+        // Set Volume
+        Mix_VolumeChunk(superJump, 70);
+    }
+    speedUp = Mix_LoadWAV("music/speed.wav"); //http://www.freesound.org/people/LloydEvans09/sounds/185849/
+    if (speedUp == NULL)
+    {
+        printf("\n\n\n\n\nNOT LOADING SPEED MUSIC FILE\n\n\n\n\n");
+    }
+    else
+    {
+        // Set Volume
+        Mix_VolumeChunk(speedUp, 70);
+    }
+    blast = Mix_LoadWAV("music/blast.wav"); //http://www.freesound.org/people/Benboncan/sounds/73005/
+    if (blast == NULL)
+    {
+        printf("\n\n\n\n\nNOT LOADING BLAST MUSIC FILE\n\n\n\n\n");
+    }
+    else
+    {
+        // Set Volume
+        Mix_VolumeChunk(blast, 70);
+    }
+    bigBlast = Mix_LoadWAV("music/bigBlast.wav"); //http://www.freesound.org/people/klangfabrik/sounds/210613/
+    if (bigBlast == NULL)
+    {
+        printf("\n\n\n\n\nNOT LOADING BIG BLAST MUSIC FILE\n\n\n\n\n");
+    }
+    else
+    {
+        // Set Volume
+        Mix_VolumeChunk(bigBlast, 70);
+    }
 
         /**************** COLLISION SOUNDS ****************/
     diskToWall = Mix_LoadWAV("music/BalltoWall.wav");	// http://www.freesound.org/people/davidou/sounds/88451/
@@ -99,9 +139,19 @@ Music::Music()
         // Set Volume
         Mix_VolumeChunk(playerLand, 70);
     }
-
+    restoreSound = Mix_LoadWAV("music/restore.wav"); //http://www.freesound.org/people/Fantom57/sounds/219230/
+    if (restoreSound == NULL)
+    {
+        printf("\n\n\n\n\nNOT LOADING RESTORE MUSIC FILE\n\n\n\n\n");
+    }
+    else
+    {
+        // Set Volume
+        Mix_VolumeChunk(restoreSound, 70);
+    }
     // Initialise sound channels
-    currentChunkChannel = 0;
+    currentWallChannel = 0;
+    currentJumpChannel = 2;
 	currentMusicChannel = 1;
 }
 //-------------------------------------------------------------------------------------
@@ -115,11 +165,16 @@ void Music::musicDone()
     Mix_FreeChunk(playScreen);
     Mix_FreeChunk(throwSound);
     Mix_FreeChunk(playerJump);
+    Mix_FreeChunk(superJump);
+    Mix_FreeChunk(speedUp);
+    Mix_FreeChunk(blast);
+    Mix_FreeChunk(bigBlast);
 
 	Mix_FreeChunk(diskToWall);
     Mix_FreeChunk(diskToTarget);
     Mix_FreeChunk(catchSound);
     Mix_FreeChunk(playerLand);
+    Mix_FreeChunk(restoreSound);
 
     Mix_CloseAudio();
     SDL_Quit();
@@ -132,22 +187,22 @@ void Music::playCollisionSound(string objA, string objB)
     	// Disk To Wall
     	if (objA == "Disk" && objB == "Player")
     	{
-    		currentChunkChannel = Mix_PlayChannel(currentChunkChannel, catchSound, 0);
+    		Mix_PlayChannel(-1, catchSound, 0);
     	}
     	// Disk To Player
     	if (objA == "Disk" && objB == "Wall")
     	{
-    		currentChunkChannel = Mix_PlayChannel(currentChunkChannel, diskToWall, 0);
+    		currentWallChannel = Mix_PlayChannel(currentWallChannel, diskToWall, 0);
     	}
     	// Disk To Target
     	if (objA == "Disk" && objB == "Target")
     	{
-    		currentChunkChannel = Mix_PlayChannel(currentChunkChannel, diskToTarget, 0);
+    		Mix_PlayChannel(-1, diskToTarget, 0);
     	}
         // Player to Ground
         if (objA == "Player" && objB == "Ground")
         {
-            currentChunkChannel = Mix_PlayChannel(currentChunkChannel, playerLand, 0);
+            Mix_PlayChannel(-1, playerLand, 0);
         }
     	SDL_Delay(50);
     }
@@ -174,14 +229,38 @@ void Music::playMusic(string state)
         // Throwing Sound
         if (state == "Throw")
         {
-            currentChunkChannel = Mix_PlayChannel(currentChunkChannel, throwSound, 0);
+            Mix_PlayChannel(-1, throwSound, 0);
         }
         // Player Jumping
         if (state == "Jump")
         {
-            currentChunkChannel = Mix_PlayChannel(currentChunkChannel, playerJump, 0);
+            currentJumpChannel = Mix_PlayChannel(currentJumpChannel, playerJump, 0);
         }
-
+        // Player Super Jumping
+        if (state == "SuperJump")
+        {
+            currentJumpChannel = Mix_PlayChannel(currentJumpChannel, superJump, 0);
+        }
+        // Restore sound
+        if (state == "Restore")
+        {
+            Mix_PlayChannel(-1, restoreSound, 0);
+        }
+        // Disk Speed Up
+        if (state == "SpeedUp")
+        {
+            Mix_PlayChannel(-1, speedUp, 0);
+        }
+        // Tile Destroyed
+        if (state == "Blast")
+        {
+            Mix_PlayChannel(-1, blast, 0);
+        }
+        // Multiple Tiles Destroyed
+        if (state == "BigBlast")
+        {
+            Mix_PlayChannel(-1, bigBlast, 0);
+        }
     	SDL_Delay(50);
     }
 }
