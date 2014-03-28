@@ -67,7 +67,7 @@ protected:
 	bool updateClient(const Ogre::FrameEvent& evt);
 	void updateClientCamera(Ogre::Real elapseTime);
 	bool processAndSendClientInput(const Ogre::FrameEvent& evt);
-	void resetClientState(const Ogre::FrameEvent& evt);
+	bool resetClientState(const Ogre::FrameEvent& evt);
 	bool interpretClientPacket(MCP_Packet pack);
 	bool interpretServerPacket(MCP_Packet pack);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
@@ -93,6 +93,8 @@ protected:
 	int sceneRendered;
 	Ogre::Real mMove; 			// Move Constant
 	float sprintFactor;	// Sprint Constant
+	bool clientGameStart;
+	bool clientOrientationChange;
 };
 
 #endif // #ifndef __MCP_h_

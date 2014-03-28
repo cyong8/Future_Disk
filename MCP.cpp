@@ -43,6 +43,8 @@ void MCP::createScene(void)
     clientPlayer = NULL;
     gameDisk = NULL;
     gameSimulator = NULL;
+    clientOrientationChange = false;
+    clientGameStart = false;
 
     /******************** Movement Constants ******************/
     mMove = 3.0f;
@@ -299,7 +301,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                         constructAndSendGameState();
                     if (mShutDown)
                        exit(2);
-                    if (gameNetwork->checkSockets())
+                    if (gameNetwork->checkSockets() && clientGameStart)
                     {
                         MCP_Packet pack;
 
@@ -333,7 +335,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if (sceneRendered)
                 {
-                    if(timeSinceLastStateUpdate == 0.01f)
+                    if (clientGameStart && timeSinceLastStateUpdate == 0.01f)
                         processAndSendClientInput(evt);
                     if (gameNetwork->checkSockets())
                         updateClient(evt);
@@ -500,6 +502,12 @@ bool MCP::constructAndSendGameState()
         pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
         gameNetwork->sendPacket(pack);  // Send Disk
     }
+    if (gameSimulator->checkGameStart() && !clientGameStart)
+    {
+        pack.sequence = 's';   
+        gameNetwork->sendPacket(pack);  // Send Disk
+        clientGameStart = true;
+    }
 
     /* Signify end of frame data */
     pack.sequence = 'n';
@@ -545,10 +553,15 @@ void MCP::updateClientCamera(Ogre::Real elapseTime)
 bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack;
+    bool result = false;
 
-    pack.sequence = 'o';
-    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
-    gameNetwork->sendPacket(pack); 
+    if (clientOrientationChange)
+    {
+        pack.sequence = 'o';
+        pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+        gameNetwork->sendPacket(pack); 
+        result = true;
+    }
     
     pack.sequence = 'n';
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
@@ -561,30 +574,35 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         clientPlayer->toggleState(Forward);
         pack.sequence = 'w';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
     {
         clientPlayer->toggleState(Left);
         pack.sequence = 'a';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
     {
         clientPlayer->toggleState(Back);
         pack.sequence = 's';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
     {
         clientPlayer->toggleState(Right);
         pack.sequence = 'd';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
     {
         clientPlayer->toggleState(Jump);
         pack.sequence = 'j';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_V) && !clientVKeyDown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
     {
@@ -593,20 +611,29 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         clientVKeyDown = true;
         pack.sequence = 'v';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (!mKeyboard->isKeyDown(OIS::KC_V) && clientVKeyDown)        
     {
-        cViewModeToggle = true;  // toggle - always true
+        cViewModeToggle = true;     // toggle - always true
         pCam->toggleThirdPersonView();
         clientVKeyDown = false;
         pack.sequence = 'v';
         gameNetwork->sendPacket(pack);
+        result = true;
     }    
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
     {
         clientPlayer->toggleState(Boost); 
         pack.sequence = 'b';
         gameNetwork->sendPacket(pack);
+        result = true;
+    }
+
+    if (resetClientState(evt) || result)
+    {
+        pack.sequence = 'n';
+        gameNetwork->sendPacket(pack);  // Send Player
     }
     printf("\t\t*****Client sending sequence %c\n\n", pack.sequence);
     // if (pack.sequence != 'n')
@@ -615,53 +642,57 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
     //     gameNetwork->sendPacket(pack);
     // }
 
-    resetClientState(evt);
-
     return true;
 }
 //-------------------------------------------------------------------------------------
-void MCP::resetClientState(const Ogre::FrameEvent& evt)
+bool MCP::resetClientState(const Ogre::FrameEvent& evt)
 {
     MCP_Packet pack;
+    bool result = false;
 
     if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
     {
         clientPlayer->toggleState(Forward);
         pack.sequence = 'w';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
     {
         clientPlayer->toggleState(Left);
         pack.sequence = 'a';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
     {
         clientPlayer->toggleState(Back);
         pack.sequence = 's';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
     {   
         clientPlayer->toggleState(Right);
         pack.sequence = 'd';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
     if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
     {
         clientPlayer->toggleState(Jump);
         pack.sequence = 'j';
         gameNetwork->sendPacket(pack);
+        result = true;
     }   
     if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
     {
         clientPlayer->toggleState(Boost);
         pack.sequence = 'b';
         gameNetwork->sendPacket(pack);
+        result = true;
     }
-    pack.sequence = 'n';
-    gameNetwork->sendPacket(pack);  // Send Player
+    return result;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::interpretClientPacket(MCP_Packet pack)
