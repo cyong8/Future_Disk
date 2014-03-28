@@ -78,14 +78,14 @@ bool Network::establishConnection()
 				
 		int clientReady = SDLNet_CheckSockets(i_set, 0);
 
-		if (clientReady == -1)
+		if (clientReady <= 0)
 		{
-			printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
-			perror("SDLNet_CheckSockets");
+			// printf("SDLNet_CheckSockets: %s\n", SDLNet_GetError());
+			// perror("SDLNet_CheckSockets");
 		}
 		else if (clientReady)
 		{
-			printf("ACTIVITY!!!!\n\n\n\n");
+			// printf("ACTIVITY!!!!\n\n\n\n");
 			acceptClient(portData);
 		}
 	}
@@ -165,13 +165,15 @@ void Network::sendPacket(MCP_Packet pack)
 MCP_Packet Network::receivePacket()
 {
 	MCP_Packet pack;
-	char buff[sizeof(MCP_Packet)];
-	memset(buff, 0, sizeof(MCP_Packet));
-	if (SDLNet_TCP_Recv(TCP_gameSocket, buff, sizeof(MCP_Packet)) <= 0)
+	char buff[sizeof(MCP_Packet)]; // bigger size
+	memset(buff, 0, sizeof(MCP_Packet)); // bigger size
+	int numRead;
+	if ((numRead = SDLNet_TCP_Recv(TCP_gameSocket, buff, sizeof(MCP_Packet))) <= 0) // bigger size
 	{
-		pack.sequence = 'n';
+		pack.id = 'n';
 		return pack;
 	}
+	// printf("\tNUM READ: %d \t\t SIZE OF STRUCT: %d\n\n", numRead, sizeof(MCP_Packet));
 	/* UDP Packet/Sockets not working - Doing TCP for now */
 	// MCP_Packet* pack = NULL;
 	// UDPpacket *p;
@@ -202,14 +204,14 @@ bool Network::checkSockets()
 {
 	int clientReady = SDLNet_CheckSockets(i_set, 0);
 
-	if (clientReady == -1)
+	if (clientReady <= 0)
 	{
-		printf("No Activity; Chiiiiiill!\n\n");
+		// printf("No Activity; Chiiiiiill!\n\n");
 		return false;
 	}
 	else if (clientReady)
 	{
-		printf("ACTIVITY!!!!\n\n");
+		// printf("ACTIVITY!!!!\n\n");
 		return true;
 	}
 }

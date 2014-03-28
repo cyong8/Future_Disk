@@ -19,6 +19,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::Real posY = -(width*heightScalingFactor)/2.0f;
 	Ogre::Real posZ = -(gapSize/2.0 + floorLength - tileSize/2.0);
 
+	floorPosition = posY;
+
 	if(ident == 0)
 	{
 		// Row 1
@@ -546,4 +548,8 @@ Ogre::Real Room::getFloorLength()
 Ogre::Vector3 Room::getBounds()
 {
 	return Ogre::Vector3(width, height, floorLength);
+}
+Ogre::Real Room::getFloorPositionY()
+{
+	return floorPosition;
 }
