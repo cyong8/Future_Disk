@@ -9,6 +9,8 @@
 #include <iostream>
 #include "OgreQuaternion.h"
 
+using namespace std;
+
 struct MCP_Packet
 {
 	char id;
@@ -27,8 +29,8 @@ public:
 	bool establishConnection(void);
 	bool waitForPacket(void);
 	void acceptClient(char* data);
-	void sendPacket(MCP_Packet pack);
-	MCP_Packet receivePacket(void);
+	void sendPacket(vector<MCP_Packet>);
+	vector<MCP_Packet> receivePacket(void);
 	bool checkConnection(void);
 	bool checkSockets(void);
 
@@ -45,7 +47,7 @@ private:
 	Uint16 TCP_portNum;
 	int server; 
 	int client;
-	int maxPacketSize;
+	int maxSizeOfList;
 	bool connectionEstablished;
 };
 

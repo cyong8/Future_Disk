@@ -3,11 +3,11 @@
 Network::Network(int sc_identifier, char* hostIP)
 {
 	connectionEstablished = false;
-	maxPacketSize = 256;
 	init_serverSocket = NULL;
 	UDP_gameSocket = NULL;
 	TCP_gameSocket = NULL;
 	TCP_portNum = 64669;
+	maxSizeOfList = sizeof(MCP_Packet) * 10;
 	i_set = SDLNet_AllocSocketSet(5);
 
 	/*Initialize the network*/
@@ -149,52 +149,52 @@ void Network::acceptClient(char *data)
 	connectionEstablished = true;
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(MCP_Packet pack)
+void Network::sendPacket(vector<MCP_Packet> packList)
 {
 	int numSent;
-	char buff[sizeof(MCP_Packet)];
-	memcpy(buff, &pack, sizeof(MCP_Packet));
+	int packListSize = packList.size() * sizeof(MCP_Packet);
+	char buff[maxSizeOfList];
 
-	numSent = SDLNet_TCP_Send(TCP_gameSocket, buff, sizeof(MCP_Packet));
+	memset(buff, 0, maxSizeOfList); // bigger size
+
+	for (int i = 0; i < packList.size(); i++)
+		memcpy(buff+(i*sizeof(MCP_Packet)), &packList[i], sizeof(MCP_Packet));
+
+	numSent = SDLNet_TCP_Send(TCP_gameSocket, buff, packListSize);
 	if (!numSent)
 	{
-		printf("*****Failed to send packet; Packet ID: %c\n\n", pack.id);
+		printf("*****Failed to send packets of size %d!\n\n", numSent);
 	}
 }
 //-------------------------------------------------------------------------------------
-MCP_Packet Network::receivePacket()
+vector<MCP_Packet> Network::receivePacket()
 {
+	// we are going to recv packetList, no iterate thru buffer and return a packList
+	vector<MCP_Packet> packList;
 	MCP_Packet pack;
-	char buff[sizeof(MCP_Packet)]; // bigger size
-	memset(buff, 0, sizeof(MCP_Packet)); // bigger size
+
+	char buff[maxSizeOfList]; 
+
+	memset(buff, 0, maxSizeOfList);
+
 	int numRead;
-	if ((numRead = SDLNet_TCP_Recv(TCP_gameSocket, buff, sizeof(MCP_Packet))) <= 0) // bigger size
+	if ((numRead = SDLNet_TCP_Recv(TCP_gameSocket, buff, maxSizeOfList)) <= 0) 
 	{
 		pack.id = 'n';
-		return pack;
+		packList.push_back(pack);
+		return packList;
 	}
-	// printf("\tNUM READ: %d \t\t SIZE OF STRUCT: %d\n\n", numRead, sizeof(MCP_Packet));
-	/* UDP Packet/Sockets not working - Doing TCP for now */
-	// MCP_Packet* pack = NULL;
-	// UDPpacket *p;
-	
-	// if (!(p = SDLNet_AllocPacket(maxPacketSize)))
-	// {
-	// 	fprintf(stderr, "SDLNet_AllocPacket: %s\n", SDLNet_GetError());
-	// 	exit(EXIT_FAILURE);
-	// }
-	// if (SDLNet_UDP_Recv(UDP_gameSocket, p))	// ATM no patcket received
-	// 	pack = (MCP_Packet*)p->data;
 
-	// pack = (MCP_Packet*)&buf;
-	memcpy(&pack, buff, sizeof(pack));
+	for (int i = 0; i < maxSizeOfList; i += sizeof(MCP_Packet))
+	{
+		memcpy(&pack, buff+i, sizeof(MCP_Packet));
 
-	// printf("\t\tReceive - ID: %c\n", pack.id);
-	// printf("\t\tReceive - X: %f\n", pack.x_coordinate);
-	// printf("\t\tReceive - Y: %f\n", pack.y_coordinate);
-	// printf("\t\tReceive - Z: %f\n\n\n", pack.z_coordinate);
+		if (pack.id == 'n')
+			break;
+		packList.push_back(pack);
+	}
 
-	return pack;
+	return packList;
 }
 bool Network::checkConnection()
 {
