@@ -103,7 +103,7 @@ bool Disk::activatePowerUp(Ogre::String name, Player* p)
         else if (powerUp == "Speed" && previousParticleSystem != 2)
             createNewParticleSystem(2);
     }
-    else if (name == "Jump") {
+    else if (name == "Jump" && p != NULL) {
         p->increaseJump();
     }
     else if (name == "Restore") {

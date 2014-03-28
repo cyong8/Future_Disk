@@ -32,7 +32,7 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    createGUI();
+    initializeGUI();
 
     srand(time(0));
 
@@ -52,6 +52,7 @@ void MCP::createScene(void)
     gameStart = false;
     gameOver = false;
     vKeyDown = false;
+    resetFlag = false;
     cViewModeToggle = false;    
     clientVKeyDown = false;
     mRotate = 0.1f;
@@ -74,10 +75,10 @@ void MCP::createSoloModeScene()
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
-    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
-    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
-    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
-    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
+    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
 
 
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
@@ -165,11 +166,15 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
     gameOver = false;
     score = 0;
-    time(&initTime);
-
-    createSoloModeScene();
+    time(&initTime);     
+    
+    if (!resetFlag)
+        createSoloModeScene();
+    scorePanel->show();
+    mTrayMgr->moveWidgetToTray(scorePanel, OgreBites::TL_BOTTOMRIGHT);
     
     gameStart = true;
+    resetFlag = true;
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -205,34 +210,38 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 bool MCP::joinGame(const CEGUI::EventArgs &e)
 {
     gameMode = 1;
+    
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    CEGUI::WindowManager::WindowIterator wIterator = wmgr.getIterator();
+    
+    wIterator++;
+  
+    std::string ip_string = wIterator.getCurrentValue()->getText().c_str();
+    char* ip = new char[ip_string.length()+1];
+    std::memcpy(ip, wIterator.getCurrentValue()->getText().c_str(), ip_string.length()+1);
+    //std::strcpy(ip, (const char*) ip_string);
 
-    if (termArgs.size() == 2)
-    {
-        clientServerIdentifier = 1;
-        gameNetwork = new Network(clientServerIdentifier, termArgs[1]); // Initialize Network
+    clientServerIdentifier = 1;
+    gameNetwork = new Network(clientServerIdentifier, ip); // Initialize Network
 
-        CEGUI::MouseCursor::getSingleton().hide();
-        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-        wmgr.destroyAllWindows();
+    CEGUI::MouseCursor::getSingleton().hide();
+    wmgr.destroyAllWindows();
 
-        gameMusic->playMusic("Play");
+    gameMusic->playMusic("Play");
 
-        objectivePanel->hide();
-        instructPanel->hide();
-        mTrayMgr->removeWidgetFromTray(instructPanel);
-        mTrayMgr->removeWidgetFromTray(objectivePanel);
-        gameOverPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverPanel);
-        gameOver = false;
-        score = 0;
-        time(&initTime);
+    objectivePanel->hide();
+    instructPanel->hide();
+    mTrayMgr->removeWidgetFromTray(instructPanel);
+    mTrayMgr->removeWidgetFromTray(objectivePanel);
+    gameOverPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameOver = false;
+    score = 0;
+    time(&initTime);
 
-        createMultiplayerModeScene_client();
-        sceneRendered = 1;
-        return true;
-    }
-    else
-        return false;
+    createMultiplayerModeScene_client();
+    sceneRendered = 1;
+    return true;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -419,6 +428,7 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
             }
+
             if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
             {
                 fx -= mMove; // Strafe left
@@ -852,20 +862,30 @@ void MCP::gameOverScreen()
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
+    CEGUI::Window *back = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/BackButton");
+    back->setText("Back to Main Menu");
+    back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+    
     sheet->addChildWindow(quit);
     sheet->addChildWindow(restart);
+    sheet->addChildWindow(back);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
     restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
+    back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
 }
 //-------------------------------------------------------------------------------------
 bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
 {
+    powerUpPanel->show();
+    mTrayMgr->moveWidgetToTray(powerUpPanel, OgreBites::TL_BOTTOMLEFT);
+
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MultiplayerMenu/Sheet");
     
     CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/QuitButton");
     quit->setText("Quit Game");
@@ -876,7 +896,7 @@ bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
     host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     
-    CEGUI::Window *join = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/JoinButton");
+    CEGUI::Window *join = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/JoinButton");
     join->setText("Join a game");
     join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
@@ -889,10 +909,43 @@ bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
     host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, this));
-    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, this));
+    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::enterIPAddress, this));
 }
 //-------------------------------------------------------------------------------------
-void MCP::createGUI()
+bool MCP::enterIPAddress(const CEGUI::EventArgs &e)
+{
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/ClientMenu/Sheet");
+    sheet->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/ClientMenu/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    quit->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
+    
+    CEGUI::Window *ip = wmgr.createWindow("TaharezLook/Editbox", "TronGame/ClientMenu/IPEditbox");
+    ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    ip->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
+    ip->setUserString("TronGame/ClientMenu/IPEditbox", "TronGame/ClientMenu/IPEditbox");
+    
+    CEGUI::Window *enter = wmgr.createWindow("TaharezLook/Button", "TronGame/ClientMenu/EnterButton");
+    enter->setText("Enter");
+    enter->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    enter->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
+    enter->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(ip);
+    sheet->addChildWindow(enter);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    enter->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, this));
+}
+//-------------------------------------------------------------------------------------
+void MCP::initializeGUI()
 {
     mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
     
@@ -906,10 +959,16 @@ void MCP::createGUI()
     CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
     CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(mWindow->getWidth()/2, mWindow->getHeight()/2));
     
+    createMainMenu();
+}
+//------------------------------------------------------------------------------------
+void MCP::createMainMenu() 
+{           
     CEGUI::MouseCursor::getSingleton().show();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
-    
+ 
     CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
@@ -933,6 +992,22 @@ void MCP::createGUI()
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
     singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
     multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::createMultiplayerMenu, this));
+}
+//-----------------------------------------------------------------------------------
+bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e) 
+{   
+    scorePanel->hide();
+    mTrayMgr->removeWidgetFromTray(scorePanel);
+    //gameOverPanel->hide();
+    //mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameOver = false;
+    
+    instructPanel->show();
+    objectivePanel->show();
+    mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
+    mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_LEFT);
+    createMainMenu();
+    return true;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::quit(const CEGUI::EventArgs &e)
