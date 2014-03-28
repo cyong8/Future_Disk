@@ -305,21 +305,23 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
                 if (sceneRendered)
                 {
-                    /* wait for packets from client */                    
-                    if (timeSinceLastStateUpdate == 0.01f)
-                        constructAndSendGameState();
                     if (mShutDown)
                        exit(2);
-                    if (gameNetwork->checkSockets() && clientGameStart)
+                    /* wait for packets from client */                    
+                    if (timeSinceLastStateUpdate == 0.01f)
                     {
-                        MCP_Packet pack;
-
-                        pack = gameNetwork->receivePacket();
-                        while (pack.sequence != 'n')
+                        constructAndSendGameState();
+                        if (gameNetwork->checkSockets() && clientGameStart)
                         {
+                            MCP_Packet pack;
+
                             pack = gameNetwork->receivePacket();
-                            printf("\t\treceived from client packet of sequence %c\n\n", pack.sequence);
-                            interpretClientPacket(pack);
+                            while (pack.sequence != 'n')
+                            {
+                                pack = gameNetwork->receivePacket();
+                                printf("\t\treceived from client packet of sequence %c\n\n", pack.sequence);
+                                interpretClientPacket(pack);
+                            }
                         }
                     }
                     timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
@@ -360,9 +362,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
         else
         {
-                    time_t pcurrTime;
-                    time(&pcurrTime);
-                    updatePauseTime(pcurrTime);
+            time_t pcurrTime;
+            time(&pcurrTime);
+            updatePauseTime(pcurrTime);
         }
     }
     return ret;
@@ -483,11 +485,11 @@ bool MCP::constructAndSendGameState()
     MCP_Packet pack;
     memset(&pack, 0, sizeof(MCP_Packet));
 
-    if(gameSimulator->checkGameStart())
-    {
-        pack.id = 's';
-        gameNetwork->sendPacket(pack);
-    }
+    // if(gameSimulator->checkGameStart())
+    // {
+    //     pack.id = 's';
+    //     gameNetwork->sendPacket(pack);
+    // }
 
     // Update hostPlayer
     pack.sequence = 'i';  // for now
@@ -521,7 +523,7 @@ bool MCP::constructAndSendGameState()
     }
     if (gameSimulator->checkGameStart() && !clientGameStart)
     {
-        pack.sequence = 's';   
+        pack.id = 's';   
         gameNetwork->sendPacket(pack);  // Send Disk
         clientGameStart = true;
     }
@@ -731,13 +733,22 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
     else if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
         clientPlayer->performJump();
     else if (typeInput == 'v')                                       // View Mode Toggle
-        clientelse VKeyDown = !clientVKeyDown;
+        clientVKeyDown = !clientVKeyDown;
     else if (typeInput == 'b')                                       // speed boost
         hostPlayer->toggleState(Boost);
     else if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
         gameSimulator->setThrowFlag();
     else if (typeInput == 'o' && gameSimulator->checkGameStart())
+    {
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
+        // pSceneNode->yaw(Ogre::Degree(-mRotate * evt.state.X.rel), Ogre::Node::TS_WORLD);
+
+        btQuaternion rotationQ = btQuaternion(pack.orientationQ.getYaw().valueRadians(), 0, 0);
+        btTransform transform = clientPlayer->getBody()->getCenterOfMassTransform();
+        transform.setRotation(rotationQ);
+        clientPlayer->getBody()->setCenterOfMassTransform(transform);
+
+    }
     
     velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
 
