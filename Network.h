@@ -9,11 +9,12 @@
 #include <iostream>
 #include "OgreQuaternion.h"
 
+using namespace std;
+
 struct MCP_Packet
 {
-	char sequence;		// Max = 2 Bytes - 16 Bits
-	char id;			// Max = 2 Bytes - 16 Bits
-	float x_coordinate;	// Max = 4 Bytes - 32 Bits
+	char id;
+	float x_coordinate;
 	float y_coordinate;
 	float z_coordinate;
 	Ogre::Quaternion orientationQ;
@@ -28,8 +29,8 @@ public:
 	bool establishConnection(void);
 	bool waitForPacket(void);
 	void acceptClient(char* data);
-	void sendPacket(MCP_Packet pack);
-	MCP_Packet receivePacket(void);
+	void sendPacket(vector<MCP_Packet>);
+	vector<MCP_Packet> receivePacket(void);
 	bool checkConnection(void);
 	bool checkSockets(void);
 
@@ -46,7 +47,7 @@ private:
 	Uint16 TCP_portNum;
 	int server; 
 	int client;
-	int maxPacketSize;
+	int maxSizeOfList;
 	bool connectionEstablished;
 };
 
