@@ -632,6 +632,11 @@ bool MCP::constructAndSendGameState()
 
     if (gameDisk != NULL)
     {
+        if (clientPlayer->checkHolding())
+        {
+            pack.id = 'D';
+            packList.push_back(pack);
+        }
         pack.id = 'd';
         pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
         pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
@@ -945,27 +950,27 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         gameDisk->getSceneNode()->needUpdate();
     }
 
-    if(pack.id = 'P')
+    if(pack.id == 'P')
     {
         Power->getSceneNode()->_setDerivedPosition(newPos);
+        Power->getSceneNode()->needUpdate();
     }
-    if(pack.id = 'S')
+    if(pack.id == 'S')
     {
         Speed->getSceneNode()->_setDerivedPosition(newPos);
+        Speed->getSceneNode()->needUpdate();
     }
-    if(pack.id = 'J')
+    if(pack.id == 'J')
     {
         JumpPower->getSceneNode()->_setDerivedPosition(newPos);
+        JumpPower->getSceneNode()->needUpdate();
     }
-    if(pack.id = 'R')
+    if(pack.id == 'R')
     {
         Restore->getSceneNode()->_setDerivedPosition(newPos);
+        Restore->getSceneNode()->needUpdate();
     }
 
-    Power->getSceneNode()->needUpdate();
-    Speed->getSceneNode()->needUpdate();
-    JumpPower->getSceneNode()->needUpdate();
-    Restore->getSceneNode()->needUpdate();
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
 
