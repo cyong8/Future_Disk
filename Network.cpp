@@ -7,7 +7,7 @@ Network::Network(int sc_identifier, char* hostIP)
 	UDP_gameSocket = NULL;
 	TCP_gameSocket = NULL;
 	TCP_portNum = 64669;
-	maxSizeOfList = sizeof(MCP_Packet) * 20;
+	maxSizeOfList = sizeof(MCP_Packet) * 16;
 	i_set = SDLNet_AllocSocketSet(5);
 
 	/*Initialize the network*/

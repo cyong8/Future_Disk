@@ -45,6 +45,7 @@ void MCP::createScene(void)
     gameSimulator = NULL;
     clientOrientationChange = false;
     clientGameStart = false;
+    clientServerIdentifier = 0;
 
     /******************** Movement Constants ******************/
     mMove = 3.0f;
@@ -441,12 +442,13 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                         timeSinceLastStateUpdate = 0.01f;
                     timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
                 }
-                
-                if (hostPlayer != NULL)
-                    restrictPlayerMovement(hostPlayer);
-                if (clientPlayer != NULL)
-                    restrictPlayerMovement(clientPlayer);
-                
+                if (gameMode == 1)
+                {
+                    if (hostPlayer != NULL)
+                        restrictPlayerMovement(hostPlayer);
+                    if (clientPlayer != NULL)
+                        restrictPlayerMovement(clientPlayer);
+                }
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
@@ -728,14 +730,20 @@ void MCP::updateClientCamera(Ogre::Real elapseTime)
         cViewModeToggle = !cViewModeToggle;
 
         if(pCam->isInAimMode()) // Go into Aim view
+        {
+            gameDisk->getSceneNode()->setVisible(false);
             pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        }
         else // Return from Aim view
+        {
+            gameDisk->getSceneNode()->setVisible(true);
             pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        }
     }
     else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
     {
         if (pCam->isInAimMode())
-            pCam->update(elapseTime,clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+            pCam->update(elapseTime, clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
         else
             pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());          
     }
@@ -753,6 +761,11 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         clientOrientationChange = false;
         pack.id = 'o';
         pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+        packList.push_back(pack);
+        pack.id = 'S';
+        pack.x_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().x;
+        pack.y_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().y;
+        pack.z_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().z;
         packList.push_back(pack);
         result = true;
     }
@@ -955,6 +968,10 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
         transform.setRotation(rotationQ);
 
         clientPlayer->getBody()->setCenterOfMassTransform(transform);
+    }
+    if (typeInput == 'S')
+    {
+        clientPlayer->getPlayerSightNode()->_setDerivedPosition(Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate));
     }
 
     return false;
