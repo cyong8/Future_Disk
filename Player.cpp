@@ -159,8 +159,8 @@ void Player::decreaseJump()
 //-------------------------------------------------------------------------------------
 void Player::initializeStates()
 {
-	int i = Boost;
-	while (i >= 0)
+	int i = Forward;
+	while (i > 0)
 	{
 		states.push_back(false);
 		i--;
@@ -176,6 +176,7 @@ void Player::toggleState(int index)
 {
 	states[index] = !states[index];
 }
+//-------------------------------------------------------------------------------------
 Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 {
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);
