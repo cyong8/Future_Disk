@@ -25,21 +25,24 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	//if (nym != "Power" && nym != "Speed" && nym != "Shield" && nym != "Jump" && nym != "Restore") {
 	    //rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-roomBounds.z/2,roomBounds.z/2));
 	    /*rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)*/
-	if (nym != "Power" && nym != "Speed" && nym != "Jump" && nym != "Restore") {
-	    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									       Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
-										    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
-    }
-    else {
-        //rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-5.0f, 5.0f));
-       rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-										    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-									       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-										    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-									       Ogre::Math::RangeRandom(-5.0f, 5.0f));
+	if(sim != NULL)
+	{
+		if (nym != "Power" && nym != "Speed" && nym != "Jump" && nym != "Restore") {
+		    rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+											    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+										       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+											    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+										       Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
+											    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
+	    }
+	    else {
+	        //rootNode->setPosition(Ogre::Math::RangeRandom(-roomBounds.x/2 + (1.0f/2.0f), roomBounds.x/2 - (1.0f/2.0f)), Ogre::Math::RangeRandom(-roomBounds.y/2 + (2.0f/3.0f), roomBounds.y/2 - (2.0f/3.0f)), Ogre::Math::RangeRandom(-5.0f, 5.0f));
+	       rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
+											    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
+										       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+											    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
+										       Ogre::Math::RangeRandom(-5.0f, 5.0f));
+    	}
     }
     
 	rootNode->pitch(Ogre::Degree(90));

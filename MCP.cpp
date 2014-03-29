@@ -121,7 +121,6 @@ void MCP::createMultiplayerModeScene_host()
     JumpPower = (Target*)gameSimulator->getGameObject("Jump");
     Restore = (Target*)gameSimulator->getGameObject("Restore");
 
-
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     clientPlayer = (Player*)gameSimulator->getGameObject("Player2");
 
@@ -146,10 +145,10 @@ void MCP::createMultiplayerModeScene_client()
     hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
     clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
 
-    Power = new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
-    Speed = new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
-    JumpPower = new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
-    Restore = new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Power = new Target("Power", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Speed = new Target("Speed", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    JumpPower = new Target("Jump", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Restore = new Target("Restore", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
 
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
@@ -963,7 +962,10 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         Restore->getSceneNode()->_setDerivedPosition(newPos);
     }
 
-
+    Power->getSceneNode()->needUpdate();
+    Speed->getSceneNode()->needUpdate();
+    JumpPower->getSceneNode()->needUpdate();
+    Restore->getSceneNode()->needUpdate();
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
 
