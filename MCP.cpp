@@ -215,8 +215,10 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 
     objectivePanel->hide();
     instructPanel->hide();
+    powerUpPanel->hide();
     mTrayMgr->removeWidgetFromTray(instructPanel);
     mTrayMgr->removeWidgetFromTray(objectivePanel);
+    mTrayMgr->removeWidgetFromTray(powerUpPanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
     gameOverWinPanel->hide();
@@ -257,8 +259,10 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
 
     objectivePanel->hide();
     instructPanel->hide();
+    powerUpPanel->hide();
     mTrayMgr->removeWidgetFromTray(instructPanel);
     mTrayMgr->removeWidgetFromTray(objectivePanel);
+    mTrayMgr->removeWidgetFromTray(powerUpPanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
     gameOverWinPanel->hide();
@@ -1116,7 +1120,7 @@ void MCP::togglePause()
         CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
         CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
         
-        CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/Pause/QuitButton");
+        CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/QuitButton");
         quit->setText("Quit Game");
         quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
@@ -1154,29 +1158,29 @@ void MCP::gameOverScreen()
     wmgr.destroyAllWindows();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver1/Sheet");
     
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver1/QuitButton");
+    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
-    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver1/RestartGameButton");
+    /*CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/RestartGameButton");
     restart->setText("Restart Game");
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
-    CEGUI::Window *back = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver1/BackButton");
+    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
     back->setText("Back to Main Menu");
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));*/
     
     sheet->addChildWindow(quit);
-    sheet->addChildWindow(restart);
-    sheet->addChildWindow(back);
+    //sheet->addChildWindow(restart);
+    //sheet->addChildWindow(back);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
-    back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
+    //restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
+    //back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
 }
 //-------------------------------------------------------------------------------------
 void MCP::otherGameOverScreen() 
@@ -1186,29 +1190,29 @@ void MCP::otherGameOverScreen()
     wmgr.destroyAllWindows();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver2/Sheet");
     
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver2/QuitButton");
+    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver2/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
-    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver2/RestartGameButton");
+    /*CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver2/RestartGameButton");
     restart->setText("Restart Game");
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
-    CEGUI::Window *back = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver2/BackButton");
+    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver2/BackButton");
     back->setText("Back to Main Menu");
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));*/
     
     sheet->addChildWindow(quit);
-    sheet->addChildWindow(restart);
-    sheet->addChildWindow(back);
+    //sheet->addChildWindow(restart);
+    //sheet->addChildWindow(back);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
-    back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
+    //restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
+    //back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
 }
 //-------------------------------------------------------------------------------------
 bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
@@ -1220,16 +1224,16 @@ bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
     wmgr.destroyAllWindows();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MultiplayerMenu/Sheet");
     
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/QuitButton");
+    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     
-    CEGUI::Window *host = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/HostButton");
+    CEGUI::Window *host = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/HostButton");
     host->setText("Host a game");
     host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     
-    CEGUI::Window *join = wmgr.createWindow("TaharezLook/Button", "TronGame/MultiplayerMenu/JoinButton");
+    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/JoinButton");
     join->setText("Join a game");
     join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
@@ -1252,17 +1256,17 @@ bool MCP::enterIPAddress(const CEGUI::EventArgs &e)
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/ClientMenu/Sheet");
     sheet->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/ClientMenu/QuitButton");
+    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     quit->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    CEGUI::Window *ip = wmgr.createWindow("TaharezLook/Editbox", "TronGame/ClientMenu/IPEditbox");
+    CEGUI::Window *ip = wmgr.createWindow("OgreTray/Editbox", "TronGame/ClientMenu/IPEditbox");
     ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     ip->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     ip->setUserString("TronGame/ClientMenu/IPEditbox", "TronGame/ClientMenu/IPEditbox");
     
-    CEGUI::Window *enter = wmgr.createWindow("TaharezLook/Button", "TronGame/ClientMenu/EnterButton");
+    CEGUI::Window *enter = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/EnterButton");
     enter->setText("Enter");
     enter->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     enter->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
@@ -1288,8 +1292,8 @@ void MCP::initializeGUI()
     CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
     CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
     
-    CEGUI::SchemeManager::getSingleton().create("TaharezLook.scheme");
-    CEGUI::System::getSingleton().setDefaultMouseCursor("TaharezLook", "MouseArrow");
+    CEGUI::SchemeManager::getSingleton().create("OgreTray.scheme");
+    CEGUI::System::getSingleton().setDefaultMouseCursor("OgreTrayImages", "MouseArrow");
     CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(mWindow->getWidth()/2, mWindow->getHeight()/2));
     
     createMainMenu();
@@ -1302,16 +1306,16 @@ void MCP::createMainMenu()
     wmgr.destroyAllWindows();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
  
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/QuitButton");
+    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
-    CEGUI::Window *singlePlayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/SinglePlayerStartButton");
+    CEGUI::Window *singlePlayerStart = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/SinglePlayerStartButton");
     singlePlayerStart->setText("Solo Mode");
     singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     
-    CEGUI::Window *multiplayerStart = wmgr.createWindow("TaharezLook/Button", "TronGame/MainMenu/MultiplayerStartButton");
+    CEGUI::Window *multiplayerStart = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/MultiplayerStartButton");
     multiplayerStart->setText("Multiplayer");
     multiplayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     multiplayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
