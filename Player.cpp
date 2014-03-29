@@ -176,6 +176,7 @@ void Player::toggleState(int index)
 {
 	states[index] = !states[index];
 }
+//-------------------------------------------------------------------------------------
 Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 {
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);

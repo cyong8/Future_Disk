@@ -186,7 +186,7 @@ vector<MCP_Packet> Network::receivePacket()
 		return packList;
 	}
 
-	printf("Number of bytes read: %d\t\t max: \n\n", numRead, maxSizeOfList);
+	printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
 
 	for (int i = 0; i < maxSizeOfList; i += sizeof(MCP_Packet))
 	{
