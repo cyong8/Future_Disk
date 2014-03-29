@@ -32,7 +32,7 @@ public:
 	void decreaseJump(void);
 	void initializeStates(void);
 	bool checkState(int index);
-	void toggleState(int index);
+	void toggleState(int index, bool value);
 	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
 	int jumpTimer;
 	bool jumpPowerActive;

@@ -93,6 +93,12 @@ protected:
 	Player* hostPlayer;		// 'h'
 	Player* clientPlayer;	// 'c'
 	PlayerCamera* pCam;
+
+	Target *Power;
+	Target *Speed;
+	Target *JumpPower;
+	Target *Restore;
+
 	int gameMode;
 	int sceneRendered;
 	bool resetFlag;

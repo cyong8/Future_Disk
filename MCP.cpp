@@ -82,12 +82,6 @@ void MCP::createSoloModeScene()
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
-    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-
-
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     //trajectory = mSceneMgr->createManualObject("Line");
     
@@ -117,6 +111,16 @@ void MCP::createMultiplayerModeScene_host()
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side"))->addToSimulator(); // Create Player 2
 
+    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+
+    Power = (Target*)gameSimulator->getGameObject("Power");
+    Speed = (Target*)gameSimulator->getGameObject("Speed");
+    JumpPower = (Target*)gameSimulator->getGameObject("Jump");
+    Restore = (Target*)gameSimulator->getGameObject("Restore");
+
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     clientPlayer = (Player*)gameSimulator->getGameObject("Player2");
 
@@ -140,6 +144,12 @@ void MCP::createMultiplayerModeScene_client()
 
     hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
     clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
+
+    Power = new Target("Power", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Speed = new Target("Speed", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    JumpPower = new Target("Jump", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Restore = new Target("Restore", mSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
 
@@ -368,26 +378,40 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 if (sceneRendered)
                 {
                     if (mShutDown)
-                       exit(2);
-                    /* wait for packets from client */                    
+                       exit(2);                    
                     if (timeSinceLastStateUpdate < 0.0f)
                     {
                         constructAndSendGameState();
-                        if (gameNetwork->checkSockets() && clientGameStart)
+                    }
+                    if (gameNetwork->checkSockets() && clientGameStart)
+                    {
+                        int i = 0;
+                        vector<MCP_Packet> packList;
+                        packList = gameNetwork->receivePacket();
+                        //printf("pack.id (before while) = %c\n\n", packList[0].id);
+                       
+                        while (packList.size() > i && packList[i].id != 'n')
                         {
-                            int i = 0;
-                            vector<MCP_Packet> packList;
-                            packList = gameNetwork->receivePacket();
-                            //printf("pack.id (before while) = %c\n\n", packList[0].id);
-                           
-                            while (packList.size() > i && packList[i].id != 'n')
-                            {
-                                printf("pack.id (inside while) = %c\n\n", packList[i].id);
-                                interpretClientPacket(packList[i]);
-                                i++;
-                            }
+                            printf("pack.id (inside while) = %c\n\n", packList[i].id);
+                            interpretClientPacket(packList[i]);
+                            i++;
                         }
                     }
+                    printf("\t\t Client States: W - %d\n", hostPlayer->checkState(Forward));
+                    printf("\t\t Client States: A - %d\n", hostPlayer->checkState(Left));
+                    printf("\t\t Client States: S - %d\n", hostPlayer->checkState(Back));
+                    printf("\t\t Client States: D - %d\n", hostPlayer->checkState(Right));
+                    printf("\t\t Client States: Shift - %d\n", hostPlayer->checkState(Boost));
+                    if (gameSimulator->checkGameStart() && !clientVKeyDown)
+                    {
+                        Ogre::Vector3 velocityVector;
+                        velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
+                        velocityVector = clientPlayer->getSceneNode()->getOrientation() * velocityVector; 
+                        btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
+
+                        clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
+                    }
+                    // Update client velocity 
                     //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
@@ -583,8 +607,32 @@ bool MCP::constructAndSendGameState()
     pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
     pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
     pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
-    pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
     packList.push_back(pack);
+
+    pack.id = 'P';
+    pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = Power->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = Power->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+    pack.id = 'S';
+    pack.x_coordinate = Speed->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = Speed->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = Speed->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+    pack.id = 'J';
+    pack.x_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+    pack.id = 'R';
+    pack.x_coordinate = Restore->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = Restore->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
 
     if (gameDisk != NULL)
     {
@@ -652,6 +700,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
 
     if (clientOrientationChange)
     {
+        clientOrientationChange = false;
         pack.id = 'o';
         pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
         packList.push_back(pack);
@@ -664,35 +713,35 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
     }
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(Forward))                              // Forward - implemented
     {
-        clientPlayer->toggleState(Forward);
+        clientPlayer->toggleState(Forward, true);
         pack.id = 'w';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
     {
-        clientPlayer->toggleState(Left);
+        clientPlayer->toggleState(Left, true);
         pack.id = 'a';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
     {
-        clientPlayer->toggleState(Back);
+        clientPlayer->toggleState(Back, true);
         pack.id = 's';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
     {
-        clientPlayer->toggleState(Right);
+        clientPlayer->toggleState(Right, true);
         pack.id = 'd';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
     {
-        clientPlayer->toggleState(Jump);
+        clientPlayer->toggleState(Jump, true);
         pack.id = 'j';
         packList.push_back(pack);
         result = true;
@@ -717,12 +766,19 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
     }    
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
     {
-        clientPlayer->toggleState(Boost); 
+        clientPlayer->toggleState(Boost, true); 
         pack.id = 'b';
         packList.push_back(pack);
         result = true;
     }
-
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientVKeyDown && clientPlayer->checkHolding())
+    {
+        pack.id = 't';
+        packList.push_back(pack);
+        result = true;
+        clientPlayer->setHolding();
+        // clientVKeyDown = false;
+    }
     if (resetClientState(evt, packList) || result)
     {
         pack.id = 'n';
@@ -741,46 +797,47 @@ bool MCP::resetClientState(const Ogre::FrameEvent& evt, vector<MCP_Packet> &pack
 
     if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
     {
-        clientPlayer->toggleState(Forward);
+        clientPlayer->toggleState(Forward, false);
         pack.id = 'w';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
+    if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
     {
-        clientPlayer->toggleState(Left);
+        clientPlayer->toggleState(Left, false);
         pack.id = 'a';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
+    if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
     {
-        clientPlayer->toggleState(Back);
+        clientPlayer->toggleState(Back, false);
         pack.id = 's';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
+    if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
     {   
-        clientPlayer->toggleState(Right);
+        clientPlayer->toggleState(Right, false);
         pack.id = 'd';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
+    if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
     {
-        clientPlayer->toggleState(Jump);
+        clientPlayer->toggleState(Jump, false);
         pack.id = 'j';
         packList.push_back(pack);
         result = true;
     }   
-    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
+    if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
     {
-        clientPlayer->toggleState(Boost);
+        clientPlayer->toggleState(Boost, false);
         pack.id = 'b';
         packList.push_back(pack);
         result = true;
     }
+
     return result;
 }
 //-------------------------------------------------------------------------------------
@@ -788,27 +845,57 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
 {
     // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
     char typeInput = pack.id;
-    Ogre::Vector3 velocityVector;
     
 //    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
     
     if (typeInput == 'w')                                       // Forward
-        hostPlayer->toggleState(Forward);
-    else if (typeInput == 'a')                                       // Left
-        hostPlayer->toggleState(Left);
-    else if (typeInput == 's')                                       // Backwards
-        hostPlayer->toggleState(Back);
-    else if (typeInput == 'd')                                       // Right
-        hostPlayer->toggleState(Right);
-    else if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
+    {
+        if (hostPlayer->checkState(Forward))
+            hostPlayer->toggleState(Forward, false);
+        else
+            hostPlayer->toggleState(Forward, true);
+    }
+    if (typeInput == 'a')                                       // Left
+    {
+        if (hostPlayer->checkState(Left))
+            hostPlayer->toggleState(Left, false);
+        else
+            hostPlayer->toggleState(Left, true);
+    }
+    if (typeInput == 's')                                       // Backwards
+    {
+        if (hostPlayer->checkState(Back))
+            hostPlayer->toggleState(Back, false);
+        else
+            hostPlayer->toggleState(Back, true);
+    }
+    if (typeInput == 'd')                                       // Right
+    {
+        if (hostPlayer->checkState(Right))
+            hostPlayer->toggleState(Right, false);
+        else
+            hostPlayer->toggleState(Right, true);
+    }
+    if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
+    {
         clientPlayer->performJump();
-    else if (typeInput == 'v')                                       // View Mode Toggle
+    }
+    if (typeInput == 'v')                                       // View Mode Toggle
+    {
         clientVKeyDown = !clientVKeyDown;
-    else if (typeInput == 'b')                                       // speed boost
-        hostPlayer->toggleState(Boost);
-    else if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
+    }
+    if (typeInput == 'b')                                       // speed boost
+    {
+        if (hostPlayer->checkState(Boost))
+            hostPlayer->toggleState(Boost, false);
+        else
+            hostPlayer->toggleState(Boost, true);
+    }
+    if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
+    {
         gameSimulator->setThrowFlag();
-    else if (typeInput == 'o')
+    }
+    if (typeInput == 'o')
     {
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
 
@@ -820,22 +907,6 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
 
         clientPlayer->getBody()->setCenterOfMassTransform(transform);
     }
-
-    if (gameSimulator->checkGameStart() && !clientVKeyDown)
-    {
-        velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
-        velocityVector = clientPlayer->getSceneNode()->getOrientation() * velocityVector; 
-        btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
-
-        clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
-    }
-
-    printf("Player states after update\tW: %d\n", hostPlayer->checkState(Forward));
-    printf("\t\t\tA: %d\n", hostPlayer->checkState(Left));
-    printf("\t\t\tS: %d\n", hostPlayer->checkState(Back));
-    printf("\t\t\tD: %d\n", hostPlayer->checkState(Right));
-    printf("\t\t\tShift: %d\n", hostPlayer->checkState(Boost));
-    printf("\t\t\tSpace: %d\n", hostPlayer->checkState(Jump));
 
     return false;
 }
@@ -851,18 +922,21 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     {
         clientGameStart = true;
     }
-
-    else if (pack.id == 'h')
+    if (pack.id == 't' && !clientPlayer->checkHolding())
+    {
+        clientPlayer->setHolding();
+    }
+    if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
         hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
     }
-    else if (pack.id == 'c')   
+    if (pack.id == 'c')   
     {
         clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
        // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
     }
-    else if (pack.id == 'd')
+    if (pack.id == 'd')
     {
         if (gameDisk == NULL)
         {
@@ -875,6 +949,27 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         gameDisk->getSceneNode()->needUpdate();
     }
 
+    if(pack.id = 'P')
+    {
+        Power->getSceneNode()->_setDerivedPosition(newPos);
+    }
+    if(pack.id = 'S')
+    {
+        Speed->getSceneNode()->_setDerivedPosition(newPos);
+    }
+    if(pack.id = 'J')
+    {
+        JumpPower->getSceneNode()->_setDerivedPosition(newPos);
+    }
+    if(pack.id = 'R')
+    {
+        Restore->getSceneNode()->_setDerivedPosition(newPos);
+    }
+
+    Power->getSceneNode()->needUpdate();
+    Speed->getSceneNode()->needUpdate();
+    JumpPower->getSceneNode()->needUpdate();
+    Restore->getSceneNode()->needUpdate();
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
 

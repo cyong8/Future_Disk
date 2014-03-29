@@ -172,9 +172,9 @@ bool Player::checkState(int index)
 	return states[index];
 }
 //-------------------------------------------------------------------------------------
-void Player::toggleState(int index)
+void Player::toggleState(int index, bool value)
 {
-	states[index] = !states[index];
+	states[index] = value;
 }
 //-------------------------------------------------------------------------------------
 Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
