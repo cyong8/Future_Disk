@@ -7,7 +7,7 @@ Network::Network(int sc_identifier, char* hostIP)
 	UDP_gameSocket = NULL;
 	TCP_gameSocket = NULL;
 	TCP_portNum = 64669;
-	maxSizeOfList = sizeof(MCP_Packet) * 10;
+	maxSizeOfList = sizeof(MCP_Packet) * 15;
 	i_set = SDLNet_AllocSocketSet(5);
 
 	/*Initialize the network*/
@@ -180,15 +180,19 @@ vector<MCP_Packet> Network::receivePacket()
 	int numRead;
 	if ((numRead = SDLNet_TCP_Recv(TCP_gameSocket, buff, maxSizeOfList)) <= 0) 
 	{
+		printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
 		pack.id = 'n';
 		packList.push_back(pack);
 		return packList;
 	}
 
+	printf("Number of bytes read: %d\t\t max: \n\n", numRead, maxSizeOfList);
+
 	for (int i = 0; i < maxSizeOfList; i += sizeof(MCP_Packet))
 	{
 		memcpy(&pack, buff+i, sizeof(MCP_Packet));
 
+		// printf("pack.id = %c\n\n", pack.id);
 		if (pack.id == 'n')
 			break;
 		packList.push_back(pack);

@@ -308,7 +308,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                     if (mShutDown)
                        exit(2);
                     /* wait for packets from client */                    
-                    if (timeSinceLastStateUpdate == 0.01f)
+                    if (timeSinceLastStateUpdate < 0.0f)
                     {
                         constructAndSendGameState();
                         if (gameNetwork->checkSockets() && clientGameStart)
@@ -316,18 +316,20 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                             int i = 0;
                             vector<MCP_Packet> packList;
                             packList = gameNetwork->receivePacket();
-
-                            while (packList[i].id != 'n')
+                            //printf("pack.id (before while) = %c\n\n", packList[0].id);
+                           
+                            while (packList.size() > i && packList[i].id != 'n')
                             {
+                                printf("pack.id (inside while) = %c\n\n", packList[i].id);
                                 interpretClientPacket(packList[i]);
                                 i++;
                             }
                         }
                     }
-                    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
                     //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
                     if (timeSinceLastStateUpdate < 0.0f)
                         timeSinceLastStateUpdate = 0.01f;
+                    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
                 }
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
@@ -340,7 +342,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             {
                 if (sceneRendered)
                 {
-                    if (clientGameStart && timeSinceLastStateUpdate == 0.01f)
+                    if (clientGameStart /*&& timeSinceLastStateUpdate < 0.00f*/)
                         processAndSendClientInput(evt);
                     if (gameNetwork->checkSockets())
                         updateClient(evt);
@@ -524,7 +526,7 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
     int i = 0;
     // INTERPRETS PACKET
     packList = gameNetwork->receivePacket();
-    while (packList[i].id != 'n')
+    while (packList[i].id != 'n' && packList.size() > i)
     {
         interpretServerPacket(packList[i]);
         i++;
@@ -699,8 +701,8 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
     // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
     char typeInput = pack.id;
     Ogre::Vector3 velocityVector;
-
-    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
+    
+//    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
     
     if (typeInput == 'w')                                       // Forward
         hostPlayer->toggleState(Forward);
@@ -720,18 +722,32 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
         gameSimulator->setThrowFlag();
     else if (typeInput == 'o')
     {
-        // update rigid body
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
+
+        btQuaternion rotationQ;
+        btTransform transform = clientPlayer->getBody()->getCenterOfMassTransform();
+
+        rotationQ = btQuaternion(clientPlayer->getSceneNode()->getOrientation().getYaw().valueRadians(), 0, 0);
+        transform.setRotation(rotationQ);
+
+        clientPlayer->getBody()->setCenterOfMassTransform(transform);
     }
-    velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
 
     if (gameSimulator->checkGameStart() && !clientVKeyDown)
     {
+        velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
         velocityVector = clientPlayer->getSceneNode()->getOrientation() * velocityVector; 
         btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
 
         clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
     }
+
+    printf("Player states after update\tW: %d\n", hostPlayer->checkState(Forward));
+    printf("\t\t\tA: %d\n", hostPlayer->checkState(Left));
+    printf("\t\t\tS: %d\n", hostPlayer->checkState(Back));
+    printf("\t\t\tD: %d\n", hostPlayer->checkState(Right));
+    printf("\t\t\tShift: %d\n", hostPlayer->checkState(Boost));
+    printf("\t\t\tSpace: %d\n", hostPlayer->checkState(Jump));
 
     return false;
 }

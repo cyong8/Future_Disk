@@ -159,8 +159,8 @@ void Player::decreaseJump()
 //-------------------------------------------------------------------------------------
 void Player::initializeStates()
 {
-	int i = Forward;
-	while (i > 0)
+	int i = Boost;
+	while (i >= 0)
 	{
 		states.push_back(false);
 		i--;
