@@ -110,6 +110,9 @@ protected:
 	float sprintFactor;	// Sprint Constant
 	bool clientGameStart;
 	bool clientOrientationChange;
+
+	vector<int> removedHTileList;
+	vector<int> removedCTileList;
 };
 
 #endif // #ifndef __MCP_h_

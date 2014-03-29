@@ -36,10 +36,6 @@ class Simulator
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
 		Ogre::String playerLastThrew;
-		vector<GameObject*> hostTileList;
-		vector<int> hostRemoveIndexes;
-		vector<GameObject*> clientTileList;
-		vector<int> clientRemoveIndexes;
 		int score;
 		bool viewChangeP1;
 		bool viewChangeP2;
@@ -82,6 +78,11 @@ class Simulator
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
+		vector<GameObject*> hostTileList;
+		vector<int> hostRemoveIndexes;
+		vector<GameObject*> clientTileList;
+		vector<int> clientRemoveIndexes;
+		bool newRemovedTile;
 };
 
 #endif // #ifndef __Simulator_h_

@@ -18,6 +18,7 @@ struct MCP_Packet
 	float y_coordinate;
 	float z_coordinate;
 	Ogre::Quaternion orientationQ;
+	int tileIndex;
 };						// Max Total = 16 Bytes - Must alloc at least 16 Bytes for buffer
 
 class Network

@@ -17,6 +17,8 @@ public:
 	Ogre::Real getHeight(void);
 	Ogre::Real getFloorLength(void);
 	Ogre::Real getFloorPositionY(void);
+	vector<Tile*> cTileList;
+	vector<Tile*> hTileList;
 protected:
 	Ogre::Real width;
 	Ogre::Real height;

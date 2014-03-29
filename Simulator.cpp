@@ -482,6 +482,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    destroyTiles(hostTileList, hostRemoveIndexes, index);
 		else
 		    destroyTiles(clientTileList, clientRemoveIndexes, index);
+		newRemovedTile = true;
 		gameDisk->resetPowerUp();
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
 	}

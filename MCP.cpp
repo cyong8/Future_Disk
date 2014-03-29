@@ -375,6 +375,30 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                 gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
                 gameSimulator->parseCollisions(); // check collisions
 
+                if (removedHTileList.size() != gameSimulator->hostRemoveIndexes.size() && gameSimulator->newRemovedTile)
+                {
+                    int i = removedHTileList.size() - 1;
+
+                    while (i != (gameSimulator->hostRemoveIndexes.size()))
+                    {
+                        removedHTileList.push_back(gameSimulator->hostRemoveIndexes[i]);
+                        i++;
+                    }
+                    gameSimulator->newRemovedTile = false;
+                }
+                if (removedCTileList.size() != gameSimulator->clientRemoveIndexes.size() && gameSimulator->newRemovedTile)
+                {
+                    int i = removedCTileList.size() - 1;
+
+                    while (i != (gameSimulator->clientRemoveIndexes.size()))
+                    {
+                        removedCTileList.push_back(gameSimulator->clientRemoveIndexes[i]);
+                        i++;
+                    }
+
+                    gameSimulator->newRemovedTile = false;
+                }
+
                 if (sceneRendered)
                 {
                     if (mShutDown)
@@ -633,6 +657,27 @@ bool MCP::constructAndSendGameState()
     pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
     packList.push_back(pack);
 
+    int rIndex;
+    while (removedCTileList.size() != 0)
+    {
+        pack.id = 'C';
+
+        rIndex = removedCTileList[removedCTileList.size() - 1];
+        removedCTileList.pop_back();
+
+        pack.tileIndex = rIndex;
+        packList.push_back(pack);
+    }
+    while (removedHTileList.size() != 0)
+    {
+        pack.id = 'H';   
+
+        rIndex = removedHTileList[removedHTileList.size() - 1];
+        removedHTileList.pop_back();
+
+        pack.tileIndex = rIndex;
+        packList.push_back(pack);
+    }
 
     if (gameDisk != NULL)
     {
@@ -973,6 +1018,14 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     {
         Restore->getSceneNode()->_setDerivedPosition(newPos);
         Restore->getSceneNode()->needUpdate();
+    }
+    if (pack.id == 'H')
+    {
+        gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
+    }
+    if (pack.id == 'C')
+    {
+        gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
     }
 
     hostPlayer->getSceneNode()->needUpdate();
