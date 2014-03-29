@@ -658,7 +658,7 @@ bool MCP::updateClient(const Ogre::FrameEvent& evt)
     int i = 0;
     // INTERPRETS PACKET
     packList = gameNetwork->receivePacket();
-    while (packList[i].id != 'n' && packList.size() > i)
+    while ( packList.size() > i && packList[i].id != 'n')
     {
         interpretServerPacket(packList[i]);
         i++;
@@ -772,8 +772,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         pack.id = 't';
         packList.push_back(pack);
         result = true;
-        clientPlayer->setHolding();
-        // clientVKeyDown = false;
+        clientPlayer->isHolding = false;
     }
     if (resetClientState(evt, packList) || result)
     {
@@ -918,10 +917,7 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     {
         clientGameStart = true;
     }
-    if (pack.id == 't' && !clientPlayer->checkHolding())
-    {
-        clientPlayer->setHolding();
-    }
+
     if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
@@ -944,20 +940,24 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
         gameDisk->getSceneNode()->needUpdate();
     }
+    if(pack.id == 'D')
+    {
+        clientPlayer->isHolding = true;
+    }
 
-    if(pack.id = 'P')
+    if(pack.id == 'P')
     {
         Power->getSceneNode()->_setDerivedPosition(newPos);
     }
-    if(pack.id = 'S')
+    if(pack.id == 'S')
     {
         Speed->getSceneNode()->_setDerivedPosition(newPos);
     }
-    if(pack.id = 'J')
+    if(pack.id == 'J')
     {
         JumpPower->getSceneNode()->_setDerivedPosition(newPos);
     }
-    if(pack.id = 'R')
+    if(pack.id == 'R')
     {
         Restore->getSceneNode()->_setDerivedPosition(newPos);
     }
@@ -966,6 +966,7 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     Speed->getSceneNode()->needUpdate();
     JumpPower->getSceneNode()->needUpdate();
     Restore->getSceneNode()->needUpdate();
+
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
 

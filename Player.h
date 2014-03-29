@@ -38,10 +38,10 @@ public:
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
+	bool isHolding;		
 
 protected:
 	vector<bool> states;
-	bool isHolding;		
 	Disk* playerDisk;
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
