@@ -329,7 +329,7 @@ void Simulator::performThrow(Player* p)
     	Ogre::Vector3 toParentPosition = gameDisk->getSceneNode()->_getDerivedPosition();
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
-		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->_getDerivedPosition().normalisedCopy();
+		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
 		
 		/* The new disk direction is along player's orientation */
 		diskDirection = p->getSceneNode()->getOrientation() * diskDirection;

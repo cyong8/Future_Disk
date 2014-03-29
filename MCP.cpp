@@ -50,6 +50,7 @@ void MCP::createScene(void)
     /******************** Movement Constants ******************/
     mMove = 3.0f;
     sprintFactor = 3.0f;
+    timeSinceLastStateUpdate = 0.01f;
 
     /******************** GAME STATE FLAGS ********************/
     gamePause = false;
@@ -170,6 +171,7 @@ void MCP::createMultiplayerModeScene_client()
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
+    gameMode = 0;
     CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
@@ -202,8 +204,8 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::hostGame(const CEGUI::EventArgs &e)
 {
-    timeSinceLastStateUpdate = 0.01f;
     gameMode = 1;
+
     clientServerIdentifier = 0;
 
     gameNetwork = new Network(clientServerIdentifier, NULL); // Initialize Network
@@ -370,108 +372,11 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             }
             if (clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
             {
-                if(!processUnbufferedInput(evt)) 
-                    return false;
-
-                gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
-                gameSimulator->parseCollisions(); // check collisions
-
-                if (removedHTileList.size() != gameSimulator->hostRemoveIndexes.size() && gameSimulator->newRemovedTile)
-                {
-                    int i = removedHTileList.size() - 1;
-
-                    while (i != (gameSimulator->hostRemoveIndexes.size()))
-                    {
-                        removedHTileList.push_back(gameSimulator->hostRemoveIndexes[i]);
-                        i++;
-                    }
-                    gameSimulator->newRemovedTile = false;
-                }
-                if (removedCTileList.size() != gameSimulator->clientRemoveIndexes.size() && gameSimulator->newRemovedTile)
-                {
-                    int i = removedCTileList.size() - 1;
-
-                    while (i != (gameSimulator->clientRemoveIndexes.size()))
-                    {
-                        removedCTileList.push_back(gameSimulator->clientRemoveIndexes[i]);
-                        i++;
-                    }
-
-                    gameSimulator->newRemovedTile = false;
-                }
-
-                if (sceneRendered)
-                {
-                    if (mShutDown)
-                       exit(2);                    
-                    if (timeSinceLastStateUpdate < 0.0f)
-                    {
-                        constructAndSendGameState();
-                    }
-                    if (gameNetwork->checkSockets() && clientGameStart)
-                    {
-                        int i = 0;
-                        vector<MCP_Packet> packList;
-                        packList = gameNetwork->receivePacket();
-                        //printf("pack.id (before while) = %c\n\n", packList[0].id);
-                       
-                        while (packList.size() > i && packList[i].id != 'n')
-                        {
-                            printf("pack.id (inside while) = %c\n\n", packList[i].id);
-                            interpretClientPacket(packList[i]);
-                            i++;
-                        }
-                    }
-                    printf("\t\t Client States: W - %d\n", hostPlayer->checkState(Forward));
-                    printf("\t\t Client States: A - %d\n", hostPlayer->checkState(Left));
-                    printf("\t\t Client States: S - %d\n", hostPlayer->checkState(Back));
-                    printf("\t\t Client States: D - %d\n", hostPlayer->checkState(Right));
-                    printf("\t\t Client States: Shift - %d\n", hostPlayer->checkState(Boost));
-                    if (gameSimulator->checkGameStart() && !clientVKeyDown)
-                    {
-                        Ogre::Vector3 velocityVector;
-                        velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
-                        velocityVector = clientPlayer->getSceneNode()->getOrientation() * velocityVector; 
-                        btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
-
-                        clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
-                    }
-                    // Update client velocity 
-                    //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
-                    if (timeSinceLastStateUpdate < 0.0f)
-                        timeSinceLastStateUpdate = 0.01f;
-                    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-                }
-                if (gameMode == 1)
-                {
-                    if (hostPlayer != NULL)
-                        restrictPlayerMovement(hostPlayer);
-                    if (clientPlayer != NULL)
-                        restrictPlayerMovement(clientPlayer);
-                }
-                if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
-                {
-                    (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
-                    gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
-                    //gameDisk->particleNode->setVisible(true);
-                }
+                renderLoop_Host(evt);
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
             {
-                if (sceneRendered)
-                {
-                    if (clientGameStart /*&& timeSinceLastStateUpdate < 0.00f*/)
-                        processAndSendClientInput(evt);
-                    if (gameNetwork->checkSockets())
-                        updateClient(evt);
-                    if (mShutDown)
-                        exit(2);
-                    updateClientCamera(evt.timeSinceLastFrame);
-                    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-                    //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
-                    if (timeSinceLastStateUpdate < 0.0f)
-                        timeSinceLastStateUpdate = 0.01f;
-                }
+               renderLoop_Client(evt);
             }     
         }
         else
@@ -612,6 +517,91 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
         }
     }
     return true;
+}
+//-------------------------------------------------------------------------------------
+void MCP::renderLoop_Host(const Ogre::FrameEvent& evt)
+{
+    if(!processUnbufferedInput(evt)) 
+        exit(2);
+
+    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f); 
+    gameSimulator->parseCollisions(); // check collisions
+
+    updateRemovedTiles();
+
+    if (sceneRendered)
+    {
+        if (mShutDown)
+           exit(2);                    
+        if (timeSinceLastStateUpdate < 0.0f)
+        {
+            constructAndSendGameState();
+        }
+        if (gameNetwork->checkSockets() && clientGameStart)
+        {
+            int i = 0;
+            vector<MCP_Packet> packList;
+            packList = gameNetwork->receivePacket();
+            //printf("pack.id (before while) = %c\n\n", packList[0].id);
+           
+            while (packList.size() > i && packList[i].id != 'n')
+            {
+                printf("pack.id (inside while) = %c\n\n", packList[i].id);
+                interpretClientPacket(packList[i]);
+                i++;
+            }
+        }
+        printf("\t\t Client States: W - %d\n", hostPlayer->checkState(Forward));
+        printf("\t\t Client States: A - %d\n", hostPlayer->checkState(Left));
+        printf("\t\t Client States: S - %d\n", hostPlayer->checkState(Back));
+        printf("\t\t Client States: D - %d\n", hostPlayer->checkState(Right));
+        printf("\t\t Client States: Shift - %d\n", hostPlayer->checkState(Boost));
+        if (gameSimulator->checkGameStart() && !clientVKeyDown)
+        {
+            Ogre::Vector3 velocityVector;
+            velocityVector = hostPlayer->fillClientVelocityVector(mMove, sprintFactor);
+            velocityVector = clientPlayer->getSceneNode()->getOrientation() * velocityVector; 
+            btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
+
+            clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
+        }
+        // Update client velocity 
+        //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
+        if (timeSinceLastStateUpdate < 0.0f)
+            timeSinceLastStateUpdate = 0.01f;
+        timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
+    }
+    // if (gameMode == 1)
+    // {
+    //     if (hostPlayer != NULL)
+    //         restrictPlayerMovement(hostPlayer);
+    //     if (clientPlayer != NULL)
+    //         restrictPlayerMovement(clientPlayer);
+    // }
+    if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
+    {
+        (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
+        gameDisk = (Disk*)gameSimulator->getGameObject("Disk");
+        //gameDisk->particleNode->setVisible(true);
+    }
+}
+//-------------------------------------------------------------------------------------
+void MCP::renderLoop_Client(const Ogre::FrameEvent& evt)
+{
+    if (mShutDown)
+        exit(2);
+    if (sceneRendered)
+    {
+        if (clientGameStart /*&& timeSinceLastStateUpdate < 0.00f*/)
+            processAndSendClientInput(evt);
+        if (gameNetwork->checkSockets())
+            updateClient(evt);
+        updateClientCamera(evt.timeSinceLastFrame);
+        timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
+        //printf("Time Since Last Update: %f\n\n", timeSinceLastStateUpdate);
+        if (timeSinceLastStateUpdate < 0.0f)
+            timeSinceLastStateUpdate = 0.01f;
+    }
 }
 //-------------------------------------------------------------------------------------
 bool MCP::constructAndSendGameState()   
@@ -971,7 +961,7 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
     }
     if (typeInput == 'S')
     {
-        clientPlayer->getPlayerSightNode()->_setDerivedPosition(Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate));
+        clientPlayer->getPlayerSightNode()->setPosition(Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate));
     }
 
     return false;
@@ -993,11 +983,12 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
         hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+        hostPlayer->getSceneNode()->needUpdate();
     }
     if (pack.id == 'c')   
     {
         clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
-       // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
+        clientPlayer->getSceneNode()->needUpdate();
     }
     if (pack.id == 'd')
     {
@@ -1045,10 +1036,34 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
     }
 
-    hostPlayer->getSceneNode()->needUpdate();
-    clientPlayer->getSceneNode()->needUpdate();
-
     return true;
+}
+//-------------------------------------------------------------------------------------
+void MCP::updateRemovedTiles()
+{
+    if (removedHTileList.size() != gameSimulator->hostRemoveIndexes.size() && gameSimulator->newRemovedTile)
+    {
+        int i = removedHTileList.size() - 1;
+
+        while (i != (gameSimulator->hostRemoveIndexes.size()))
+        {
+            removedHTileList.push_back(gameSimulator->hostRemoveIndexes[i]);
+            i++;
+        }
+        gameSimulator->newRemovedTile = false;
+    }
+    if (removedCTileList.size() != gameSimulator->clientRemoveIndexes.size() && gameSimulator->newRemovedTile)
+    {
+        int i = removedCTileList.size() - 1;
+
+        while (i != (gameSimulator->clientRemoveIndexes.size()))
+        {
+            removedCTileList.push_back(gameSimulator->clientRemoveIndexes[i]);
+            i++;
+        }
+
+        gameSimulator->newRemovedTile = false;
+    }
 }
 //-------------------------------------------------------------------------------------
 bool MCP::mouseMoved(const OIS::MouseEvent &evt)

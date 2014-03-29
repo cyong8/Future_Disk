@@ -50,19 +50,19 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 
  	// DEBUGGING 
-	Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
-	pCamNode->attachObject(camEnt);
-	pCamNode->scale(dimensions.x/5.0, dimensions.y/5.0, dimensions.z/5.0);
-	pCamNode->setVisible(true, false);
-	pCamNode->showBoundingBox(true);
-	camEnt->setMaterialName("Examples/Chrome");
+	// Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
+	// pCamNode->attachObject(camEnt);
+	// pCamNode->scale(dimensions.x/5.0, dimensions.y/5.0, dimensions.z/5.0);
+	// pCamNode->setVisible(true, false);
+	// pCamNode->showBoundingBox(true);
+	// camEnt->setMaterialName("Examples/Chrome");
 
-	Ogre::Entity* sightEnt = mgr->createEntity(nym+"_sightMesh", "cube.mesh");
-	pSightNode->attachObject(sightEnt);
-	pSightNode->scale(dimensions.x/5.0, dimensions.y/5.0, dimensions.z/5.0);
-	pSightNode->setVisible(true, false);
-	pSightNode->showBoundingBox(true);
-	sightEnt->setMaterialName("Examples/Chrome");
+	// Ogre::Entity* sightEnt = mgr->createEntity(nym+"_sightMesh", "cube.mesh");
+	// pSightNode->attachObject(sightEnt);
+	// pSightNode->scale(dimensions.x/5.0, dimensions.y/5.0, dimensions.z/5.0);
+	// pSightNode->setVisible(true, false);
+	// pSightNode->showBoundingBox(true);
+	// sightEnt->setMaterialName("Examples/Chrome");
 	
 	// rootNode->setVisible(false, false);
 	// this->rootNode->showBoundingBox(true);

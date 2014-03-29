@@ -62,6 +62,8 @@ protected:
 	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
+	void renderLoop_Host(const Ogre::FrameEvent& evt);
+	void renderLoop_Client(const Ogre::FrameEvent& evt);
 	bool constructAndSendGameState(void);
 	bool updateClient(const Ogre::FrameEvent& evt);
 	void updateClientCamera(Ogre::Real elapseTime);
@@ -69,6 +71,7 @@ protected:
 	bool resetClientState(const Ogre::FrameEvent& evt, vector<MCP_Packet> &packList);
 	bool interpretClientPacket(MCP_Packet pack);
 	bool interpretServerPacket(MCP_Packet pack);
+	void updateRemovedTiles(void);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
