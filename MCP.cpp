@@ -808,47 +808,47 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
         else
             hostPlayer->toggleState(Forward, true);
     }
-    else if (typeInput == 'a')                                       // Left
+    if (typeInput == 'a')                                       // Left
     {
         if (hostPlayer->checkState(Left))
             hostPlayer->toggleState(Left, false);
         else
             hostPlayer->toggleState(Left, true);
     }
-    else if (typeInput == 's')                                       // Backwards
+    if (typeInput == 's')                                       // Backwards
     {
         if (hostPlayer->checkState(Back))
             hostPlayer->toggleState(Back, false);
         else
             hostPlayer->toggleState(Back, true);
     }
-    else if (typeInput == 'd')                                       // Right
+    if (typeInput == 'd')                                       // Right
     {
         if (hostPlayer->checkState(Right))
             hostPlayer->toggleState(Right, false);
         else
             hostPlayer->toggleState(Right, true);
     }
-    else if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
+    if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
     {
         clientPlayer->performJump();
     }
-    else if (typeInput == 'v')                                       // View Mode Toggle
+    if (typeInput == 'v')                                       // View Mode Toggle
     {
         clientVKeyDown = !clientVKeyDown;
     }
-    else if (typeInput == 'b')                                       // speed boost
+    if (typeInput == 'b')                                       // speed boost
     {
         if (hostPlayer->checkState(Boost))
             hostPlayer->toggleState(Boost, false);
         else
             hostPlayer->toggleState(Boost, true);
     }
-    else if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
+    if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
     {
         gameSimulator->setThrowFlag();
     }
-    else if (typeInput == 'o')
+    if (typeInput == 'o')
     {
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
 
@@ -876,17 +876,17 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         clientGameStart = true;
     }
 
-    else if (pack.id == 'h')
+    if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
         hostPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
     }
-    else if (pack.id == 'c')   
+    if (pack.id == 'c')   
     {
         clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
        // clientPlayer->getSceneNode()->_setDerivedOrientation(newQuat);
     }
-    else if (pack.id == 'd')
+    if (pack.id == 'd')
     {
         if (gameDisk == NULL)
         {
