@@ -732,7 +732,14 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         packList.push_back(pack);
         result = true;
     }
-
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientVKeyDown && clientPlayer->checkHolding())
+    {
+        pack.id = 't';
+        packList.push_back(pack);
+        result = true;
+        clientPlayer->setHolding();
+        // clientVKeyDown = false;
+    }
     if (resetClientState(evt, packList) || result)
     {
         pack.id = 'n';
@@ -756,41 +763,42 @@ bool MCP::resetClientState(const Ogre::FrameEvent& evt, vector<MCP_Packet> &pack
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
+    if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
     {
         clientPlayer->toggleState(Left, false);
         pack.id = 'a';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
+    if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
     {
         clientPlayer->toggleState(Back, false);
         pack.id = 's';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
+    if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
     {   
         clientPlayer->toggleState(Right, false);
         pack.id = 'd';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
+    if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
     {
         clientPlayer->toggleState(Jump, false);
         pack.id = 'j';
         packList.push_back(pack);
         result = true;
     }   
-    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
+    if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
     {
         clientPlayer->toggleState(Boost, false);
         pack.id = 'b';
         packList.push_back(pack);
         result = true;
     }
+
     return result;
 }
 //-------------------------------------------------------------------------------------
@@ -875,7 +883,10 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     {
         clientGameStart = true;
     }
-
+    if (pack.id == 't' && !clientPlayer->checkHolding())
+    {
+        clientPlayer->setHolding();
+    }
     if (pack.id == 'h')
     {
         hostPlayer->getSceneNode()->_setDerivedPosition(newPos);
