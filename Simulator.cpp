@@ -363,7 +363,10 @@ void Simulator::performThrow(Player* p)
     else // Update position relative to the Player
     {
     	Ogre::Vector3 dpos;
-    	float newDiskZ = -p->getPlayerDimensions().z;
+    	float newDiskZ= -p->getPlayerDimensions().z;
+    	if(p->getGameObjectName() == "Player2")
+    			newDiskZ = p->getPlayerDimensions().z;
+
     	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
 		gameDisk->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
 
