@@ -56,6 +56,10 @@ void MCP::createScene(void)
     gameOver = false;
     vKeyDown = false;
     resetFlag = false;
+    stopPlayer1 = false;
+    player1Loss = false;
+    stopPlayer2 = false;
+    player2Loss = false;
     cViewModeToggle = false;    
     clientVKeyDown = false;
     mRotate = 0.1f;
@@ -167,6 +171,10 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(objectivePanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameOverWinPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
+    gameOverLossPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverLossPanel);    
     gameOver = false;
     score = 0;
     time(&initTime);     
@@ -201,6 +209,11 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(objectivePanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameOverWinPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
+    gameOverLossPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverLossPanel);   
+    
     gameOver = false;
     score = 0;
     time(&initTime);
@@ -238,6 +251,11 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(objectivePanel);
     gameOverPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gameOverWinPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
+    gameOverLossPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverLossPanel); 
+      
     gameOver = false;
     score = 0;
     time(&initTime);
@@ -251,6 +269,16 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
     static int count = 0;
     bool ret = BaseApplication::frameRenderingQueued(evt);
+    
+    if (hostPlayer != NULL && checkGameLoss(hostPlayer)) {
+        player1Loss = true;
+        gameOver = true;
+    }
+        
+    if (clientPlayer != NULL && checkGameLoss(clientPlayer)) {
+        player2Loss = true;
+        gameOver = true;
+    }
 
     if (mShutDown)
         return false;
@@ -272,14 +300,44 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mTrayMgr->removeWidgetFromTray(pauseLabel);
         gameOverPanel->hide();
         mTrayMgr->removeWidgetFromTray(gameOverPanel);          
+        gameOverWinPanel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverWinPanel);  
+        gameOverLossPanel->hide();
+        mTrayMgr->removeWidgetFromTray(gameOverLossPanel);  
     }
     else if(gameOver)
     {
-        gameOverPanel->show();
-        mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
-        gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
-        if (gameStart)
+        if (gameMode == 1) {
+            if (player1Loss) {
+                if (clientServerIdentifier == 0) {
+                    gameOverLossPanel->show();
+                    mTrayMgr->moveWidgetToTray(gameOverLossPanel, OgreBites::TL_CENTER);
+                }
+                else {
+                    gameOverWinPanel->show();
+                    mTrayMgr->moveWidgetToTray(gameOverWinPanel, OgreBites::TL_CENTER);
+                }
+            }
+            else if (player2Loss) {
+                if (clientServerIdentifier == 0) {
+                    gameOverWinPanel->show();
+                    mTrayMgr->moveWidgetToTray(gameOverWinPanel, OgreBites::TL_CENTER);
+                }
+                else {
+                    gameOverLossPanel->show();
+                    mTrayMgr->moveWidgetToTray(gameOverLossPanel, OgreBites::TL_CENTER);
+                }
+            }
+        }
+        else {
+            gameOverPanel->show();
+            mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
+            gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
+        }
+        if (gameStart && clientServerIdentifier == 0)
             gameOverScreen();
+        else if (gameStart && clientServerIdentifier == 1)
+            otherGameOverScreen();
         gameStart = false;
     }
     else // Game started
@@ -331,6 +389,12 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
                         timeSinceLastStateUpdate = 0.01f;
                     timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
                 }
+                
+                if (hostPlayer != NULL)
+                    restrictPlayerMovement(hostPlayer);
+                if (clientPlayer != NULL)
+                    restrictPlayerMovement(clientPlayer);
+                
                 if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
                 {
                     (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
@@ -452,7 +516,10 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             {
                 if(p->performJump())
                 {
-                    gameMusic->playMusic("Jump");
+                    if (p->jumpPowerActive)
+                        gameMusic->playMusic("SuperJump");
+                    else
+                        gameMusic->playMusic("Jump");
                     spacePressedLast = true;
                     gameSimulator->soundedJump = true;
                 }
@@ -465,11 +532,28 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
                 trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
                 btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
 
-                if (turboMode)
-                    p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                else
-                    p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                   
+                if (p->getGameObjectName() == "Player1") {
+                    if (!stopPlayer1) {
+                        if (turboMode)
+                            p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                        else
+                            p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                    }
+                    else {
+                        p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.5f));
+                    }
+                }
+                else if (p->getGameObjectName() == "Player2") {
+                    if (!stopPlayer2) {
+                        if (turboMode)
+                            p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                        else
+                            p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                    }
+                    else {
+                        p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), -0.5f));
+                    }
+                }   
             }
         }
     }
@@ -900,7 +984,8 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
             gameMusic->toggleMute();
             break;
         case OIS::KC_P:
-            togglePause();
+            if (gameMode == 0)
+                togglePause();
             break;
     }
     return true;
@@ -952,28 +1037,69 @@ void MCP::togglePause()
         objectivePanel->show();
         instructPanel->show();
         mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
-        mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_LEFT);
+        mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_TOP);
         gamePause = true;
         time(&pauseTime);
-    } 
+    }
+} 
+//-------------------------------------------------------------------------------------
+bool MCP::checkGameLoss(Player* p) {
+    Ogre::Vector3 pos = p->getSceneNode()->getPosition();
+    
+    if (pos.y < -40.0f)
+        return true;
+    return false;
 }
 //-------------------------------------------------------------------------------------
 void MCP::gameOverScreen() 
 {
     CEGUI::MouseCursor::getSingleton().show();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver/Sheet");
+    wmgr.destroyAllWindows();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver1/Sheet");
     
-    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/QuitButton");
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver1/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
-    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/RestartGameButton");
+    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver1/RestartGameButton");
     restart->setText("Restart Game");
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
-    CEGUI::Window *back = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver/BackButton");
+    CEGUI::Window *back = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver1/BackButton");
+    back->setText("Back to Main Menu");
+    back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+    
+    sheet->addChildWindow(quit);
+    sheet->addChildWindow(restart);
+    sheet->addChildWindow(back);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
+    
+    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
+    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
+    back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
+}
+//-------------------------------------------------------------------------------------
+void MCP::otherGameOverScreen() 
+{
+    CEGUI::MouseCursor::getSingleton().show();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver2/Sheet");
+    
+    CEGUI::Window *quit = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver2/QuitButton");
+    quit->setText("Quit Game");
+    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        
+    CEGUI::Window *restart = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver2/RestartGameButton");
+    restart->setText("Restart Game");
+    restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+    
+    CEGUI::Window *back = wmgr.createWindow("TaharezLook/Button", "TronGame/GameOver2/BackButton");
     back->setText("Back to Main Menu");
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
     back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
@@ -1116,7 +1242,7 @@ bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e)
     instructPanel->show();
     objectivePanel->show();
     mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
-    mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_LEFT);
+    mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_TOP);
     createMainMenu();
     return true;
 }
@@ -1165,13 +1291,21 @@ void MCP::restrictPlayerMovement(Player* p)
     Ogre::Vector3 pos = p->getSceneNode()->getPosition();
     Ogre::Vector3 dim = p->getPlayerDimensions();
 
-
     // Left/Right wall check
-    if ((pos.x + dim.x) >= gameRoom->getWidth()/2.0f || (pos.x + dim.x) <= -gameRoom->getWidth()/2.0f)
-        p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), p->getBody()->getLinearVelocity().getZ()));
+    //if ((pos.x + dim.x) >= gameRoom->getWidth()/2.0f || (pos.x + dim.x) <= -gameRoom->getWidth()/2.0f)
+        //p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), p->getBody()->getLinearVelocity().getZ()));
     // Gap and (Relative) Back wall check
-    if ((pos.z + dim.z) >= gameRoom->getHeight()/2.0f || (pos.z + dim.z) <= -gameRoom->getHeight()/2.0f)
-        p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), 0.0f));
+    //if ((pos.z + dim.z) >= gameRoom->getHeight()/2.0f || (pos.z + dim.z) <= -gameRoom->getHeight()/2.0f)
+        //p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), 0.0f));
+        
+    if (p->getGameObjectName() == "Player1" && (pos.z + dim.z) <= 7.0f)
+        stopPlayer1 = true;
+    else
+        stopPlayer1 = false;
+    if (p->getGameObjectName() == "Player2" && (pos.z + dim.z) >= -7.0f)
+        stopPlayer2 = true;
+    else
+        stopPlayer2 = false;
 }
 //-------------------------------------------------------------------------------------
 /*void MCP::showTrajectory(PlayerCamera* playCam)

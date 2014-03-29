@@ -450,7 +450,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
 			    if (gameDisk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(playerLastThrew)))
 			        restoreTile();
-                // play power up sound effect
+                gameMusic->playCollisionSound("Disk", "Target");
+                if (gameDisk->powerUp == "Speed")
+                    gameMusic->playMusic("SpeedUp");
 			}
 			else
 			{		    
@@ -542,10 +544,12 @@ void Simulator::restoreTile() {
     if (p1 != NULL && p1->getGameObjectName() == playerLastThrew && hostRemoveIndexes.size() > 0) {
         hostTileList[hostRemoveIndexes.back()]->addToSimulator();
         hostRemoveIndexes.pop_back();
+        gameMusic->playMusic("Restore");
     }
     else if (p2 != NULL && p2->getGameObjectName() == playerLastThrew && clientRemoveIndexes.size() > 0) {
         clientTileList[clientRemoveIndexes.back()]->addToSimulator();
         clientRemoveIndexes.pop_back();
+        gameMusic->playMusic("Restore");
     }
 }
 //-------------------------------------------------------------------------------------
@@ -582,5 +586,8 @@ void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeI
                 removeObject(tileList[index+6]->getGameObjectName());
             }
         }
+        gameMusic->playMusic("BigBlast");
     }
+    else
+        gameMusic->playMusic("Blast");
 }

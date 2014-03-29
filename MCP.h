@@ -75,7 +75,9 @@ protected:
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
 	void togglePause(void);
+	bool checkGameLoss(Player* p);
 	void gameOverScreen(void);
+	void otherGameOverScreen(void);
 	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
 	void initializeGUI(void);
 	void createMainMenu(void);
@@ -94,6 +96,10 @@ protected:
 	int gameMode;
 	int sceneRendered;
 	bool resetFlag;
+	bool stopPlayer1;
+	bool player1Loss;
+	bool stopPlayer2;
+	bool player2Loss;
 	Ogre::Real mMove; 			// Move Constant
 	float sprintFactor;	// Sprint Constant
 	bool clientGameStart;
