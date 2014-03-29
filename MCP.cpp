@@ -661,6 +661,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
 
     if (clientOrientationChange)
     {
+        clientOrientationChange = false;
         pack.id = 'o';
         pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
         packList.push_back(pack);
@@ -673,35 +674,35 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
     }
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(Forward))                              // Forward - implemented
     {
-        clientPlayer->toggleState(Forward);
+        clientPlayer->toggleState(Forward, true);
         pack.id = 'w';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
     {
-        clientPlayer->toggleState(Left);
+        clientPlayer->toggleState(Left, true);
         pack.id = 'a';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
     {
-        clientPlayer->toggleState(Back);
+        clientPlayer->toggleState(Back, true);
         pack.id = 's';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
     {
-        clientPlayer->toggleState(Right);
+        clientPlayer->toggleState(Right, true);
         pack.id = 'd';
         packList.push_back(pack);
         result = true;
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
     {
-        clientPlayer->toggleState(Jump);
+        clientPlayer->toggleState(Jump, true);
         pack.id = 'j';
         packList.push_back(pack);
         result = true;
@@ -726,7 +727,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
     }    
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
     {
-        clientPlayer->toggleState(Boost); 
+        clientPlayer->toggleState(Boost, true); 
         pack.id = 'b';
         packList.push_back(pack);
         result = true;
@@ -750,42 +751,42 @@ bool MCP::resetClientState(const Ogre::FrameEvent& evt, vector<MCP_Packet> &pack
 
     if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
     {
-        clientPlayer->toggleState(Forward);
+        clientPlayer->toggleState(Forward, false);
         pack.id = 'w';
         packList.push_back(pack);
         result = true;
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
     {
-        clientPlayer->toggleState(Left);
+        clientPlayer->toggleState(Left, false);
         pack.id = 'a';
         packList.push_back(pack);
         result = true;
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
     {
-        clientPlayer->toggleState(Back);
+        clientPlayer->toggleState(Back, false);
         pack.id = 's';
         packList.push_back(pack);
         result = true;
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
     {   
-        clientPlayer->toggleState(Right);
+        clientPlayer->toggleState(Right, false);
         pack.id = 'd';
         packList.push_back(pack);
         result = true;
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
     {
-        clientPlayer->toggleState(Jump);
+        clientPlayer->toggleState(Jump, false);
         pack.id = 'j';
         packList.push_back(pack);
         result = true;
     }   
     else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
     {
-        clientPlayer->toggleState(Boost);
+        clientPlayer->toggleState(Boost, false);
         pack.id = 'b';
         packList.push_back(pack);
         result = true;
@@ -801,21 +802,52 @@ bool MCP::interpretClientPacket(MCP_Packet pack)
 //    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
     
     if (typeInput == 'w')                                       // Forward
-        hostPlayer->toggleState(Forward);
+    {
+        if (hostPlayer->checkState(Forward))
+            hostPlayer->toggleState(Forward, false);
+        else
+            hostPlayer->toggleState(Forward, true);
+    }
     else if (typeInput == 'a')                                       // Left
-        hostPlayer->toggleState(Left);
+    {
+        if (hostPlayer->checkState(Left))
+            hostPlayer->toggleState(Left, false);
+        else
+            hostPlayer->toggleState(Left, true);
+    }
     else if (typeInput == 's')                                       // Backwards
-        hostPlayer->toggleState(Back);
+    {
+        if (hostPlayer->checkState(Back))
+            hostPlayer->toggleState(Back, false);
+        else
+            hostPlayer->toggleState(Back, true);
+    }
     else if (typeInput == 'd')                                       // Right
-        hostPlayer->toggleState(Right);
+    {
+        if (hostPlayer->checkState(Right))
+            hostPlayer->toggleState(Right, false);
+        else
+            hostPlayer->toggleState(Right, true);
+    }
     else if (typeInput == 'j' && !clientPlayer->groundConstantSet)   // Jump
+    {
         clientPlayer->performJump();
+    }
     else if (typeInput == 'v')                                       // View Mode Toggle
+    {
         clientVKeyDown = !clientVKeyDown;
+    }
     else if (typeInput == 'b')                                       // speed boost
-        hostPlayer->toggleState(Boost);
+    {
+        if (hostPlayer->checkState(Boost))
+            hostPlayer->toggleState(Boost, false);
+        else
+            hostPlayer->toggleState(Boost, true);
+    }
     else if (typeInput == 't' && clientPlayer->checkHolding())       // Player tried to throw
+    {
         gameSimulator->setThrowFlag();
+    }
     else if (typeInput == 'o')
     {
         clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
