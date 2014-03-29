@@ -82,12 +82,6 @@ void MCP::createSoloModeScene()
     (new Target("Target2", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
     (new Target("Target3", mSceneMgr, gameSimulator, Ogre::Vector3(1.0f, 0.01f, 1.0f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Target
 
-    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
-
-
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     //trajectory = mSceneMgr->createManualObject("Line");
     
@@ -117,6 +111,17 @@ void MCP::createMultiplayerModeScene_host()
     (new Player("Player1", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
     (new Player("Player2", mSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side"))->addToSimulator(); // Create Player 2
 
+    (new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+    (new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()))->addToSimulator(); // Create initial Power-up
+
+    Power = (Target*)gameSimulator->getGameObject("Power");
+    Speed = (Target*)gameSimulator->getGameObject("Speed");
+    JumpPower = (Target*)gameSimulator->getGameObject("Jump");
+    Restore = (Target*)gameSimulator->getGameObject("Restore");
+
+
     hostPlayer = (Player*)gameSimulator->getGameObject("Player1");
     clientPlayer = (Player*)gameSimulator->getGameObject("Player2");
 
@@ -140,6 +145,12 @@ void MCP::createMultiplayerModeScene_client()
 
     hostPlayer = new Player("Player1", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side");
     clientPlayer = new Player("Player2", mSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side");
+
+    Power = new Target("Power", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Speed = new Target("Speed", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    JumpPower = new Target("Jump", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+    Restore = new Target("Restore", mSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
+
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
 
@@ -595,6 +606,31 @@ bool MCP::constructAndSendGameState()
     pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
     packList.push_back(pack);
 
+    pack.id = 'P';
+    pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = Power->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = Power->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+    pack.id = 'S';
+    pack.x_coordinate = Speed->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = Speed->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = Speed->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+    pack.id = 'J';
+    pack.x_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+    pack.id = 'R';
+    pack.x_coordinate = Restore->getSceneNode()->_getDerivedPosition().x;
+    pack.y_coordinate = Restore->getSceneNode()->_getDerivedPosition().y;
+    pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
+    packList.push_back(pack);
+
+
     if (gameDisk != NULL)
     {
         pack.id = 'd';
@@ -756,35 +792,35 @@ bool MCP::resetClientState(const Ogre::FrameEvent& evt, vector<MCP_Packet> &pack
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
+    if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
     {
         clientPlayer->toggleState(Left, false);
         pack.id = 'a';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
+    if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
     {
         clientPlayer->toggleState(Back, false);
         pack.id = 's';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
+    if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
     {   
         clientPlayer->toggleState(Right, false);
         pack.id = 'd';
         packList.push_back(pack);
         result = true;
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
+    if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
     {
         clientPlayer->toggleState(Jump, false);
         pack.id = 'j';
         packList.push_back(pack);
         result = true;
     }   
-    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
+    if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
     {
         clientPlayer->toggleState(Boost, false);
         pack.id = 'b';
@@ -898,6 +934,24 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
         gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
         gameDisk->getSceneNode()->needUpdate();
     }
+
+    if(pack.id = 'P')
+    {
+        Power->getSceneNode()->_setDerivedPosition(newPos);
+    }
+    if(pack.id = 'S')
+    {
+        Speed->getSceneNode()->_setDerivedPosition(newPos);
+    }
+    if(pack.id = 'J')
+    {
+        JumpPower->getSceneNode()->_setDerivedPosition(newPos);
+    }
+    if(pack.id = 'R')
+    {
+        Restore->getSceneNode()->_setDerivedPosition(newPos);
+    }
+
 
     hostPlayer->getSceneNode()->needUpdate();
     clientPlayer->getSceneNode()->needUpdate();
