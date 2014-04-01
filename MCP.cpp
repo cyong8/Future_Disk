@@ -32,15 +32,13 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
-    initializeGUI();
-
     srand(time(0));
 
     gameMusic = new Music();    // Initialize Music
     gameMusic->playMusic("Start");
 
     hostPlayer = NULL;
-    clientPlayer = NULL;
+    clientPlayer = NULL;    // An array for more than 2 players
     gameDisk = NULL;
     gameSimulator = NULL;
     clientOrientationChange = false;
@@ -67,6 +65,8 @@ void MCP::createScene(void)
     mRotate = 0.1f;
     sceneRendered = 0;
     gameMode = 0;
+
+    initializeGUI();    
 }
 //-------------------------------------------------------------------------------------
 void MCP::createSoloModeScene()
@@ -74,6 +74,13 @@ void MCP::createSoloModeScene()
     gameSimulator = new Simulator(mSceneMgr, gameMusic);   // Initialize Simulator
 
     gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
+    
+    if (gameSimulator->getGameObject("host54") != NULL)
+    {
+        printf("\n\n*****TILE CHECK\n\n");
+
+        (gameSimulator->getGameObject("host54"))->getSceneNode()->setVisible(true);
+    }
 
     /********************  OBJECT CREATION  ********************/
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
@@ -171,12 +178,9 @@ void MCP::createMultiplayerModeScene_client()
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
-    gameMode = 0;
     CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
-    clientServerIdentifier = 0;
-    gameMusic->playMusic("Play");
 
     objectivePanel->hide();
     instructPanel->hide();
@@ -188,16 +192,20 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
     gameOverLossPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverLossPanel);    
-    gameOver = false;
-    score = 0;
     time(&initTime);     
-    
-    if (!resetFlag)
-        createSoloModeScene();
     scorePanel->show();
     mTrayMgr->moveWidgetToTray(scorePanel, OgreBites::TL_BOTTOMRIGHT);
-    
+
+    clientServerIdentifier = 0;
+    gameMusic->playMusic("Play");
+    gameOver = false;
     gameStart = true;
+    gameMode = 0;
+    score = 0;
+    
+    if (!resetFlag)
+        createSoloModeScene();    
+    
     resetFlag = true;
     return true;
 }
@@ -376,7 +384,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
             }
             else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
             {
-               renderLoop_Client(evt);
+                renderLoop_Client(evt);
             }     
         }
         else
@@ -1074,11 +1082,11 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     if (evt.state.Z.rel)
         sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
     
-    if (gameSimulator != NULL)
-    {
-        if (!gameSimulator->checkGameStart())
-            return false;
-    }
+    // if (gameSimulator != NULL)
+    // {
+    //     if (!gameSimulator->checkGameStart())
+    //         return false;
+    // }
 
     if (!gameStart || gamePause) // restrict movements before the game has started or during pause
         return false;

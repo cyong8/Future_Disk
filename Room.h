@@ -22,6 +22,7 @@ public:
 protected:
 	Ogre::Real width;
 	Ogre::Real height;
+	Ogre::Real heightScalingFactor;
 	Ogre::Real gapSize;
 	Ogre::Real floorLength;
 	Ogre::Real floorPosition;

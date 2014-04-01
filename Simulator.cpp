@@ -441,6 +441,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (((Target*)o)->checkHitFlag() == false)
 		{
+			printf("COLLIDED WITH TILE!\n\n\n");
+
 			// The 47.0f value is the x-width and y-height of the disk
 		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());

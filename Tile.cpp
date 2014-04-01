@@ -19,14 +19,3 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 
 	shape = new btBoxShape(btVector3(tile_dimensions.x/2.0f, tile_dimensions.y/2.0f, tile_dimensions.z/2.0f));
 }
-
-void Tile::markHit()
-{
-	hit = true;
-	this->rootNode->setVisible(false);
-}
-
-bool Tile::isHit()
-{
-	return hit;
-}

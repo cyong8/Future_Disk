@@ -6,9 +6,10 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	width = 30.0f;
 	height = 60.0f;
 	floorLength = 35.0f;
-	Ogre::Real heightScalingFactor = 3.0f/4.0f;
-	
+	heightScalingFactor = 3.0f/4.0f;
 	Ogre::Vector3 position;
+
+	gapSize = 10.0f;
 	Ogre::Plane plane;
 	plane.d = 0;
 
@@ -587,18 +588,6 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 		
 		
 	}
-
-	/* Plane for 2nd player Floor */
-/*	plane.normal = Ogre::Vector3::UNIT_Y;
-	position = Ogre::Vector3(0.0f, -(width*heightScalingFactor)/2.0f, height/2.0f + width/3.0f - floorLength/2.0f);
-	Ogre::MeshManager::getSingleton().createPlane("Floor2_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
-	width, floorLength, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Z);
-
-	if (ident == 0)
-		(new Wall("Floor2", "Floor2_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength)))->addToSimulator();
-	else 
-		new Wall("Floor2", "Floor2_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Y, position, Ogre::Vector3(width, 0.01f, floorLength));
-*/
 	/* Plane for Ceiling */
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Y;
 	position = Ogre::Vector3(0.0f, (width*heightScalingFactor)/2.0f, 0.0f);
