@@ -75,13 +75,6 @@ void MCP::createSoloModeScene()
 
     gameRoom = new Room(mSceneMgr, gameSimulator, clientServerIdentifier);
     
-    if (gameSimulator->getGameObject("host54") != NULL)
-    {
-        printf("\n\n*****TILE CHECK\n\n");
-
-        (gameSimulator->getGameObject("host54"))->getSceneNode()->setVisible(true);
-    }
-
     /********************  OBJECT CREATION  ********************/
     pCam = new PlayerCamera("P1Cam", mSceneMgr, mCamera); 
     gameSimulator->setCamera(pCam); 

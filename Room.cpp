@@ -7,9 +7,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	height = 60.0f;
 	floorLength = 35.0f;
 	heightScalingFactor = 3.0f/4.0f;
-	Ogre::Vector3 position;
 
-	gapSize = 10.0f;
+	gapSize = 0.0f;
 	Ogre::Plane plane;
 	plane.d = 0;
 
@@ -21,8 +20,9 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::Real posZ = -(gapSize/2.0 + floorLength - tileSize/2.0);
 
 	floorPosition = posY;
+	
 
-	if(ident == 0)
+/*	if(ident == 0)
 	{
 		// Row 1
 		position = Ogre::Vector3(-width/2 + tileSize/2, -(width*heightScalingFactor)/2.0f, -(gapSize/2.0 + floorLength + tileSize/2.0));
@@ -587,7 +587,7 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 		hTileList.push_back(t);
 		
 		
-	}
+	}*/
 	/* Plane for Ceiling */
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Y;
 	position = Ogre::Vector3(0.0f, (width*heightScalingFactor)/2.0f, 0.0f);
