@@ -13,14 +13,13 @@
 #include "Wall.h"
 #include "Target.h"
 
-#include <CEGUI/CEGUI.h>
-#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
-
 #include "Music.h"
 #include "Network.h"
+#include "GUI.h"
 
 class Simulator;
 class Music;
+class GUI;
 
 class MCP : public BaseApplication
 {
@@ -46,20 +45,24 @@ public:
 	Network* gameNetwork;
 	// MUSIC OBJECT
 	Music* gameMusic;
-	
-	CEGUI::OgreRenderer* mRenderer;
+	// GUI OBJECT
+    GUI* gui;	
+
 	//Ogre::ManualObject* trajectory;
 	MCP(void);
 	virtual ~MCP(void);
+	
+	// Methods for the GUI class to access
+	bool soloMode(const CEGUI::EventArgs &e);
+	bool hostGame(const CEGUI::EventArgs &e);
+	bool joinGame(const CEGUI::EventArgs &e);
+	bool quit(const CEGUI::EventArgs &e);
 
 protected:
 	virtual void createScene(void);
 	void createSoloModeScene(void);
 	void createMultiplayerModeScene_host(void);
 	void createMultiplayerModeScene_client(void);
-	bool soloMode(const CEGUI::EventArgs &e);
-	bool hostGame(const CEGUI::EventArgs &e);
-	bool joinGame(const CEGUI::EventArgs &e);
 	virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	virtual bool processUnbufferedInput(const Ogre::FrameEvent& evt);
 	void renderLoop_Host(const Ogre::FrameEvent& evt);
@@ -79,14 +82,7 @@ protected:
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
 	void togglePause(void);
 	bool checkGameLoss(Player* p);
-	void gameOverScreen(void);
-	void otherGameOverScreen(void);
-	bool createMultiplayerMenu(const CEGUI::EventArgs &e);
-	void initializeGUI(void);
-	void createMainMenu(void);
 	bool activateMainMenuSolo(const CEGUI::EventArgs &e);
-	bool quit(const CEGUI::EventArgs &e);
-	bool enterIPAddress(const CEGUI::EventArgs &e);
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement(Player* p);
 	void showTrajectory(PlayerCamera* playCam);

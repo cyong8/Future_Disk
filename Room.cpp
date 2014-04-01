@@ -9,7 +9,7 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	heightScalingFactor = 3.0f/4.0f;
 	Ogre::Vector3 position;
 
-	gapSize = 10.0f;
+	gapSize = 0.0f;
 	Ogre::Plane plane;
 	plane.d = 0;
 

@@ -66,7 +66,8 @@ void MCP::createScene(void)
     sceneRendered = 0;
     gameMode = 0;
 
-    initializeGUI();    
+    gui = new GUI(this); 
+    gui->createMainMenu(); 
 }
 //-------------------------------------------------------------------------------------
 void MCP::createSoloModeScene()
@@ -182,19 +183,15 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
 
-    objectivePanel->hide();
-    instructPanel->hide();
-    mTrayMgr->removeWidgetFromTray(instructPanel);
-    mTrayMgr->removeWidgetFromTray(objectivePanel);
-    gameOverPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameOverWinPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
-    gameOverLossPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverLossPanel);    
+    gui->removePanel(objectivePanel);
+    gui->removePanel(instructPanel);
+    gui->removePanel(gameOverPanel);
+    gui->removePanel(gameOverWinPanel);
+    gui->removePanel(gameOverLossPanel); 
+       
     time(&initTime);     
-    scorePanel->show();
-    mTrayMgr->moveWidgetToTray(scorePanel, OgreBites::TL_BOTTOMRIGHT);
+
+    gui->addPanel(scorePanel, OgreBites::TL_BOTTOMRIGHT);
 
     clientServerIdentifier = 0;
     gameMusic->playMusic("Play");
@@ -224,19 +221,13 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 
     gameMusic->playMusic("Play");
 
-    objectivePanel->hide();
-    instructPanel->hide();
-    powerUpPanel->hide();
-    mTrayMgr->removeWidgetFromTray(instructPanel);
-    mTrayMgr->removeWidgetFromTray(objectivePanel);
-    mTrayMgr->removeWidgetFromTray(powerUpPanel);
-    gameOverPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameOverWinPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
-    gameOverLossPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverLossPanel);   
-    
+    gui->removePanel(objectivePanel);
+    gui->removePanel(instructPanel);
+    gui->removePanel(powerUpPanel);
+    gui->removePanel(gameOverPanel);
+    gui->removePanel(gameOverWinPanel);
+    gui->removePanel(gameOverLossPanel);
+
     gameOver = false;
     score = 0;
     time(&initTime);
@@ -268,18 +259,12 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
 
     gameMusic->playMusic("Play");
 
-    objectivePanel->hide();
-    instructPanel->hide();
-    powerUpPanel->hide();
-    mTrayMgr->removeWidgetFromTray(instructPanel);
-    mTrayMgr->removeWidgetFromTray(objectivePanel);
-    mTrayMgr->removeWidgetFromTray(powerUpPanel);
-    gameOverPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverPanel);
-    gameOverWinPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
-    gameOverLossPanel->hide();
-    mTrayMgr->removeWidgetFromTray(gameOverLossPanel); 
+    gui->removePanel(objectivePanel);
+    gui->removePanel(instructPanel);
+    gui->removePanel(powerUpPanel);
+    gui->removePanel(gameOverPanel);
+    gui->removePanel(gameOverWinPanel);
+    gui->removePanel(gameOverLossPanel);
       
     gameOver = false;
     score = 0;
@@ -321,48 +306,39 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
     if(!gameStart && !gameOver) // Game not started
     {
-        pauseLabel->hide();
-        mTrayMgr->removeWidgetFromTray(pauseLabel);
-        gameOverPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverPanel);          
-        gameOverWinPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverWinPanel);  
-        gameOverLossPanel->hide();
-        mTrayMgr->removeWidgetFromTray(gameOverLossPanel);  
+        gui->removeLabel(pauseLabel);
+        gui->removePanel(gameOverPanel);
+        gui->removePanel(gameOverWinPanel);
+        gui->removePanel(gameOverLossPanel); 
     }
     else if(gameOver)
     {
         if (gameMode == 1) {
             if (player1Loss) {
                 if (clientServerIdentifier == 0) {
-                    gameOverLossPanel->show();
-                    mTrayMgr->moveWidgetToTray(gameOverLossPanel, OgreBites::TL_CENTER);
+                    gui->addPanel(gameOverLossPanel, OgreBites::TL_CENTER);
                 }
                 else {
-                    gameOverWinPanel->show();
-                    mTrayMgr->moveWidgetToTray(gameOverWinPanel, OgreBites::TL_CENTER);
+                    gui->addPanel(gameOverWinPanel, OgreBites::TL_CENTER);
                 }
             }
             else if (player2Loss) {
                 if (clientServerIdentifier == 0) {
-                    gameOverWinPanel->show();
-                    mTrayMgr->moveWidgetToTray(gameOverWinPanel, OgreBites::TL_CENTER);
+                    gui->addPanel(gameOverWinPanel, OgreBites::TL_CENTER);
                 }
                 else {
-                    gameOverLossPanel->show();
-                    mTrayMgr->moveWidgetToTray(gameOverLossPanel, OgreBites::TL_CENTER);
+                    gui->addPanel(gameOverLossPanel, OgreBites::TL_CENTER);
                 }
             }
         }
         else {
-            gameOverPanel->show();
-            mTrayMgr->moveWidgetToTray(gameOverPanel, OgreBites::TL_CENTER);
+            gui->addPanel(gameOverPanel, OgreBites::TL_CENTER);
             gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
         }
         if (gameStart && clientServerIdentifier == 0)
-            gameOverScreen();
+            gui->gameOverScreen();
         else if (gameStart && clientServerIdentifier == 1)
-            otherGameOverScreen();
+            gui->otherGameOverScreen();
         gameStart = false;
     }
     else // Game started
@@ -1196,45 +1172,23 @@ bool MCP::keyReleased(const OIS::KeyEvent &evt)
 //-------------------------------------------------------------------------------------
 void MCP::togglePause()
 {
+    gui->pauseMenu(gamePause);
+    
     if (gamePause == true)  //leaving pause
-    {
-        CEGUI::MouseCursor::getSingleton().hide();
-        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-        wmgr.destroyAllWindows();
-        
+    {        
         gameMusic->playMusic("Play");
         gamePause = false;
-        pauseLabel->hide();
-        mTrayMgr->removeWidgetFromTray(pauseLabel);
-        objectivePanel->hide();
-        instructPanel->hide();
-        mTrayMgr->removeWidgetFromTray(instructPanel);
-        mTrayMgr->removeWidgetFromTray(objectivePanel);
+        gui->removeLabel(pauseLabel);
+        gui->removePanel(objectivePanel);
+        gui->removePanel(instructPanel);
     }
     else //entering Pause
-    {
-        CEGUI::MouseCursor::getSingleton().show();
-        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-        CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Pause/Sheet");
-        
-        CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/QuitButton");
-        quit->setText("Quit Game");
-        quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-        
-        sheet->addChildWindow(quit);
-        
-        CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-        quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-        
+    {        
         gameMusic->playMusic("Start");
         pauseLabel->setCaption("GAME PAUSED!");
-        pauseLabel->show();
-        mTrayMgr->moveWidgetToTray(pauseLabel, OgreBites::TL_CENTER);
-        objectivePanel->show();
-        instructPanel->show();
-        mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
-        mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_TOP);
+        gui->addLabel(pauseLabel, OgreBites::TL_CENTER);
+        gui->addPanel(objectivePanel, OgreBites::TL_TOP);
+        gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
         gamePause = true;
         time(&pauseTime);
     }
@@ -1247,200 +1201,16 @@ bool MCP::checkGameLoss(Player* p) {
         return true;
     return false;
 }
-//-------------------------------------------------------------------------------------
-void MCP::gameOverScreen() 
-{
-    CEGUI::MouseCursor::getSingleton().show();
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver1/Sheet");
-    
-    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-        
-    /*CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/RestartGameButton");
-    restart->setText("Restart Game");
-    restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
-    
-    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
-    back->setText("Back to Main Menu");
-    back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));*/
-    
-    sheet->addChildWindow(quit);
-    //sheet->addChildWindow(restart);
-    //sheet->addChildWindow(back);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    //restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
-    //back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
-}
-//-------------------------------------------------------------------------------------
-void MCP::otherGameOverScreen() 
-{
-    CEGUI::MouseCursor::getSingleton().show();
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver2/Sheet");
-    
-    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver2/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-        
-    /*CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver2/RestartGameButton");
-    restart->setText("Restart Game");
-    restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
-    
-    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver2/BackButton");
-    back->setText("Back to Main Menu");
-    back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));*/
-    
-    sheet->addChildWindow(quit);
-    //sheet->addChildWindow(restart);
-    //sheet->addChildWindow(back);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    //restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
-    //back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
-}
-//-------------------------------------------------------------------------------------
-bool MCP::createMultiplayerMenu(const CEGUI::EventArgs &e)
-{
-    powerUpPanel->show();
-    mTrayMgr->moveWidgetToTray(powerUpPanel, OgreBites::TL_BOTTOMLEFT);
-
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MultiplayerMenu/Sheet");
-    
-    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    
-    CEGUI::Window *host = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/HostButton");
-    host->setText("Host a game");
-    host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
-    
-    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/JoinButton");
-    join->setText("Join a game");
-    join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
-    
-    sheet->addChildWindow(quit);
-    sheet->addChildWindow(host);
-    sheet->addChildWindow(join);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, this));
-    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::enterIPAddress, this));
-}
-//-------------------------------------------------------------------------------------
-bool MCP::enterIPAddress(const CEGUI::EventArgs &e)
-{
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/ClientMenu/Sheet");
-    sheet->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
-    
-    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    quit->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
-    
-    CEGUI::Window *ip = wmgr.createWindow("OgreTray/Editbox", "TronGame/ClientMenu/IPEditbox");
-    ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    ip->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
-    ip->setUserString("TronGame/ClientMenu/IPEditbox", "TronGame/ClientMenu/IPEditbox");
-    
-    CEGUI::Window *enter = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/EnterButton");
-    enter->setText("Enter");
-    enter->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    enter->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
-    enter->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
-    
-    sheet->addChildWindow(quit);
-    sheet->addChildWindow(ip);
-    sheet->addChildWindow(enter);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    enter->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, this));
-}
-//-------------------------------------------------------------------------------------
-void MCP::initializeGUI()
-{
-    mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
-    
-    CEGUI::Imageset::setDefaultResourceGroup("Imagesets");
-    CEGUI::Font::setDefaultResourceGroup("Fonts");
-    CEGUI::Scheme::setDefaultResourceGroup("Schemes");
-    CEGUI::WidgetLookManager::setDefaultResourceGroup("LookNFeel");
-    CEGUI::WindowManager::setDefaultResourceGroup("Layouts");
-    
-    CEGUI::SchemeManager::getSingleton().create("OgreTray.scheme");
-    CEGUI::System::getSingleton().setDefaultMouseCursor("OgreTrayImages", "MouseArrow");
-    CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(mWindow->getWidth()/2, mWindow->getHeight()/2));
-    
-    createMainMenu();
-}
-//------------------------------------------------------------------------------------
-void MCP::createMainMenu() 
-{           
-    CEGUI::MouseCursor::getSingleton().show();
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
-    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/MainMenu/Sheet");
- 
-    CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/QuitButton");
-    quit->setText("Quit Game");
-    quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-        
-    CEGUI::Window *singlePlayerStart = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/SinglePlayerStartButton");
-    singlePlayerStart->setText("Solo Mode");
-    singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
-    
-    CEGUI::Window *multiplayerStart = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/MultiplayerStartButton");
-    multiplayerStart->setText("Multiplayer");
-    multiplayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    multiplayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
-    
-    sheet->addChildWindow(quit);
-    sheet->addChildWindow(singlePlayerStart);
-    sheet->addChildWindow(multiplayerStart);
-    
-    CEGUI::System::getSingleton().setGUISheet(sheet);
-    
-    quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, this));
-    singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
-    multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::createMultiplayerMenu, this));
-}
 //-----------------------------------------------------------------------------------
 bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e) 
 {   
-    scorePanel->hide();
-    mTrayMgr->removeWidgetFromTray(scorePanel);
-    //gameOverPanel->hide();
-    //mTrayMgr->removeWidgetFromTray(gameOverPanel);
+    gui->removePanel(scorePanel);
+    //gui->removePanel(gameOverPanel);
     gameOver = false;
     
-    instructPanel->show();
-    objectivePanel->show();
-    mTrayMgr->moveWidgetToTray(instructPanel, OgreBites::TL_RIGHT);
-    mTrayMgr->moveWidgetToTray(objectivePanel, OgreBites::TL_TOP);
-    createMainMenu();
+    gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
+    gui->addPanel(objectivePanel, OgreBites::TL_TOP);
+    gui->createMainMenu();
     return true;
 }
 //-------------------------------------------------------------------------------------
