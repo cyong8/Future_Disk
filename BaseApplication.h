@@ -43,6 +43,9 @@ This source file is part of the
 #include <assert.h>
 #include <time.h>
 
+#include <CEGUI/CEGUI.h>
+#include <CEGUI/RendererModules/Ogre/CEGUIOgreRenderer.h>
+
 using namespace std;
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS
@@ -69,6 +72,10 @@ public:
 
     // Ogre::FrameListener
     virtual bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+    
+    virtual OgreBites::SdkTrayManager* getTrayManager(void);
+    virtual Ogre::RenderWindow* getRenderWindow(void);
+    virtual OgreBites::ParamsPanel* getPowerUpPanel(void);
 
 protected:
     virtual bool setup();

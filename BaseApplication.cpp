@@ -440,6 +440,7 @@ void BaseApplication::windowResized(Ogre::RenderWindow* rw)
     ms.width = width;
     ms.height = height;
 }
+
 //Unattach OIS before window shutdown (very important under Linux)
 void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
 {
@@ -456,6 +457,7 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
         }
     }
 }
+
 bool BaseApplication::updateTimer(time_t currTime)
 {
     double secondsElapsed = difftime(currTime, initTime);
@@ -484,14 +486,31 @@ bool BaseApplication::updateTimer(time_t currTime)
         return true;
     return false;
 }
+
 void BaseApplication::updatePauseTime(time_t currTime)
 {
     pTimePassed = difftime(currTime, pauseTime);
 }
+
 void BaseApplication::modifyScore(int num)
 {
     score += num;
     if(score<=0)
         score = 0;
     scorePanel->setParamValue(0,Ogre::StringConverter::toString(score));
+}
+
+OgreBites::SdkTrayManager* BaseApplication::getTrayManager(void)
+{
+    return mTrayMgr;
+}
+
+Ogre::RenderWindow* BaseApplication::getRenderWindow(void)
+{
+    return mWindow;
+}
+
+OgreBites::ParamsPanel* BaseApplication::getPowerUpPanel(void)
+{
+    return powerUpPanel;
 }
