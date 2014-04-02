@@ -23,7 +23,13 @@ protected:
 	Ogre::Real width;
 	Ogre::Real height;
 	Ogre::Real heightScalingFactor;
+	
 	Ogre::Real gapSize;
+	Ogre::Real tileSize;
+	Ogre::Real tilesPerRow;
+	Ogre::Real tilesPerCol;
+	Ogre::Real tilesPerPlayer;
+	
 	Ogre::Real floorLength;
 	Ogre::Real floorPosition;
 };

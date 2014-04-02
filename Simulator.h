@@ -73,14 +73,15 @@ class Simulator
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
-		void restoreTile();
+		void restoreTile(void);
 		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);
+		GameObject* objListCheck(int index);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
 		vector<GameObject*> hostTileList;
-		vector<int> hostRemoveIndexes;
 		vector<GameObject*> clientTileList;
+		vector<int> hostRemoveIndexes;
 		vector<int> clientRemoveIndexes;
 		bool newRemovedTile;
 };

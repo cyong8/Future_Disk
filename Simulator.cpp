@@ -597,3 +597,7 @@ void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeI
     else
         gameMusic->playMusic("Blast");
 }
+GameObject* Simulator::objListCheck(int index)
+{
+	return objList[index];
+}
