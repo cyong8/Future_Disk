@@ -14,7 +14,7 @@
 #include "Target.h"
 
 #include "Music.h"
-#include "Network.h"
+#include "Network.h" // Remove when client/server fully implemented
 #include "GUI.h"
 
 class Simulator;
@@ -57,6 +57,9 @@ public:
 	bool hostGame(const CEGUI::EventArgs &e);
 	bool joinGame(const CEGUI::EventArgs &e);
 	bool quit(const CEGUI::EventArgs &e);
+	Ogre::SceneManager* getSceneManager(void);
+	Music* getMusicObject(void);
+
 
 protected:
 	virtual void createScene(void);
@@ -97,6 +100,11 @@ protected:
 	Target *Speed;
 	Target *JumpPower;
 	Target *Restore;
+
+	time_t gapStartTime;
+	// clock_t gapStartClock;
+	time_t gapEndTime;
+	// clock_t gapEndClock;
 
 	int gameMode;
 	int sceneRendered;

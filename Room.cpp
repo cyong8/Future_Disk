@@ -3,6 +3,7 @@
 
 Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 {
+	Wall* w;
 	char cTileNameBuffer[100];
 	char hTileNameBuffer[100];
 
@@ -36,6 +37,36 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 
 	floorPosition = tilePosY;
 	int arrayIndex = 0;	
+
+	/* Gap Box to restrict Player movement */ // use _getWorldAABB
+		// Client Gap
+	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
+	position = Ogre::Vector3(0.0f, 0.0f, -(gapSize/2.0f));
+	Ogre::MeshManager::getSingleton().createPlane("ClientGapPlane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	width, width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
+	
+	clientGapNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("ClientGap");
+	Ogre::Entity* cgEnt = mSceneMgr->createEntity("ClientGapEntity", "ClientGapPlane");
+	clientGapNode->attachObject(cgEnt);
+	cgEnt->setMaterialName("Examples/SpaceSkyPlane");
+	cgEnt->setCastShadows(false);
+	clientGapNode->setPosition(position);
+	clientGapNode->setVisible(false);
+	
+		// Host Gap
+	plane.normal = Ogre::Vector3::UNIT_Z;
+	position = Ogre::Vector3(0.0f, 0.0f, (gapSize/2.0f));
+	Ogre::MeshManager::getSingleton().createPlane("HostGapPlane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+	width, width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
+
+	hostGapNode = mSceneMgr->getRootSceneNode()->createChildSceneNode("HostGap");
+	Ogre::Entity* hgEnt = mSceneMgr->createEntity("HostGapEntity", "HostGapPlane");
+	hostGapNode->attachObject(hgEnt);
+	hgEnt->setMaterialName("Examples/SpaceSkyPlane");
+	hgEnt->setCastShadows(false);
+	hostGapNode->setPosition(position);
+	hostGapNode->setVisible(false);
+
 	/* Tiles of Floor */
 	for (int row = 0; row < tilesPerRow; row++)	// change the Z
 	{
@@ -57,7 +88,6 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 					arrayIndex++;
 				}
 		}
-
 		cTilePosition = Ogre::Vector3(tilePosX, tilePosY, cTilePosition.z + tileSize);
 		hTilePosition = Ogre::Vector3(tilePosX, tilePosY, hTilePosition.z - tileSize);
 	}
@@ -68,10 +98,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("Ceiling_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	width, height + width, 20, 20, true, 1, width/4.0f, height/4.0f, Ogre::Vector3::UNIT_Z);
 
-	if (ident == 0)
-		(new Wall("Ceiling", "Ceiling_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Y, position, Ogre::Vector3(width, 0.01f, height + width)))->addToSimulator();
-	else 
-		new Wall("Ceiling", "Ceiling_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Y, position, Ogre::Vector3(width, 0.01f, height + width));
+	w = new Wall("Ceiling", "Ceiling_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Y, position, Ogre::Vector3(width, 0.01f, height + width));
+	wallList.push_back(w);
 
 	/* Plane for LeftWall */
 	plane.normal = Ogre::Vector3::UNIT_X;
@@ -79,10 +107,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("LeftWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	height, width*heightScalingFactor, 20, 20, true, 1, height/4, width/4, Ogre::Vector3::UNIT_Y);
 
-	if (ident == 0)
-		(new Wall("LeftWall", "LeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_X, position, Ogre::Vector3(0.01f, width*heightScalingFactor, height)))->addToSimulator();
-	else
-		new Wall("LeftWall", "LeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_X, position, Ogre::Vector3(0.01f, width*heightScalingFactor, height));
+	w = new Wall("LeftWall", "LeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_X, position, Ogre::Vector3(0.01f, width*heightScalingFactor, height));
+	wallList.push_back(w);
 
 	/* Plane for RightWall */
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_X;
@@ -90,10 +116,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("RightWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	height, width*heightScalingFactor, 20, 20, true, 1, height/4, width/4, Ogre::Vector3::UNIT_Y);
 
-	if (ident == 0)
-		(new Wall("RightWall", "RightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_X, position, Ogre::Vector3(0.01f, width*heightScalingFactor, height)))->addToSimulator();
-	else 
-		new Wall("RightWall", "RightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_X, position, Ogre::Vector3(0.01f, width*heightScalingFactor, height));
+	w = new Wall("RightWall", "RightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_X, position, Ogre::Vector3(0.01f, width*heightScalingFactor, height));
+	wallList.push_back(w);
 
 // Front and Back Divisions
 	/* Plane for FarWall */
@@ -102,10 +126,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("FarWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	width/3, width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
 
-	if (ident == 0)
-		(new Wall("FarWall", "FarWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Z, position, Ogre::Vector3(width/3, width*heightScalingFactor, 0.01f)))->addToSimulator();
-	else 
-		new Wall("FarWall", "FarWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Z, position, Ogre::Vector3(width/3, width*heightScalingFactor, 0.01f));
+	w = new Wall("FarWall", "FarWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::UNIT_Z, position, Ogre::Vector3(width/3, width*heightScalingFactor, 0.01f));
+	wallList.push_back(w);
 
 	/* Plane for NearWall */
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
@@ -113,10 +135,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("NearWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	width/3, width*heightScalingFactor, 20, 20, true, 1, width/4, width/4, Ogre::Vector3::UNIT_Y);
 
-	if (ident == 0)
-		(new Wall("NearWall", "NearWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Z, position, Ogre::Vector3(width/3, width*heightScalingFactor, 0.01f)))->addToSimulator();
-	else
-		new Wall("NearWall", "NearWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Z, position, Ogre::Vector3(width/3, width*heightScalingFactor, 0.01f));
+	w = new Wall("NearWall", "NearWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3::NEGATIVE_UNIT_Z, position, Ogre::Vector3(width/3, width*heightScalingFactor, 0.01f));
+	wallList.push_back(w);
 
 	// Plane for FarLeftWall 
 	plane.normal = Ogre::Vector3::UNIT_Z;
@@ -124,10 +144,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("FarLeftWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	fnSideWidth, width*heightScalingFactor, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
-	if (ident == 0)
-		(new Wall("FarLeftWall", "FarLeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, 1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f)))->addToSimulator();
-	else 
-		new Wall("FarLeftWall", "FarLeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, 1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	w = new Wall("FarLeftWall", "FarLeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, 1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	wallList.push_back(w);	
 
 	// Plane for FarRightWall 
 	plane.normal = Ogre::Vector3::UNIT_Z;
@@ -135,20 +153,18 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("FarRightWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	fnSideWidth, width*heightScalingFactor, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
-	if (ident == 0)
-		(new Wall("FarRightWall", "FarRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f)))->addToSimulator();
-	else 
-		new Wall("FarRightWall", "FarRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	w = new Wall("FarRightWall", "FarRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, 1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	wallList.push_back(w);	
+
 	// Plane for NearLeftWall 
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
 	position = Ogre::Vector3(-width/3.0f, 0.0f, height/2.0f + width/6.0f); // change the x value (more left)
 	Ogre::MeshManager::getSingleton().createPlane("NearLeftWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	fnSideWidth, width*heightScalingFactor, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 	
-	if (ident == 0)
-		(new Wall("NearLeftWall", "NearLeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f)))->addToSimulator();
-	else 
-		new Wall("NearLeftWall", "NearLeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	
+	w = new Wall("NearLeftWall", "NearLeftWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	wallList.push_back(w);
 
 	// Plane for NearRightWall 
 	plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
@@ -156,10 +172,14 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	Ogre::MeshManager::getSingleton().createPlane("NearRightWall_Plane", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
 	fnSideWidth, width*heightScalingFactor, 20, 20, true, 1, 5, 5, Ogre::Vector3::UNIT_Y);
 
+	w = new Wall("NearRightWall", "NearRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	wallList.push_back(w);
+
 	if (ident == 0)
-		(new Wall("NearRightWall", "NearRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f)))->addToSimulator();
-	else
-		new Wall("NearRightWall", "NearRightWall_Plane", mSceneMgr, game_simulator, Ogre::Vector3(-1.0f, 0.0f, -1.0f), position, Ogre::Vector3(fnSideWidth, width*heightScalingFactor, 0.01f));
+	{
+		for (int i = 0; i < wallList.size(); i++)
+			wallList[i]->addToSimulator();	
+	}
 }
 //-------------------------------------------------------------------------------------
 Ogre::Real Room::getWidth()
@@ -172,16 +192,31 @@ Ogre::Real Room::getHeight()
 	return height;
 }
 //-------------------------------------------------------------------------------------
-Ogre::Real Room::getFloorLength()
+Ogre::Real Room::getGapSize()
 {
-	return floorLength;
+	return gapSize;
 }
 //-------------------------------------------------------------------------------------
 Ogre::Vector3 Room::getBounds()
 {
 	return Ogre::Vector3(width, height, floorLength);
 }
+//-------------------------------------------------------------------------------------
 Ogre::Real Room::getFloorPositionY()
 {
 	return floorPosition;
+}
+//-------------------------------------------------------------------------------------
+Ogre::SceneNode* Room::getClientGapSceneNode()
+{
+	return clientGapNode;
+}
+//-------------------------------------------------------------------------------------
+Ogre::SceneNode* Room::getHostGapSceneNode()
+{
+	return hostGapNode;
+}
+Wall* Room::getWall(int index)
+{
+	return wallList[index];
 }

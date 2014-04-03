@@ -358,7 +358,7 @@ void Simulator::performThrow(Player* p)
 			playerLastThrew = p->getGameObjectName();
 		}
 
-    	p->setHolding();
+    	p->setHolding(false);
     }
     else // Update position relative to the Player
     {

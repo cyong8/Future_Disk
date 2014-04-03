@@ -4,6 +4,19 @@
 #include "Wall.h"
 #include "Tile.h"
 
+enum wallIndex
+{
+	Ceiling, 
+	LeftWall, 
+	RightWall, 
+	FarWall, 
+	NearWall, 
+	FarLeftWall, 
+	FarRightWall, 
+	NearLeftWall, 
+	NearRightWall
+};
+
 class Wall;
 
 class Tile;
@@ -15,11 +28,18 @@ public:
 	Ogre::Vector3 getBounds(void);
 	Ogre::Real getWidth(void);
 	Ogre::Real getHeight(void);
-	Ogre::Real getFloorLength(void);
+	Ogre::Real getGapSize(void);
 	Ogre::Real getFloorPositionY(void);
+	Ogre::SceneNode* getClientGapSceneNode(void);
+	Ogre::SceneNode* getHostGapSceneNode(void);
+	Wall* getWall(int index);
+
 	vector<Tile*> cTileList;
 	vector<Tile*> hTileList;
+	vector<Wall*> wallList;
 protected:
+	Ogre::SceneNode* clientGapNode;
+	Ogre::SceneNode* hostGapNode;
 	Ogre::Real width;
 	Ogre::Real height;
 	Ogre::Real heightScalingFactor;
@@ -32,6 +52,7 @@ protected:
 	
 	Ogre::Real floorLength;
 	Ogre::Real floorPosition;
+
 };
 
 #endif // #ifndef __Room_h_

@@ -13,7 +13,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	playerSide = side;
 	jumpTimer = 0;
 	jumpPowerActive = false;
-
+	movementRestricted = false;
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
 	
@@ -69,6 +69,20 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 }
 //-------------------------------------------------------------------------------------
+void Player::setHolding(bool x)
+{
+	isHolding = x;
+}
+//-------------------------------------------------------------------------------------
+bool Player::checkHolding()
+{
+	return isHolding;
+}
+//-------------------------------------------------------------------------------------
+void Player::throwDisk()
+{
+}
+//-------------------------------------------------------------------------------------
 void Player::attachDisk(Disk* d)
 {
 	isHolding = true;
@@ -79,18 +93,19 @@ void Player::attachDisk(Disk* d)
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 }
 //-------------------------------------------------------------------------------------
-void Player::setHolding()
+Ogre::String Player::getPlayerSide()
 {
-	isHolding = !isHolding;
+	return playerSide;
 }
 //-------------------------------------------------------------------------------------
-bool Player::checkHolding()
+void Player::setMovementRestriction(bool x)
 {
-	return isHolding;
+	movementRestricted = x;
 }
 //-------------------------------------------------------------------------------------
-void Player::throwDisk()
+bool Player::checkMovementRestriction()
 {
+	return movementRestricted;
 }
 //-------------------------------------------------------------------------------------
 Disk* Player::getPlayerDisk()

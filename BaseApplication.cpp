@@ -306,7 +306,6 @@ bool BaseApplication::setup(void)
     // Load resources
     loadResources();
 
-
     // Create the scene
     createScene();
 

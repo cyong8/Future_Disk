@@ -12,10 +12,13 @@ class Player : public GameObject
 public:
 	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition, Ogre::String side);
 
-	void setHolding(void); // Set whether the player is holding the disk
+	void setHolding(bool x); // Set whether the player is holding the disk
 	bool checkHolding(void); // Check if the player is holding the disk
 	void throwDisk(void); // Throw the disk in a particular direction
 	void attachDisk(Disk* d); // Attach the disk to the player
+	Ogre::String getPlayerSide(void);
+	void setMovementRestriction(bool x);
+	bool checkMovementRestriction(void);
 
 	Disk* getPlayerDisk(void); // Get the disk that the player is holding
 	Ogre::SceneNode* getPlayerSightNode(void); // Get the scene node where the player is looking
@@ -38,7 +41,7 @@ public:
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
-	bool isHolding;		
+
 
 protected:
 	vector<bool> states;
@@ -49,6 +52,8 @@ protected:
 	Ogre::Real groundY;
 	Ogre::Real prevGroundY;
 	Ogre::String playerSide;
+	bool isHolding;
+	bool movementRestricted;		
 };
 
 #endif // #ifndef __Player_h_

@@ -32,6 +32,9 @@ MCP::~MCP(void)
 //-------------------------------------------------------------------------------------
 void MCP::createScene(void)
 {
+    time(&gapStartTime);
+    time(&gapEndTime);
+    
     srand(time(0));
 
     gameMusic = new Music();    // Initialize Music
@@ -56,9 +59,7 @@ void MCP::createScene(void)
     gameOver = false;
     vKeyDown = false;
     resetFlag = false;
-    stopPlayer1 = false;
     player1Loss = false;
-    stopPlayer2 = false;
     player2Loss = false;
     cViewModeToggle = false;    
     clientVKeyDown = false;
@@ -462,34 +463,16 @@ bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
                 spacePressedLast = false;
-            if(keyWasPressed)
+            if(keyWasPressed && !p->checkMovementRestriction())
             {   // Rotate the velocity vector by the orientation of the player
                 Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
                 trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
                 btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
 
-                if (p->getGameObjectName() == "Player1") {
-                    if (!stopPlayer1) {
-                        if (turboMode)
-                            p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                        else
-                            p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                    }
-                    else {
-                        p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.5f));
-                    }
-                }
-                else if (p->getGameObjectName() == "Player2") {
-                    if (!stopPlayer2) {
-                        if (turboMode)
-                            p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                        else
-                            p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                    }
-                    else {
-                        p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), -0.5f));
-                    }
-                }   
+                if (turboMode)
+                        p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                else
+                        p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
             }
         }
     }
@@ -548,13 +531,10 @@ void MCP::renderLoop_Host(const Ogre::FrameEvent& evt)
             timeSinceLastStateUpdate = 0.01f;
         timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
     }
-    // if (gameMode == 1)
-    // {
-    //     if (hostPlayer != NULL)
-    //         restrictPlayerMovement(hostPlayer);
-    //     if (clientPlayer != NULL)
-    //         restrictPlayerMovement(clientPlayer);
-    // }
+    if (hostPlayer != NULL)
+            restrictPlayerMovement(hostPlayer);
+    if (clientPlayer != NULL)
+            restrictPlayerMovement(clientPlayer);
     if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
     {
         (new Disk("Disk", mSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/))->addToSimulator();
@@ -806,7 +786,7 @@ bool MCP::processAndSendClientInput(const Ogre::FrameEvent& evt)
         pack.id = 't';
         packList.push_back(pack);
         result = true;
-        clientPlayer->isHolding = false;
+        clientPlayer->setHolding(false);
     }
     if (resetClientState(evt, packList) || result)
     {
@@ -981,7 +961,7 @@ bool MCP::interpretServerPacket(MCP_Packet pack)
     }
     if(pack.id == 'D')
     {
-        clientPlayer->isHolding = true;
+        clientPlayer->setHolding(true);
     }
 
     if(pack.id == 'P')
@@ -1250,22 +1230,41 @@ void MCP::restrictPlayerMovement(Player* p)
 {
     Ogre::Vector3 pos = p->getSceneNode()->getPosition();
     Ogre::Vector3 dim = p->getPlayerDimensions();
+    btVector3 velocityVector = p->getBody()->getLinearVelocity();
+    Ogre::SceneNode* restrictNode;
+    Ogre::AxisAlignedBox gapBox;
+    Ogre::AxisAlignedBox playerBox = p->getSceneNode()->_getWorldAABB();
 
-    // Left/Right wall check
-    //if ((pos.x + dim.x) >= gameRoom->getWidth()/2.0f || (pos.x + dim.x) <= -gameRoom->getWidth()/2.0f)
-        //p->getBody()->setLinearVelocity(btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), p->getBody()->getLinearVelocity().getZ()));
-    // Gap and (Relative) Back wall check
-    //if ((pos.z + dim.z) >= gameRoom->getHeight()/2.0f || (pos.z + dim.z) <= -gameRoom->getHeight()/2.0f)
-        //p->getBody()->setLinearVelocity(btVector3(p->getBody()->getLinearVelocity().getX(), p->getBody()->getLinearVelocity().getY(), 0.0f));
-        
-    if (p->getGameObjectName() == "Player1" && (pos.z + dim.z) <= 7.0f)
-        stopPlayer1 = true;
+    if (p->getPlayerSide() == "Negative Side")
+        restrictNode = gameRoom->getClientGapSceneNode();
     else
-        stopPlayer1 = false;
-    if (p->getGameObjectName() == "Player2" && (pos.z + dim.z) >= -7.0f)
-        stopPlayer2 = true;
+        restrictNode = gameRoom->getHostGapSceneNode();
+
+    gapBox = restrictNode->_getWorldAABB();
+
+    if (gapBox.intersects(playerBox))
+    {
+        time(&gapStartTime);
+        time(&gapEndTime);
+        // gapStartClock = clock();
+
+        p->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+        p->getBody()->setLinearVelocity(btVector3(velocityVector.getX(), velocityVector.getY(), 5.0f));
+        restrictNode->setVisible(true);
+        p->setMovementRestriction(true);
+    }
     else
-        stopPlayer2 = false;
+    {
+        time(&gapEndTime);
+        // gapEndClock = clock();
+
+        if (difftime(gapEndTime, gapStartTime) > 1.0f)
+        {
+            restrictNode->setVisible(false);
+        }
+
+        p->setMovementRestriction(false);
+    }
 }
 //-------------------------------------------------------------------------------------
 /*void MCP::showTrajectory(PlayerCamera* playCam)
@@ -1282,6 +1281,16 @@ void MCP::restrictPlayerMovement(Player* p)
     
     mSceneMgr->getRootSceneNode()->attachObject(trajectory);
 }*/
+//-------------------------------------------------------------------------------------
+Ogre::SceneManager* MCP::getSceneManager()
+{
+    return mSceneMgr;
+}  
+//-------------------------------------------------------------------------------------
+Music* MCP::getMusicObject()
+{
+    return gameMusic;
+}
 //-------------------------------------------------------------------------------------
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
