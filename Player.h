@@ -10,7 +10,7 @@ class Disk;
 class Player : public GameObject
 {
 public:
-	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition, Ogre::String side);
+	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID);
 
 	void setHolding(bool x); // Set whether the player is holding the disk
 	bool checkHolding(void); // Check if the player is holding the disk
@@ -35,7 +35,7 @@ public:
 	void decreaseJump(void);
 	void initializeStates(void);
 	bool checkState(int index);
-	void toggleState(int index, bool value);
+	void setState(int index, bool value);
 	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
 	int jumpTimer;
 	bool jumpPowerActive;

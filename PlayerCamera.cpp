@@ -29,8 +29,6 @@ void PlayerCamera::toggleThirdPersonView()
 {
     inAimMode = !inAimMode;    
  
-    //p->getPlayerSightNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -400.0f)); // reset camera to face in front of player
-    //mTargetNode->setPosition(p->getPlayerSightNode()->getPosition());
     if (!inAimMode) // Restore SightNode to default position when the player leaves Aim View
     {
         overlay->hide();

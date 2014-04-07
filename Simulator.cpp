@@ -67,14 +67,14 @@ void Simulator::addObject (GameObject* o)
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
-		if (o->getGameObjectName() == "Player1")
-		{
-			setPlayer((Player*)o);
-			player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
-			player1Cam->setPlayer((Player*)o);
-		}
-		if (o->getGameObjectName() == "Player2")
-			setPlayer((Player*)o);
+		// if (o->getGameObjectName() == "Player1")
+		// {
+		// 	setPlayer((Player*)o);
+		// 	player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
+		// 	player1Cam->setPlayer((Player*)o);
+		// }
+		// if (o->getGameObjectName() == "Player2")
+		// 	setPlayer((Player*)o);
 
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 	}
@@ -164,33 +164,33 @@ void Simulator::removeObject(Ogre::String name)
 //-------------------------------------------------------------------------------------
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
-	Ogre::Vector3 sightPosBeforeSim1;
-	Ogre::Vector3 sightPosBeforeSim2;
-	if (p1)
-		// keep track of sight node position to reapply it after simulator is stepped 
-		sightPosBeforeSim1 = p1->getPlayerSightNode()->getPosition(); 
+	// Ogre::Vector3 sightPosBeforeSim1;
+	// Ogre::Vector3 sightPosBeforeSim2;
+	// if (p1)
+	// 	// keep track of sight node position to reapply it after simulator is stepped 
+	// 	sightPosBeforeSim1 = p1->getPlayerSightNode()->getPosition(); 
 
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 
-	if (p1)
-		p1->getPlayerSightNode()->setPosition(sightPosBeforeSim1);
+	// if (p1)
+	// 	p1->getPlayerSightNode()->setPosition(sightPosBeforeSim1);
 	// update the rotation of the disk scene node
 	//gameDisk->rotateOffWall();
-	if (player1Cam)
-		updatePlayerCamera(player1Cam, elapseTime);
-
-	if (p1->checkHolding() || (p2 != NULL))
-    {
-    	if(p2 != NULL)
+	// if (player1Cam)
+	// 	updatePlayerCamera(player1Cam, elapseTime);
+	if (p1 != NULL)
+	{
+		if (p1->checkHolding())
+			performThrow(p1);
+		
+	}
+    if(p2 != NULL)
+	{
+    	if (p2->checkHolding())
     	{
-	    	if (p2->checkHolding())
-	    	{
-	    		performThrow(p2);
-	    	}
+    		performThrow(p2);
     	}
-    	if (p1->checkHolding())
-    		performThrow(p1);
-    }
+	}
 	else	// Speed disk back up in order to mimic inelasticity
 	{	
 		if (gameDisk != NULL)
@@ -213,12 +213,14 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			}
 		}
 	}
-    if (p1 != NULL && p1->jumpPowerActive) {
+    if (p1 != NULL && p1->jumpPowerActive) 
+    {
         p1->jumpTimer--;
         if (p1->jumpTimer <= 0)
             p1->decreaseJump();
     }
-    if (p2 != NULL && p2->jumpPowerActive) {
+    if (p2 != NULL && p2->jumpPowerActive) 
+    {
         p2->jumpTimer--;
         if (p2->jumpTimer <= 0)
             p2->decreaseJump();
@@ -275,14 +277,6 @@ void Simulator::parseCollisions(void)
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
 		soundedJump = false;
 	}
-}
-//-------------------------------------------------------------------------------------
-void Simulator::setCamera(PlayerCamera* pcam)
-{
-	if (Ogre::StringUtil::match(pcam->name, "P1Cam", true))
-		this->player1Cam = pcam;
-	if (Ogre::StringUtil::match(pcam->name, "P2Cam", true))
-		this->player2Cam = pcam;
 }
 //-------------------------------------------------------------------------------------
 void Simulator::setPlayer(Player* p)

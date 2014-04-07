@@ -14,39 +14,33 @@
 #include "Target.h"
 
 #include "Music.h"
-#include "Network.h" // Remove when client/server fully implemented
+#include "Server.h"
+#include "Client.h"
 #include "GUI.h"
 
 class Simulator;
 class Music;
 class GUI;
+class Server;
+class Client;
 
 class MCP : public BaseApplication
 {
 public:
-	Simulator* gameSimulator;
-	Room* gameRoom;
-	vector<Wall*> wallList;
 	Ogre::Real minutes;
 	Ogre::Real seconds;
-	bool vKeyDown;
-	bool gameStart;
-	bool gamePause;
-	bool gameOver;
-	bool jumpFlag;
-	bool allowJumping;
-	bool cViewModeToggle;
-    bool clientVKeyDown;
-	int clientServerIdentifier;
-	float timeSinceLastStateUpdate;
-	vector<char*> termArgs;
 
-	// NETWORK OBJECT
-	Network* gameNetwork;
+	/* Primary player for this instance of MCP */
+	Client* mainClient;
+
+	vector<char*> termArgs;
+	
 	// MUSIC OBJECT
 	Music* gameMusic;
 	// GUI OBJECT
     GUI* gui;	
+    // SERVER OBJECT
+    Server* gameServer;
 
 	//Ogre::ManualObject* trajectory;
 	MCP(void);
@@ -89,37 +83,7 @@ protected:
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement(Player* p);
 	void showTrajectory(PlayerCamera* playCam);
-
-	Ogre::Light* pointLight;
-	Disk* gameDisk;			// 'd'
-	Player* hostPlayer;		// 'h'
-	Player* clientPlayer;	// 'c'
-	PlayerCamera* pCam;
-
-	Target *Power;
-	Target *Speed;
-	Target *JumpPower;
-	Target *Restore;
-
-	time_t gapStartTime;
-	// clock_t gapStartClock;
-	time_t gapEndTime;
-	// clock_t gapEndClock;
-
-	int gameMode;
-	int sceneRendered;
-	bool resetFlag;
-	bool stopPlayer1;
-	bool player1Loss;
-	bool stopPlayer2;
-	bool player2Loss;
-	Ogre::Real mMove; 			// Move Constant
-	float sprintFactor;	// Sprint Constant
-	bool clientGameStart;
-	bool clientOrientationChange;
-
-	vector<int> removedHTileList;
-	vector<int> removedCTileList;
+	void setShutDown(void);
 };
 
 #endif // #ifndef __MCP_h_

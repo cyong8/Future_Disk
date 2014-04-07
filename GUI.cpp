@@ -1,6 +1,7 @@
 #include "GUI.h"
 
-GUI::GUI(MCP* m) {
+GUI::GUI(MCP* m) 
+{
     mcp = m;
     mRenderer = &CEGUI::OgreRenderer::bootstrapSystem();
     
@@ -15,7 +16,8 @@ GUI::GUI(MCP* m) {
     CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(mcp->getRenderWindow()->getWidth()/2, mcp->getRenderWindow()->getHeight()/2));
 }
 //------------------------------------------------------------------------------------
-GUI::~GUI() {
+GUI::~GUI() 
+{
 
 }
 //------------------------------------------------------------------------------------
@@ -35,20 +37,27 @@ void GUI::createMainMenu()
     singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     
-    CEGUI::Window *multiplayerStart = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/MultiplayerStartButton");
-    multiplayerStart->setText("Multiplayer");
-    multiplayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    multiplayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
+    CEGUI::Window *host = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/HostButton");
+    host->setText("Host Game");
+    host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
+
+    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/JoinButton");
+    join->setText("Join a game");
+    join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.67, 0)));
     
     sheet->addChildWindow(quit);
     sheet->addChildWindow(singlePlayerStart);
-    sheet->addChildWindow(multiplayerStart);
+    sheet->addChildWindow(host);
+    sheet->addChildWindow(join);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
     singlePlayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, mcp));
-    multiplayerStart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GUI::createMultiplayerMenu, this));
+    host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, mcp));
+    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GUI::enterIPAddress, this));
 }
 //---------------------------------------------------------------------------------------
 void GUI::pauseMenu(bool pause)
@@ -104,8 +113,6 @@ bool GUI::createMultiplayerMenu(const CEGUI::EventArgs &e)
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
-    host->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::hostGame, mcp));
-    join->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GUI::enterIPAddress, this));
 }
 //-------------------------------------------------------------------------------------
 bool GUI::enterIPAddress(const CEGUI::EventArgs &e)

@@ -9,7 +9,15 @@
 #include <iostream>
 #include "OgreQuaternion.h"
 
+#define TCP_portNum 64669
+
 using namespace std;
+
+enum identifier
+{
+	SERVER,
+	CLIENT
+};
 
 struct MCP_Packet
 {
@@ -26,13 +34,11 @@ class Network
 public:
 	Network(int sc_identifier, char* hostIP);
 	~Network();
-	void initializeSockets(void);
-	bool establishConnection(void);
-	bool waitForPacket(void);
-	void acceptClient(char* data);
-	void sendPacket(vector<MCP_Packet>);
-	vector<MCP_Packet> receivePacket(void);
-	bool checkConnection(void);
+	void startListening(void);
+	int establishConnection(void);
+	void acceptClient(void);
+	void sendPacket(vector<MCP_Packet>, int socketID);
+	vector<MCP_Packet> receivePacket(int socketID);
 	bool checkSockets(void);
 
 private:
@@ -45,11 +51,18 @@ private:
 	char* serverIP_c;
 	int UDP_portNum;
 	int UDP_channel;
-	Uint16 TCP_portNum;
-	int server; 
-	int client;
+	identifier networkID;
 	int maxSizeOfList;
+	int numberOfConnections;
 	bool connectionEstablished;
+	int playerID;
+
+	/* Client Specific Variables */
+	TCPsocket clientSocket;
+
+	/* Server Specific Variables */
+	vector<TCPsocket> clientSocketList;
+
 };
 
 #endif // #ifndef __Network_h_

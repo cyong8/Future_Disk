@@ -44,7 +44,6 @@ BaseApplication::~BaseApplication(void)
     windowClosed(mWindow);
     delete mRoot;
 }
-
 //-------------------------------------------------------------------------------------
 bool BaseApplication::configure(void)
 {
@@ -76,7 +75,8 @@ void BaseApplication::createCamera(void)
     // Create the camera
     mCamera = mSceneMgr->createCamera("PlayerCam"); 
     mCamera->setNearClipDistance(.1);
-    mCamera->setPosition(Ogre::Vector3(0,0,0)); 
+    mCamera->setPosition(Ogre::Vector3(0.0f, 60.0f, 0.0f)); 
+    mCamera->lookAt(Ogre::Vector3(0.0f, 0.0f, 0.0f));
 }
 //-------------------------------------------------------------------------------------
 void BaseApplication::createFrameListener(void)

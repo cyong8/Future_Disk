@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "Disk.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position, Ogre::String side) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID) 
 	: GameObject(nym, mgr, sim)
 {
 	initializeStates();
@@ -10,13 +10,32 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	groundY = -99999.0f;
 	prevGroundY = -99999.0f;
 	jumpFactor = 8.0f;
-	playerSide = side;
 	jumpTimer = 0;
 	jumpPowerActive = false;
 	movementRestricted = false;
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
-	
+	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
+
+	if (playerID == 1)
+	{
+		playerSide == "Negative Side";
+		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
+	}
+	else if (playerID == 2)
+	{
+		playerSide == "Positive Side";
+		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);
+	}
+	else if (playerID == 3)
+	{
+		playerSide == "Left Side";
+	}
+	else if (playerID == 4)
+	{
+		playerSide == "Right Side";
+	}
+
 	if (nym == "Player1") {
 	    tailParticle = mgr->createParticleSystem("CyanSun1", "Examples/CyanSun");
 	    particleNode = rootNode->createChildSceneNode("PlayerParticle1");
@@ -187,7 +206,7 @@ bool Player::checkState(int index)
 	return states[index];
 }
 //-------------------------------------------------------------------------------------
-void Player::toggleState(int index, bool value)
+void Player::setState(int index, bool value)
 {
 	states[index] = value;
 }
