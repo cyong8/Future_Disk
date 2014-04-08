@@ -6,6 +6,13 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 	clientOrientationChange = false;
     mRotate = 0.1f;
     gameStart = false;
+    gameDisk = NULL;
+    numPlayers = 0;
+
+    playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
+
+    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+        playerList[i] = NULL;
 
 	gameNetwork = new Network(CLIENT, IP);
 	gameMusic = new Music();
@@ -30,6 +37,8 @@ void Client::createScene()
 
     sprintf(playerBuffer, "Player%d", playerID);
     clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID);
+    numPlayers++;
+    playerList[playerID] = clientPlayer;
 
 	sprintf(cameraBuffer, "Player%dCam", playerID);
     pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));/*need camera object*/
@@ -58,11 +67,11 @@ void Client::createScene()
 //-------------------------------------------------------------------------------------
 bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-	if (!processUnbufferedInput(evt, mKeyboard, mMouse))
-        exit(2);
-
     if (gameNetwork->checkSockets())
         updateScene();
+
+    if (!processUnbufferedInput(evt, mKeyboard, mMouse))
+        exit(2);
 
     updateCamera(evt.timeSinceLastFrame);
 }
@@ -75,98 +84,98 @@ bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
     static bool vKeydown = false;
     memset(&pack, 0, sizeof(MCP_Packet));
 
-    if (clientOrientationChange)
-    {
-        clientOrientationChange = false;
-        pack.id = 'o';
-        pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
-        packList.push_back(pack);
-        pack.id = 'S';
-        pack.x_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().x;
-        pack.y_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().y;
-        pack.z_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().z;
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-    {
-        return false;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(Forward))                              // Forward - implemented
-    {
-        clientPlayer->setState(Forward, true);
-        pack.id = 'w';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
-    {
-        clientPlayer->setState(Left, true);
-        pack.id = 'a';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
-    {
-        clientPlayer->setState(Back, true);
-        pack.id = 's';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
-    {
-        clientPlayer->setState(Right, true);
-        pack.id = 'd';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
-    {
-        clientPlayer->setState(Jump, true);
-        pack.id = 'j';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
-    {
-        pCam->toggleThirdPersonView();
-        pack.id = 'v';
-        packList.push_back(pack);
-        vKeydown = true;
-        result = true;
-        gameDisk->getSceneNode()->setVisible(false);
-        pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    }
-    if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
-    {
-        pCam->toggleThirdPersonView();
-        pack.id = 'v';
-        packList.push_back(pack);
-        vKeydown = false;
-        result = true;
-        gameDisk->getSceneNode()->setVisible(true);
-        pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    }    
-    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
-    {
-        clientPlayer->setState(Boost, true); 
-        pack.id = 'b';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
-    {
-        pack.id = 't';
-        packList.push_back(pack);
-        result = true;
-        clientPlayer->setHolding(false);
-    }
-    if (resetMovementState(evt, mKeyboard, packList) || result)
-    {
-        pack.id = 'n';
-        packList.push_back(pack);
-        gameNetwork->sendPacket(packList, 0);
-    }
+    // if (clientOrientationChange)
+    // {
+    //     clientOrientationChange = false;
+    //     pack.id = 'o';
+    //     pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
+    //     packList.push_back(pack);
+    //     pack.id = 'S';
+    //     pack.x_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().x;
+    //     pack.y_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().y;
+    //     pack.z_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().z;
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    // {
+    //     return false;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(Forward))                              // Forward - implemented
+    // {
+    //     clientPlayer->setState(Forward, true);
+    //     pack.id = 'w';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
+    // {
+    //     clientPlayer->setState(Left, true);
+    //     pack.id = 'a';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
+    // {
+    //     clientPlayer->setState(Back, true);
+    //     pack.id = 's';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
+    // {
+    //     clientPlayer->setState(Right, true);
+    //     pack.id = 'd';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
+    // {
+    //     clientPlayer->setState(Jump, true);
+    //     pack.id = 'j';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    // {
+    //     pCam->toggleThirdPersonView();
+    //     pack.id = 'v';
+    //     packList.push_back(pack);
+    //     vKeydown = true;
+    //     result = true;
+    //     gameDisk->getSceneNode()->setVisible(false);
+    //     pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    // }
+    // if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
+    // {
+    //     pCam->toggleThirdPersonView();
+    //     pack.id = 'v';
+    //     packList.push_back(pack);
+    //     vKeydown = false;
+    //     result = true;
+    //     gameDisk->getSceneNode()->setVisible(true);
+    //     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    // }    
+    // if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
+    // {
+    //     clientPlayer->setState(Boost, true); 
+    //     pack.id = 'b';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
+    // {
+    //     pack.id = 't';
+    //     packList.push_back(pack);
+    //     result = true;
+    //     clientPlayer->setHolding(false);
+    // }
+    // if (resetMovementState(evt, mKeyboard, packList) || result)
+    // {
+    //     pack.id = 'n';
+    //     packList.push_back(pack);
+    //     gameNetwork->sendPacket(packList, 0);
+    // }
 
     return true;
 }
@@ -177,48 +186,48 @@ bool Client::resetMovementState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     bool result = false;
     memset(&pack, 0, sizeof(MCP_Packet));
 
-    if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
-    {
-        clientPlayer->setState(Forward, false);
-        pack.id = 'w';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
-    {
-        clientPlayer->setState(Left, false);
-        pack.id = 'a';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
-    {
-        clientPlayer->setState(Back, false);
-        pack.id = 's';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
-    {   
-        clientPlayer->setState(Right, false);
-        pack.id = 'd';
-        packList.push_back(pack);
-        result = true;
-    }
-    if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
-    {
-        clientPlayer->setState(Jump, false);
-        pack.id = 'j';
-        packList.push_back(pack);
-        result = true;
-    }   
-    if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
-    {
-        clientPlayer->setState(Boost, false);
-        pack.id = 'b';
-        packList.push_back(pack);
-        result = true;
-    }
+    // if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
+    // {
+    //     clientPlayer->setState(Forward, false);
+    //     pack.id = 'w';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
+    // {
+    //     clientPlayer->setState(Left, false);
+    //     pack.id = 'a';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
+    // {
+    //     clientPlayer->setState(Back, false);
+    //     pack.id = 's';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
+    // {   
+    //     clientPlayer->setState(Right, false);
+    //     pack.id = 'd';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
+    // if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
+    // {
+    //     clientPlayer->setState(Jump, false);
+    //     pack.id = 'j';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }   
+    // if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
+    // {
+    //     clientPlayer->setState(Boost, false);
+    //     pack.id = 'b';
+    //     packList.push_back(pack);
+    //     result = true;
+    // }
 
     return result;
 }
@@ -229,7 +238,7 @@ void Client::updateScene() // Receive packets and interpret them
 	int i = 0;
 
     packList = gameNetwork->receivePacket(playerID);
-    while (packList.size() > i && packList[i].id != 'n')
+    while (packList.size() > i && packList[i].packetID != 'n')
     {
         interpretServerPacket(packList[i]);
         i++;
@@ -248,30 +257,44 @@ void Client::interpretServerPacket(MCP_Packet pack)
 {
     Ogre::Vector3 newPos;
     Ogre::Quaternion newQuat;
-    newPos = Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate);
-    newQuat = pack.orientationQ;
 
-    if(pack.id == 's')
+    printf("packet ID: %c\n\n", pack.packetID);
+
+    /* BEGIN GAME */ 
+    if(pack.packetID == (char)(((int)'0') + GAMESTATE))
     {
         gameStart = true;
     }
+    /* UPDATE PLAYERS */
+    if (pack.packetID == (char)(((int)'0') + PLAYER))
+    {
+        PLAYER_packet p;
+        memcpy(&p, &pack, sizeof(PLAYER_packet));
 
-    if (pack.id == 'h')
-    {
-        if (opponent != NULL)
+        newPos = Ogre::Vector3(p.x, p.y, p.z);
+        newQuat = p.orientation;
+        int newPlayerID = p.playID - '0';
+        printf("New Player ID: %d from %c\n\n", newPlayerID, p.playID);
+        if (playerList[newPlayerID] == NULL)
         {
-            opponent->getSceneNode()->_setDerivedPosition(newPos);
-            opponent->getSceneNode()->_setDerivedOrientation(newQuat);
-            opponent->getSceneNode()->needUpdate();
+            char playerBuffer[25];
+            sprintf(playerBuffer, "Player%d", newPlayerID);
+
+            playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
+            numPlayers++;
         }
+
+        playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
+        playerList[newPlayerID]->getSceneNode()->_setDerivedOrientation(newQuat);
+        playerList[newPlayerID]->getSceneNode()->needUpdate();
     }
-    if (pack.id == 'c')   
+    /* UPDATE DISK */
+   if (pack.packetID == (char)(((int)'0') + DISK))
     {
-        clientPlayer->getSceneNode()->_setDerivedPosition(newPos);
-        clientPlayer->getSceneNode()->needUpdate();
-    }
-    if (pack.id == 'd')
-    {
+        DISK_packet* p = (DISK_packet*)&pack;
+        newPos = Ogre::Vector3(p->x, p->y, p->z);
+        newQuat = p->orientation;
+
         if (gameDisk == NULL)
         {
             gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
@@ -282,39 +305,39 @@ void Client::interpretServerPacket(MCP_Packet pack)
         gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
         gameDisk->getSceneNode()->needUpdate();
     }
-    if(pack.id == 'D')
-    {
-        clientPlayer->setHolding(true);
-    }
+    // if(pack.packetID == 'D')
+    // {
+    //     clientPlayer->setHolding(true);
+    // }
 
-    if(pack.id == 'P')
-    {
-        Power->getSceneNode()->_setDerivedPosition(newPos);
-        Power->getSceneNode()->needUpdate();
-    }
-    if(pack.id == 'S')
-    {
-        Speed->getSceneNode()->_setDerivedPosition(newPos);
-        Speed->getSceneNode()->needUpdate();
-    }
-    if(pack.id == 'J')
-    {
-        JumpPower->getSceneNode()->_setDerivedPosition(newPos);
-        JumpPower->getSceneNode()->needUpdate();
-    }
-    if(pack.id == 'R')
-    {
-        Restore->getSceneNode()->_setDerivedPosition(newPos);
-        Restore->getSceneNode()->needUpdate();
-    }
-    if (pack.id == 'H')
-    {
-        gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-    }
-    if (pack.id == 'C')
-    {
-        gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-    }
+    // if(pack.packetID == 'P')
+    // {
+    //     Power->getSceneNode()->_setDerivedPosition(newPos);
+    //     Power->getSceneNode()->needUpdate();
+    // }
+    // if(pack.packetID == 'S')
+    // {
+    //     Speed->getSceneNode()->_setDerivedPosition(newPos);
+    //     Speed->getSceneNode()->needUpdate();
+    // }
+    // if(pack.packetID == 'J')
+    // {
+    //     JumpPower->getSceneNode()->_setDerivedPosition(newPos);
+    //     JumpPower->getSceneNode()->needUpdate();
+    // }
+    // if(pack.packetID == 'R')
+    // {
+    //     Restore->getSceneNode()->_setDerivedPosition(newPos);
+    //     Restore->getSceneNode()->needUpdate();
+    // }
+    // if (pack.packetID == 'H')
+    // {
+    //     gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
+    // }
+    // if (pack.packetID == 'C')
+    // {
+    //     gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
+    // }
 }
 //-------------------------------------------------------------------------------------
 bool Client::mouseMoved(const OIS::MouseEvent &evt)

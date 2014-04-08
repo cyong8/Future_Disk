@@ -10,6 +10,7 @@
 #include "OgreQuaternion.h"
 
 #define TCP_portNum 64669
+#define MAX_NUMBER_OF_PLAYERS 4
 
 using namespace std;
 
@@ -19,15 +20,96 @@ enum identifier
 	CLIENT
 };
 
+enum keyID
+{
+	W,
+	A,
+	S,
+	D,
+	V,
+	SPACE,
+	SHIFT,
+	MOUSECLICK,
+	ESC,
+	ENTER
+};
+
+enum packID
+{
+	PLAYER,
+	INPUT,
+	DISK,
+	POWERUP,
+	TILE,
+	GAMESTATE,
+	EXPANSION
+};
+
+enum powerUpID
+{
+	nPOWER,
+	nSPEED,
+	nJUMP,
+	nRESTORE
+};
+
 struct MCP_Packet
 {
-	char id;
-	float x_coordinate;
-	float y_coordinate;
-	float z_coordinate;
-	Ogre::Quaternion orientationQ;
-	int tileIndex;
-};						// Max Total = 16 Bytes - Must alloc at least 16 Bytes for buffer
+	char packetID;
+};			
+struct PLAYER_packet: MCP_Packet
+{
+	char playID;
+	// positions of each player
+	float x;
+	float y;
+	float z;
+	// orientation of each player
+	Ogre::Quaternion orientation;
+};
+struct INPUT_packet : MCP_Packet
+{
+	char playID;
+	// keypressed
+	keyID key;
+};
+struct DISK_packet : MCP_Packet
+{
+	char diskID;
+	// position of the disk
+	float x;
+	float y;
+	float z;
+	// orientation of the disk
+	Ogre::Quaternion orientation;
+};
+struct POWERUP_packet : MCP_Packet
+{
+	powerUpID powerID;
+	// positions of each power-up
+	float x;
+	float y;
+	float z;
+	// which power-ups are active
+};
+struct TILE_packet : MCP_Packet
+{
+	// tile removed/added
+	char playID;
+	bool removed;
+	short tileNumber;
+};
+struct GAMESTATE_packet : MCP_Packet
+{
+	int stateChange;	// type of state change
+	// Activate respective power up 
+	// sound
+	// GUI stuff- lose, win, gameStart
+};
+struct EXPANSION_packet : MCP_Packet // deal with this later
+{
+	// size and shape of room, which is dependent on the number of players
+};
 
 class Network
 {
@@ -42,7 +124,8 @@ public:
 	bool checkSockets(void);
 
 private:
-	SDLNet_SocketSet i_set;
+	SDLNet_SocketSet iSet;
+	SDLNet_SocketSet clientSet;
 	TCPsocket init_serverSocket;
 	TCPsocket TCP_gameSocket;
 	UDPsocket UDP_gameSocket;

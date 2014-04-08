@@ -8,8 +8,9 @@ Network::Network(int sc_identifier, char* hostIP)
 	clientSocket = NULL;
 	UDP_gameSocket = NULL;
 	TCP_gameSocket = NULL;
-	maxSizeOfList = sizeof(MCP_Packet) * 16;
-	i_set = SDLNet_AllocSocketSet(5);
+	maxSizeOfList = 2048;
+	iSet = SDLNet_AllocSocketSet(1);
+	clientSet = SDLNet_AllocSocketSet(4);
 
 	/*Initialize the network*/
 	if(SDLNet_Init() < 0)
@@ -36,7 +37,8 @@ Network::~Network()
 	SDLNet_TCP_Close(init_serverSocket);
 	SDLNet_TCP_Close(TCP_gameSocket);
 	SDLNet_UDP_Close(UDP_gameSocket);
-	SDLNet_FreeSocketSet(i_set);
+	SDLNet_FreeSocketSet(clientSet);
+	SDLNet_FreeSocketSet(iSet);
 }
 //-------------------------------------------------------------------------------------
 void Network::startListening()
@@ -56,8 +58,8 @@ void Network::startListening()
 	    exit(2);
 	}
 
-	/* Add the socket to the socket i_set so we can use CheckSockets() later */
-	int numused = SDLNet_TCP_AddSocket(i_set, init_serverSocket);
+	/* Add the socket to the socket clientSet so we can use CheckSockets() later */
+	int numused = SDLNet_TCP_AddSocket(iSet, init_serverSocket);
 
 	if (numused == -1 || numused == 0) 
 	{
@@ -84,7 +86,7 @@ int Network::establishConnection()
 	}
 	if (networkID == CLIENT)
 	{	
-		char idBuff[5];
+		char idBuff[2];
 
 		if (SDLNet_ResolveHost(&serverIP, serverIP_c, TCP_portNum) < 0) // Connects to the listening host
 		{
@@ -102,11 +104,11 @@ int Network::establishConnection()
 		/* Player has to wait for Server to send packet - Info of UDP  NOT IMPLEMENTED*/
 		/* Player waits to be told what player he is (i.e. server sends him a playerID) */
 
-		SDLNet_TCP_Recv(clientSocket, idBuff, 5);
+		SDLNet_TCP_Recv(clientSocket, idBuff, 2);
 
 		playerID = atoi(idBuff);
 
-		int numused = SDLNet_TCP_AddSocket(i_set, clientSocket);
+		int numused = SDLNet_TCP_AddSocket(clientSet, clientSocket);
 
 		if (numused == -1 || numused == 0) 
 		{
@@ -128,8 +130,8 @@ void Network::acceptClient()
 	tmpAcceptSocket = SDLNet_TCP_Accept(init_serverSocket);
  
 	numberOfConnections++;
-	char buff[5];
-	sprintf(buff, "%d", numberOfConnections);
+	char buff[2];
+	sprintf(buff, "%d\0", numberOfConnections);
 
 	// memcpy(buff, &val, 1);
 
@@ -141,11 +143,11 @@ void Network::acceptClient()
 		return;
 	}
 
-	SDLNet_TCP_Send(tmpAcceptSocket, buff, 5);
+	SDLNet_TCP_Send(tmpAcceptSocket, buff, 2);
 	clientIP = SDLNet_TCP_GetPeerAddress(tmpAcceptSocket);
 	printf("Client connected - IP: %d\n\n", clientIP->host);
 
-	int numused = SDLNet_TCP_AddSocket(i_set, tmpAcceptSocket);
+	int numused = SDLNet_TCP_AddSocket(clientSet, tmpAcceptSocket);
 
 	if (numused == -1 || numused == 0) 
 	{
@@ -159,15 +161,18 @@ void Network::acceptClient()
 void Network::sendPacket(vector<MCP_Packet> packList, int socketID)
 {
 	int numSent;
-	int packListSize = packList.size() * sizeof(MCP_Packet);
+	// int packListSize = packList.size() * sizeof(MCP_Packet);
 	char buff[maxSizeOfList];
 
 	memset(buff, 0, maxSizeOfList); // bigger size
 
+	printf("Size of Packet List to be sent: %d\n\n", (int)packList.size());
 	for (int i = 0; i < packList.size(); i++)
-		memcpy(buff+(i*sizeof(MCP_Packet)), &packList[i], sizeof(MCP_Packet));
+	{
+		memcpy(buff+(i*sizeof(&packList[i])), &packList[i], sizeof(&packList[i]));
+	}
 
-	numSent = SDLNet_TCP_Send(clientSocketList[socketID], buff, packListSize);
+	numSent = SDLNet_TCP_Send(clientSocketList[socketID], buff, maxSizeOfList);
 
 	if (!numSent)
 	{
@@ -192,7 +197,7 @@ vector<MCP_Packet> Network::receivePacket(int socketID)
 		if ((numRead = SDLNet_TCP_Recv(clientSocket, buff, maxSizeOfList)) <= 0) 
 		{
 			//printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
-			pack.id = 'n';
+			pack.packetID = 'n';
 			packList.push_back(pack);
 			return packList;
 		}
@@ -204,21 +209,21 @@ vector<MCP_Packet> Network::receivePacket(int socketID)
 			memcpy(&pack, buff+i, sizeof(MCP_Packet));
 
 			// printf("pack.id = %c\n\n", pack.id);
-			if (pack.id == 'n')
+			if (pack.packetID == 'n')
 				break;
 			packList.push_back(pack);
 		}
 	}
 	if (socketID == 0)
 	{
-		for (int i = 1; i < clientSocketList.size() + 1; i++)
+		for (int i = 0; i < numberOfConnections; i++) 
 		{
-			if (SDLNet_SocketReady(clientSocketList[i]))
+			if (SDLNet_SocketReady(clientSocketList[i])) // SEG FAULT HERE - clearly wrong index
 			{
-				if ((numRead = SDLNet_TCP_Recv(TCP_gameSocket, buff, maxSizeOfList)) <= 0) 
+				if ((numRead = SDLNet_TCP_Recv(clientSocketList[i], buff, maxSizeOfList)) <= 0) 
 				{
 					printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
-					pack.id = 'n';
+					pack.packetID = 'n';
 					packList.push_back(pack);
 					return packList;
 				}
@@ -230,7 +235,7 @@ vector<MCP_Packet> Network::receivePacket(int socketID)
 					memcpy(&pack, buff+i, sizeof(MCP_Packet));
 
 					// printf("pack.id = %c\n\n", pack.id);
-					if (pack.id == 'n')
+					if (pack.packetID == 'n')
 						break;
 					packList.push_back(pack);
 				}
@@ -243,16 +248,11 @@ vector<MCP_Packet> Network::receivePacket(int socketID)
 //-------------------------------------------------------------------------------------
 bool Network::checkSockets()
 {
-	int clientReady = SDLNet_CheckSockets(i_set, 0);
+	int acceptReady = SDLNet_CheckSockets(iSet, 0);
+	int clientReady = SDLNet_CheckSockets(clientSet, 0);
 
-	if (clientReady <= 0)
-	{
-		// printf("No Activity; Chiiiiiill!\n\n");
+	if (acceptReady <= 0 && clientReady <= 0)
 		return false;
-	}
-	else if (clientReady)
-	{
-		// printf("ACTIVITY!!!!\n\n");
+	else 
 		return true;
-	}
 }

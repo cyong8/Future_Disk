@@ -187,9 +187,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
     if(p2 != NULL)
 	{
     	if (p2->checkHolding())
-    	{
     		performThrow(p2);
-    	}
 	}
 	else	// Speed disk back up in order to mimic inelasticity
 	{	
@@ -263,12 +261,14 @@ void Simulator::parseCollisions(void)
 	if (!groundCheck1)
 		soundedJump = true;
 	else
-		p1->groundConstantSet = false;
+		if (p1 != NULL)
+			p1->groundConstantSet = false;
 
 	if (!groundCheck2)
 		soundedJump = true;
 	else
-		p2->groundConstantSet = false;
+		if (p2 != NULL)
+			p2->groundConstantSet = false;
 
 	if ((groundCheck1 || groundCheck2) && gameDisk == NULL)
     	setDisk = true;
@@ -313,10 +313,7 @@ void Simulator::performThrow(Player* p)
   	btQuaternion diskOrientation;
  	btTransform transform;
 
- 	if (throwFlag)
- 		printf("p1 throwing!\n\n");
-
-	if (throwFlag) // Add disk back to simulator and it will take care of throw velocity
+	if (throwFlag)
     {	
     	wallHitAfterThrow = false;
         //resetPowerUps();
@@ -382,9 +379,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
 	// Wall
 	if (o->typeName == "Wall")
-	{	
-		if (!p1->checkHolding())
-			wallHitAfterThrow = true;
+	{	if (p1 != NULL)
+			if (!p1->checkHolding())
+				wallHitAfterThrow = true;
 		if (p2 != NULL)
 			if (p2->checkHolding())
 				wallHitAfterThrow = true;
@@ -403,13 +400,12 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 
-		if (!player1CanCatch && !p1->checkHolding())
-			player1CanCatch = true;
+		if (p1 != NULL)
+			if (!player1CanCatch && !p1->checkHolding())
+				player1CanCatch = true;
 		if (p2 != NULL)
-		{
 			if (!player2CanCatch && !p2->checkHolding())
 				player2CanCatch = true;
-		}
 	}
 	// Player
 	else if (o->typeName == "Player")

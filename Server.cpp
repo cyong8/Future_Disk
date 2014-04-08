@@ -9,17 +9,19 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
 	gameNetwork = new Network(SERVER, 0);
 	gameSimulator = new Simulator(sSceneMgr, gameMusic);
 
-	timeSinceLastStateUpdate = 0.01f;
     srand(time(0));
-	time(&gapStartTime);
+    time(&gapStartTime);
     time(&gapEndTime);
+
+	timeSinceLastStateUpdate = 0.01f;
     mMove = 5.0f;
     mRotate = 0.1f;
     sprintFactor = 2.0f;
+    gameDisk = NULL;
+    numberOfClients = 0;
 
     printf("Create host scene!\n\n");
 
-    numberOfClients = 0;
     createScene();
 }
 //-------------------------------------------------------------------------------------
@@ -58,7 +60,7 @@ void Server::createScene()
     pointLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getWall(Ceiling)->getSceneNode()->getPosition().y, 0.0f));
 
     printf("about to add power ups!\n\n");
-    // createOverlays(pCam);
+    // createOverlays(pCam); // in MCP
 }
 //-------------------------------------------------------------------------------------
 bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on socketSet index 0
@@ -75,7 +77,7 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
 
     if (gameNetwork->checkSockets()) //&& clientGameStart)
     {
-        if (gameNetwork->establishConnection()) // attempt to establish a connection at each frame
+        if (gameNetwork->establishConnection() == 1) // attempt to establish a connection at each frame
         {
             // Add the given player to the scene and simulator
             numberOfClients++;
@@ -92,9 +94,9 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
         vector<MCP_Packet> packList;
         packList = gameNetwork->receivePacket(0);
        
-        while (packList.size() > i && packList[i].id != 'n')
+        while (packList.size() > i && packList[i].packetID != 'n')
         {
-            printf("pack.id (inside while) = %c\n\n", packList[i].id);
+            printf("pack.packetID (inside while) = %c\n\n", packList[i].packetID);
             interpretClientPacket(packList[i]);
             i++;
         }
@@ -110,7 +112,7 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
         restrictPlayerMovement(playerList[i]);
 
         if (timeSinceLastStateUpdate < 0.0f)
-            constructAndSendGameState(i-1);
+            constructAndSendGameState(i);
 
          /* DEBUGGING */
         // printf("\t\t Client States: W - %d\n", p1->checkState(Forward));
@@ -153,91 +155,91 @@ void Server::updateClientVelocity(Player* p)
 bool Server::constructAndSendGameState(int socketID)
 {
 	vector<MCP_Packet> packList;
-    MCP_Packet pack;
-    memset(&pack, 0, sizeof(MCP_Packet));
 
-    // Update hostPlayer
-    pack.id = 'h';
-    // pack.x_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().x;
-    // pack.y_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().y;
-    // pack.z_coordinate = hostPlayer->getSceneNode()->_getDerivedPosition().z;
-    // pack.orientationQ = hostPlayer->getSceneNode()->_getDerivedOrientation();
-    packList.push_back(pack);
-
-    // Update clientPlayer
-    pack.id = 'c';
-    // pack.x_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().x;
-    // pack.y_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().y;
-    // pack.z_coordinate = clientPlayer->getSceneNode()->_getDerivedPosition().z;
-    packList.push_back(pack);
-
-    pack.id = 'P';
-    pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = Power->getSceneNode()->_getDerivedPosition().y;
-    pack.z_coordinate = Power->getSceneNode()->_getDerivedPosition().z;
-    packList.push_back(pack);
-
-    pack.id = 'S';
-    pack.x_coordinate = Speed->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = Speed->getSceneNode()->_getDerivedPosition().y;
-    pack.z_coordinate = Speed->getSceneNode()->_getDerivedPosition().z;
-    packList.push_back(pack);
-
-    pack.id = 'J';
-    pack.x_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().y;
-    pack.z_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().z;
-    packList.push_back(pack);
-
-    pack.id = 'R';
-    pack.x_coordinate = Restore->getSceneNode()->_getDerivedPosition().x;
-    pack.y_coordinate = Restore->getSceneNode()->_getDerivedPosition().y;
-    pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
-    packList.push_back(pack);
-
-    int rIndex;
-    while (removedCTileList.size() != 0)
+    for (int i = 0; i < numberOfClients; i++)
     {
-        pack.id = 'C';
+        PLAYER_packet pack;
+        memset(&pack, 0, sizeof(PLAYER_packet));
 
-        rIndex = removedCTileList[removedCTileList.size() - 1];
-        removedCTileList.pop_back();
+        pack.packetID = (char)(((int)'0') + PLAYER);
+        pack.playID = (char)(((int)'0') + i);
+        pack.x = playerList[i]->getSceneNode()->getPosition().x;
+        pack.y = playerList[i]->getSceneNode()->getPosition().y;
+        pack.z = playerList[i]->getSceneNode()->getPosition().z;
+        pack.orientation = playerList[i]->getSceneNode()->getOrientation();
 
-        pack.tileIndex = rIndex;
         packList.push_back(pack);
     }
-    while (removedHTileList.size() != 0)
-    {
-        pack.id = 'H';   
 
-        rIndex = removedHTileList[removedHTileList.size() - 1];
-        removedHTileList.pop_back();
+    // if ()
+    // pack.id = 'P';
+    // pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
+    // pack.y_coordinate = Power->getSceneNode()->_getDerivedPosition().y;
+    // pack.z_coordinate = Power->getSceneNode()->_getDerivedPosition().z;
+    // packList.push_back(pack);
 
-        pack.tileIndex = rIndex;
-        packList.push_back(pack);
-    }
+    // pack.id = 'S';
+    // pack.x_coordinate = Speed->getSceneNode()->_getDerivedPosition().x;
+    // pack.y_coordinate = Speed->getSceneNode()->_getDerivedPosition().y;
+    // pack.z_coordinate = Speed->getSceneNode()->_getDerivedPosition().z;
+    // packList.push_back(pack);
+
+    // pack.id = 'J';
+    // pack.x_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().x;
+    // pack.y_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().y;
+    // pack.z_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().z;
+    // packList.push_back(pack);
+
+    // pack.id = 'R';
+    // pack.x_coordinate = Restore->getSceneNode()->_getDerivedPosition().x;
+    // pack.y_coordinate = Restore->getSceneNode()->_getDerivedPosition().y;
+    // pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
+    // packList.push_back(pack);
+
+    // int rIndex;
+    // while (removedCTileList.size() != 0)
+    // {
+    //     pack.id = 'C';
+
+    //     rIndex = removedCTileList[removedCTileList.size() - 1];
+    //     removedCTileList.pop_back();
+
+    //     pack.tileIndex = rIndex;
+    //     packList.push_back(pack);
+    // }
+    // while (removedHTileList.size() != 0)
+    // {
+    //     pack.id = 'H';   
+
+    //     rIndex = removedHTileList[removedHTileList.size() - 1];
+    //     removedHTileList.pop_back();
+
+    //     pack.tileIndex = rIndex;
+    //     packList.push_back(pack);
+    // }
     if (gameDisk != NULL)
     {
-        if (1)//clientPlayer->checkHolding()) // No longer client/host
-        {
-            pack.id = 'D';
-            packList.push_back(pack);
-        }
-        pack.id = 'd';
-        pack.x_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.y_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().y;
-        pack.z_coordinate = gameDisk->getSceneNode()->_getDerivedPosition().z;
-        pack.orientationQ = gameDisk->getSceneNode()->_getDerivedOrientation();
+        DISK_packet pack;
+
+        pack.packetID = (char)(((int)'0') + DISK);
+        pack.diskID = (char)((int)'0');
+        pack.x = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        pack.y = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        pack.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
+        pack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
+
         packList.push_back(pack);
     }
-    if (gameSimulator->checkGameStart() )//&& !clientGameStart)
+    if (gameSimulator->checkGameStart())
     {
-        pack.id = 's';   
+        GAMESTATE_packet pack;
+        pack.packetID = (char)(((int)'0') + GAMESTATE);   
         packList.push_back(pack);
-        // clientGameStart = true;
     }
 
-    pack.id = 'n';
+    MCP_Packet pack;
+
+    pack.packetID = 'n';
     packList.push_back(pack);
 
     gameNetwork->sendPacket(packList, socketID);
@@ -314,7 +316,7 @@ void Server::restrictPlayerMovement(Player* p)
 bool Server::interpretClientPacket(MCP_Packet pack)
 {
     // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
-    char typeInput = pack.id;
+    char typeInput = pack.packetID;
     
 //    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
     

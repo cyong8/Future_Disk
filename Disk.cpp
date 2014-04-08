@@ -22,6 +22,8 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 		initialPlayer = "Player1";
 	if (dropToPlayer == 1.0f)
 		initialPlayer = "Player2";
+
+	playerIDOfHolder = 0;
 		
 	powerUp = "";
 
@@ -86,14 +88,16 @@ void Disk::createNewParticleSystem(int index)
 //-------------------------------------------------------------------------------------
 bool Disk::activatePowerUp(Ogre::String name, Player* p)
 {
-    if (name == "Power" || name == "Speed") {
+    if (name == "Power" || name == "Speed") 
+    {
         powerUp = name;
         if (powerUp == "Power" && previousParticleSystem != 1)
             createNewParticleSystem(1);
         else if (powerUp == "Speed" && previousParticleSystem != 2)
             createNewParticleSystem(2);
     }
-    else if (name == "Jump" && p != NULL) {
+    else if (name == "Jump" && p != NULL) 
+    {
         p->increaseJump();
     }
     else if (name == "Restore") {
@@ -108,3 +112,14 @@ void Disk::resetPowerUp()
     if (previousParticleSystem != 0)
         createNewParticleSystem(0);
 }
+//-------------------------------------------------------------------------------------
+void Disk::setHolder(int pID)
+{
+	playerIDOfHolder = pID;
+}
+//-------------------------------------------------------------------------------------
+int Disk::checkIDOfHolder()
+{
+	return playerIDOfHolder;
+}
+//-------------------------------------------------------------------------------------

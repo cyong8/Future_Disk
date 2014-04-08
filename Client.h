@@ -30,6 +30,7 @@ private:
 	Room* gameRoom;
 		/* Other Players */
 	vector<Player*> playerList;
+	int numPlayers;
 	Player* opponent;
 		/* Power Ups */
 	Target *Power;
