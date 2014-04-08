@@ -86,7 +86,7 @@ void GUI::pauseMenu(bool pause)
 //-------------------------------------------------------------------------------------
 bool GUI::createMultiplayerMenu(const CEGUI::EventArgs &e)
 {
-    addPanel(mcp->getPowerUpPanel(), OgreBites::TL_BOTTOMLEFT);
+    addPanel(mcp->getPanel(POWER), OgreBites::TL_BOTTOMLEFT);
 
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();

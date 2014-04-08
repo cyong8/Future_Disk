@@ -160,30 +160,34 @@ void BaseApplication::createFrameListener(void)
     instructPanel->setParamValue(9, "P");
     instructPanel->setParamValue(10, "M");
 
-
     pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 155);
+    pauseLabel->hide();
+    mTrayMgr->removeWidgetFromTray(pauseLabel);
 
     pTimePassed = 0;
 
     Ogre::StringVector gOverText;
-
     gOverText.push_back("GAME OVER!");
     gOverText.push_back("Your Score");
     gameOverPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOver", 400, gOverText);
     gameOverPanel->setParamValue(0, "");
     gameOverPanel->setParamValue(1, "");
+    gameOverPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverPanel);
     
-    Ogre::StringVector gOverTextWin;
-    
+    Ogre::StringVector gOverTextWin; 
     gOverTextWin.push_back("GAME OVER");
     gameOverWinPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOverWin", 400, gOverTextWin);
     gameOverWinPanel->setParamValue(0, "YOU WIN!");
-    
+    gameOverWinPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverWinPanel);
     Ogre::StringVector gOverTextLoss;
     
     gOverTextLoss.push_back("GAME OVER");
     gameOverLossPanel = mTrayMgr->createParamsPanel(OgreBites::TL_CENTER, "GameOverLose", 400, gOverTextLoss);
     gameOverLossPanel->setParamValue(0, "YOU LOSE...");
+    gameOverLossPanel->hide();
+    mTrayMgr->removeWidgetFromTray(gameOverLossPanel);
     
     Ogre::StringVector powerUps;
     powerUps.push_back("MULTIPLAYER POWER-UPS");
@@ -509,7 +513,23 @@ Ogre::RenderWindow* BaseApplication::getRenderWindow(void)
     return mWindow;
 }
 
-OgreBites::ParamsPanel* BaseApplication::getPowerUpPanel(void)
+OgreBites::ParamsPanel* BaseApplication::getPanel(Panel p)
 {
-    return powerUpPanel;
+    switch (p) {
+        case SCORE: return scorePanel;
+        case INSTRUCT: return instructPanel;
+        case OBJECTIVE: return objectivePanel;
+        case POWER: return powerUpPanel;
+        case GAMEOVER: return gameOverPanel;
+        case GAMEOVERWIN: return gameOverWinPanel;
+        case GAMEOVERLOSS: return gameOverLossPanel;
+        default: assert(false);
+    }
+}
+OgreBites::Label* BaseApplication::getLabel(Label l)
+{
+    switch (l) {
+        case PAUSE: return pauseLabel;
+        default: assert(false);
+    }
 }

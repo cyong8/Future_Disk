@@ -25,7 +25,6 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	setDisk = false;
-	currentPower = NONE;
 
 	gameMusic = music;
 	sceneMgr = mSceneMgr;

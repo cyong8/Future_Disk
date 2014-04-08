@@ -15,8 +15,6 @@ class PlayerCamera;
 class Disk;
 class Music;
 
-enum powerUp{NONE, POWER, SPEED, SHIELD, JUMP, RESTORE};
-
 class Simulator
 {
 	protected:
@@ -47,7 +45,6 @@ class Simulator
 	   	bool wallHitAfterThrow;
 		Ogre::String previousWallHit;
 		Ogre::Real diskSpeedFactor;
-		powerUp currentPower;
 		
 		Music* gameMusic;
 
