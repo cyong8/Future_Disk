@@ -8,7 +8,6 @@ Network::Network(int sc_identifier, char* hostIP)
 	clientSocket = NULL;
 	UDP_gameSocket = NULL;
 	TCP_gameSocket = NULL;
-	maxSizeOfList = 2048;
 	iSet = SDLNet_AllocSocketSet(1);
 	clientSet = SDLNet_AllocSocketSet(4);
 
@@ -158,21 +157,35 @@ void Network::acceptClient()
 	clientSocketList.push_back(tmpAcceptSocket);
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(vector<MCP_Packet> packList, int socketID)
+void Network::sendPacket(char* packList, int socketID)
 {
 	int numSent;
-	// int packListSize = packList.size() * sizeof(MCP_Packet);
-	char buff[maxSizeOfList];
 
-	memset(buff, 0, maxSizeOfList); // bigger size
+	// memset(buff, 0, MAX_SIZE_OF_BUFFER); // bigger size
 
-	printf("Size of Packet List to be sent: %d\n\n", (int)packList.size());
-	for (int i = 0; i < packList.size(); i++)
-	{
-		memcpy(buff+(i*sizeof(&packList[i])), &packList[i], sizeof(&packList[i]));
-	}
+	// printf("Size of Packet List to be sent: %d\n\n", (int)packList.size());
+	// for (int i = 0; i < packList.size(); i++)
+	// {
+	// 	if (packList[i].packetID == (char)(((int)'0') + PLAYER))
+	// 		memcpy(buff+(i*sizeof(PLAYER_packet)), &packList[i], sizeof(PLAYER_packet));
+	// 	else if (packList[i].packetID == (char)(((int)'0') + DISK))
+	// 		memcpy(buff+(i*sizeof(DISK_packet)), &packList[i], sizeof(DISK_packet));
+	// 	else if (packList[i].packetID == (char)(((int)'0') + INPUT))
+	// 		memcpy(buff+(i*sizeof(INPUT_packet)), &packList[i], sizeof(INPUT_packet));
+	// 	else if (packList[i].packetID == (char)(((int)'0') + POWERUP))
+	// 		memcpy(buff+(i*sizeof(POWERUP_packet)), &packList[i], sizeof(POWERUP_packet));
+	// 	else if (packList[i].packetID == (char)(((int)'0') + TILE))
+	// 		memcpy(buff+(i*sizeof(TILE_packet)), &packList[i], sizeof(TILE_packet));
+	// 	else if (packList[i].packetID == (char)(((int)'0') + GAMESTATE))
+	// 		memcpy(buff+(i*sizeof(GAMESTATE_packet)), &packList[i], sizeof(GAMESTATE_packet));
+	// 	else if (packList[i].packetID == (char)(((int)'0') + EXPANSION))
+	// 		memcpy(buff+(i*sizeof(EXPANSION_packet)), &packList[i], sizeof(EXPANSION_packet));
+	// }
 
-	numSent = SDLNet_TCP_Send(clientSocketList[socketID], buff, maxSizeOfList);
+	if (networkID == CLIENT)
+		numSent = SDLNet_TCP_Send(clientSocket, packList, MAX_SIZE_OF_BUFFER);
+	else if (networkID == SERVER)
+		numSent = SDLNet_TCP_Send(clientSocketList[socketID], packList, MAX_SIZE_OF_BUFFER);
 
 	if (!numSent)
 	{
@@ -180,79 +193,60 @@ void Network::sendPacket(vector<MCP_Packet> packList, int socketID)
 	}
 }
 //-------------------------------------------------------------------------------------
-vector<MCP_Packet> Network::receivePacket(int socketID)
+char* Network::receivePacket(int socketID)
 {
 	// we are going to recv packetList, no iterate thru buffer and return a packList
-	vector<MCP_Packet> packList;
-	MCP_Packet pack;
+	char* buff = (char*)malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
 
-	char buff[maxSizeOfList]; 
-
-	memset(buff, 0, maxSizeOfList);
+	memset(buff, 0, MAX_SIZE_OF_BUFFER);
 
 	int numRead;
 
-	if (socketID > 0)
+	if (networkID == CLIENT)
 	{
-		if ((numRead = SDLNet_TCP_Recv(clientSocket, buff, maxSizeOfList)) <= 0) 
+		if ((numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER)) <= 0) 
 		{
-			//printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
-			pack.packetID = 'n';
-			packList.push_back(pack);
-			return packList;
+			//printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
+			buff[0] = 'n';
 		}
-
-		//printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
-
-		for (int i = 0; i < maxSizeOfList; i += sizeof(MCP_Packet))
-		{
-			memcpy(&pack, buff+i, sizeof(MCP_Packet));
-
-			// printf("pack.id = %c\n\n", pack.id);
-			if (pack.packetID == 'n')
-				break;
-			packList.push_back(pack);
-		}
+		return buff;
+		//printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER); 
 	}
-	if (socketID == 0)
+	else if (networkID == SERVER)
 	{
-		for (int i = 0; i < numberOfConnections; i++) 
+		if ((numRead = SDLNet_TCP_Recv(clientSocketList[socketID], buff, MAX_SIZE_OF_BUFFER)) <= 0) 
 		{
-			if (SDLNet_SocketReady(clientSocketList[i])) // SEG FAULT HERE - clearly wrong index
-			{
-				if ((numRead = SDLNet_TCP_Recv(clientSocketList[i], buff, maxSizeOfList)) <= 0) 
-				{
-					printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
-					pack.packetID = 'n';
-					packList.push_back(pack);
-					return packList;
-				}
-
-				printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, maxSizeOfList);
-
-				for (int i = 0; i < maxSizeOfList; i += sizeof(MCP_Packet))
-				{
-					memcpy(&pack, buff+i, sizeof(MCP_Packet));
-
-					// printf("pack.id = %c\n\n", pack.id);
-					if (pack.packetID == 'n')
-						break;
-					packList.push_back(pack);
-				}
-			}
-		}	
+			printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
+			
+			buff[0] = 'n';
+		}
+		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 	}
 
-	return packList;
+	return buff;
 }
 //-------------------------------------------------------------------------------------
-bool Network::checkSockets()
+bool Network::checkSockets(int socketID)
 {
-	int acceptReady = SDLNet_CheckSockets(iSet, 0);
-	int clientReady = SDLNet_CheckSockets(clientSet, 0);
-
-	if (acceptReady <= 0 && clientReady <= 0)
-		return false;
-	else 
-		return true;
+	if (networkID == CLIENT)
+	{
+		if (SDLNet_SocketReady(clientSocket) <= 0)
+			return false;
+		else 
+			return true;
+	}
+	else if (socketID >= 0)
+	{
+		if (SDLNet_SocketReady(clientSocketList[socketID]) <= 0)
+			return false;
+		else
+			return true;
+	}
+	else if (socketID == -1)
+	{
+		if (SDLNet_CheckSockets(iSet, 0) <= 0)
+			return false;
+		else 
+			return true;	
+	}
 }

@@ -11,6 +11,7 @@
 
 #define TCP_portNum 64669
 #define MAX_NUMBER_OF_PLAYERS 4
+#define MAX_SIZE_OF_BUFFER 4000
 
 using namespace std;
 
@@ -36,9 +37,10 @@ enum keyID
 
 enum packID
 {
-	PLAYER,
-	INPUT,
+	C_PLAYER,
+	S_PLAYER,
 	DISK,
+	INPUT,
 	POWERUP,
 	TILE,
 	GAMESTATE,
@@ -52,13 +54,16 @@ enum powerUpID
 	nJUMP,
 	nRESTORE
 };
-
-struct MCP_Packet
+struct C_PLAYER_packet
 {
 	char packetID;
-};			
-struct PLAYER_packet: MCP_Packet
+	char playID;
+	// orientation of respective player
+	Ogre::Quaternion orientation;
+};	
+struct S_PLAYER_packet
 {
+	char packetID;
 	char playID;
 	// positions of each player
 	float x;
@@ -67,14 +72,16 @@ struct PLAYER_packet: MCP_Packet
 	// orientation of each player
 	Ogre::Quaternion orientation;
 };
-struct INPUT_packet : MCP_Packet
+struct INPUT_packet 
 {
+	char packetID;
 	char playID;
 	// keypressed
-	keyID key;
+	char key;
 };
-struct DISK_packet : MCP_Packet
+struct DISK_packet 
 {
+	char packetID;
 	char diskID;
 	// position of the disk
 	float x;
@@ -83,8 +90,9 @@ struct DISK_packet : MCP_Packet
 	// orientation of the disk
 	Ogre::Quaternion orientation;
 };
-struct POWERUP_packet : MCP_Packet
+struct POWERUP_packet 
 {
+	char packetID;
 	powerUpID powerID;
 	// positions of each power-up
 	float x;
@@ -92,22 +100,25 @@ struct POWERUP_packet : MCP_Packet
 	float z;
 	// which power-ups are active
 };
-struct TILE_packet : MCP_Packet
+struct TILE_packet 
 {
+	char packetID;
 	// tile removed/added
 	char playID;
 	bool removed;
 	short tileNumber;
 };
-struct GAMESTATE_packet : MCP_Packet
+struct GAMESTATE_packet 
 {
+	char packetID;
 	int stateChange;	// type of state change
 	// Activate respective power up 
 	// sound
 	// GUI stuff- lose, win, gameStart
 };
-struct EXPANSION_packet : MCP_Packet // deal with this later
+struct EXPANSION_packet  // deal with this later
 {
+	char packetID;
 	// size and shape of room, which is dependent on the number of players
 };
 
@@ -119,9 +130,9 @@ public:
 	void startListening(void);
 	int establishConnection(void);
 	void acceptClient(void);
-	void sendPacket(vector<MCP_Packet>, int socketID);
-	vector<MCP_Packet> receivePacket(int socketID);
-	bool checkSockets(void);
+	void sendPacket(char* packList, int socketID);
+	char* receivePacket(int socketID);
+	bool checkSockets(int socketID);
 
 private:
 	SDLNet_SocketSet iSet;
@@ -135,7 +146,6 @@ private:
 	int UDP_portNum;
 	int UDP_channel;
 	identifier networkID;
-	int maxSizeOfList;
 	int numberOfConnections;
 	bool connectionEstablished;
 	int playerID;

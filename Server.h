@@ -59,8 +59,9 @@ private:
 	bool constructAndSendGameState(int socketID);
 	void updateRemovedTiles(void);
 	void restrictPlayerMovement(Player* p);
-	bool interpretClientPacket(MCP_Packet pack);
+	bool interpretClientPacket(int playerID);
 	void keyPressed(const OIS::KeyEvent &evt);
+	void processClientInput(int playerIndex, keyID inputType);
 };
 
 #endif // #ifndef __Server_h_

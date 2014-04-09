@@ -11,8 +11,8 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
-    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
-        playerList[i] = NULL;
+    // for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+    //     playerList[i] = NULL;
 
 	gameNetwork = new Network(CLIENT, IP);
 	gameMusic = new Music();
@@ -32,17 +32,16 @@ void Client::createScene()
 	char playerBuffer[25];
     char cameraBuffer[25];
 
-    gameRoom = new Room(cSceneMgr, NULL, CLIENT);
+    gameRoom = new Room(cSceneMgr, NULL, 1);
     printf("\n\nPlayer ID: %d\n\n", playerID);
 
     sprintf(playerBuffer, "Player%d", playerID);
     clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID);
-    numPlayers++;
     playerList[playerID] = clientPlayer;
+    numPlayers++;
 
 	sprintf(cameraBuffer, "Player%dCam", playerID);
-    pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));/*need camera object*/
-    
+    pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
     
@@ -67,7 +66,7 @@ void Client::createScene()
 //-------------------------------------------------------------------------------------
 bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    if (gameNetwork->checkSockets())
+    if (gameNetwork->checkSockets(0))
         updateScene();
 
     if (!processUnbufferedInput(evt, mKeyboard, mMouse))
@@ -78,11 +77,8 @@ bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
 //-------------------------------------------------------------------------------------
 bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-	vector<MCP_Packet> packList;
-    MCP_Packet pack;
     bool result = false;
     static bool vKeydown = false;
-    memset(&pack, 0, sizeof(MCP_Packet));
 
     // if (clientOrientationChange)
     // {
@@ -180,69 +176,11 @@ bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
     return true;
 }
 //-------------------------------------------------------------------------------------
-bool Client::resetMovementState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, vector<MCP_Packet> &packList)
-{
-    MCP_Packet pack;
-    bool result = false;
-    memset(&pack, 0, sizeof(MCP_Packet));
-
-    // if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(Forward))
-    // {
-    //     clientPlayer->setState(Forward, false);
-    //     pack.id = 'w';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(Left))
-    // {
-    //     clientPlayer->setState(Left, false);
-    //     pack.id = 'a';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(Back))
-    // {
-    //     clientPlayer->setState(Back, false);
-    //     pack.id = 's';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(Right))
-    // {   
-    //     clientPlayer->setState(Right, false);
-    //     pack.id = 'd';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && clientPlayer->checkState(Jump))
-    // {
-    //     clientPlayer->setState(Jump, false);
-    //     pack.id = 'j';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }   
-    // if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(Boost))
-    // {
-    //     clientPlayer->setState(Boost, false);
-    //     pack.id = 'b';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-
-    return result;
-}
-//-------------------------------------------------------------------------------------
 void Client::updateScene() // Receive packets and interpret them
 {
-	vector<MCP_Packet> packList;
-	int i = 0;
-
-    packList = gameNetwork->receivePacket(playerID);
-    while (packList.size() > i && packList[i].packetID != 'n')
-    {
-        interpretServerPacket(packList[i]);
-        i++;
-    }
+	char* packList = gameNetwork->receivePacket(playerID);
+    
+    interpretServerPacket(packList);
 }
 //-------------------------------------------------------------------------------------
 void Client::updateCamera(Ogre::Real elapseTime)
@@ -253,91 +191,101 @@ void Client::updateCamera(Ogre::Real elapseTime)
         pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());      
 }
 //-------------------------------------------------------------------------------------
-void Client::interpretServerPacket(MCP_Packet pack)
+void Client::interpretServerPacket(char* packList)
 {
+    int indexIntoBuff = 0;
     Ogre::Vector3 newPos;
     Ogre::Quaternion newQuat;
 
-    printf("packet ID: %c\n\n", pack.packetID);
-
-    /* BEGIN GAME */ 
-    if(pack.packetID == (char)(((int)'0') + GAMESTATE))
+    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && packList[indexIntoBuff] != 'n')
     {
-        gameStart = true;
-    }
-    /* UPDATE PLAYERS */
-    if (pack.packetID == (char)(((int)'0') + PLAYER))
-    {
-        PLAYER_packet p;
-        memcpy(&p, &pack, sizeof(PLAYER_packet));
-
-        newPos = Ogre::Vector3(p.x, p.y, p.z);
-        newQuat = p.orientation;
-        int newPlayerID = p.playID - '0';
-        printf("New Player ID: %d from %c\n\n", newPlayerID, p.playID);
-        if (playerList[newPlayerID] == NULL)
+        char packType = packList[indexIntoBuff];
+        /* UPDATE DISK */
+        if (packType == (char)(((int)'0') + DISK))
         {
-            char playerBuffer[25];
-            sprintf(playerBuffer, "Player%d", newPlayerID);
+            DISK_packet d;
+            memcpy(&d, packList + indexIntoBuff, sizeof(DISK_packet));
 
-            playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
-            numPlayers++;
+            newPos = Ogre::Vector3(d.x, d.y, d.z);
+            newQuat = d.orientation;
+
+            if (gameDisk == NULL)
+            {
+                gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
+                gameDisk->particleNode->setVisible(true);
+            }
+
+            gameDisk->getSceneNode()->_setDerivedPosition(newPos);
+            gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
+            gameDisk->getSceneNode()->needUpdate();
+            indexIntoBuff += sizeof(DISK_packet);
         }
-
-        playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
-        playerList[newPlayerID]->getSceneNode()->_setDerivedOrientation(newQuat);
-        playerList[newPlayerID]->getSceneNode()->needUpdate();
-    }
-    /* UPDATE DISK */
-   if (pack.packetID == (char)(((int)'0') + DISK))
-    {
-        DISK_packet* p = (DISK_packet*)&pack;
-        newPos = Ogre::Vector3(p->x, p->y, p->z);
-        newQuat = p->orientation;
-
-        if (gameDisk == NULL)
+        /* UPDATE PLAYERS */
+        else if (packType == (char)(((int)'0') + S_PLAYER))
         {
-            gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
-            gameDisk->particleNode->setVisible(true);
+            S_PLAYER_packet p;
+            memcpy(&p, packList + indexIntoBuff, sizeof(S_PLAYER_packet));
+
+            newPos = Ogre::Vector3(p.x, p.y, p.z);
+            newQuat = p.orientation;
+
+            int newPlayerID = p.playID - '0';
+            printf("New Player ID: %d from %c\n\n", newPlayerID, p.playID);
+
+            if (playerList[newPlayerID] == NULL)
+            {
+                char playerBuffer[25];
+                sprintf(playerBuffer, "Player%d", newPlayerID);
+
+                playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
+                numPlayers++;
+            }
+
+            playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
+            playerList[newPlayerID]->getSceneNode()->_setDerivedOrientation(newQuat);
+            playerList[newPlayerID]->getSceneNode()->needUpdate();
+
+            indexIntoBuff += sizeof(S_PLAYER_packet);
         }
+        // if(packType == 'D')
+        // {
+        //     clientPlayer->setHolding(true);
+        // }
 
-        gameDisk->getSceneNode()->_setDerivedPosition(newPos);
-        gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
-        gameDisk->getSceneNode()->needUpdate();
+        // if(packType == 'P')
+        // {
+        //     Power->getSceneNode()->_setDerivedPosition(newPos);
+        //     Power->getSceneNode()->needUpdate();
+        // }
+        // if(packType == 'S')
+        // {
+        //     Speed->getSceneNode()->_setDerivedPosition(newPos);
+        //     Speed->getSceneNode()->needUpdate();
+        // }
+        // if(packType == 'J')
+        // {
+        //     JumpPower->getSceneNode()->_setDerivedPosition(newPos);
+        //     JumpPower->getSceneNode()->needUpdate();
+        // }
+        // if(packType == 'R')
+        // {
+        //     Restore->getSceneNode()->_setDerivedPosition(newPos);
+        //     Restore->getSceneNode()->needUpdate();
+        // }
+        // if (packType == 'H')
+        // {
+        //     gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
+        // }
+        // if (packType == 'C')
+        // {
+        //     gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
+        // }
+        /* BEGIN GAME */ 
+        else if(packType == (char)(((int)'0') + GAMESTATE))
+        {
+            gameStart = true;
+        }
     }
-    // if(pack.packetID == 'D')
-    // {
-    //     clientPlayer->setHolding(true);
-    // }
-
-    // if(pack.packetID == 'P')
-    // {
-    //     Power->getSceneNode()->_setDerivedPosition(newPos);
-    //     Power->getSceneNode()->needUpdate();
-    // }
-    // if(pack.packetID == 'S')
-    // {
-    //     Speed->getSceneNode()->_setDerivedPosition(newPos);
-    //     Speed->getSceneNode()->needUpdate();
-    // }
-    // if(pack.packetID == 'J')
-    // {
-    //     JumpPower->getSceneNode()->_setDerivedPosition(newPos);
-    //     JumpPower->getSceneNode()->needUpdate();
-    // }
-    // if(pack.packetID == 'R')
-    // {
-    //     Restore->getSceneNode()->_setDerivedPosition(newPos);
-    //     Restore->getSceneNode()->needUpdate();
-    // }
-    // if (pack.packetID == 'H')
-    // {
-    //     gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-    // }
-    // if (pack.packetID == 'C')
-    // {
-    //     gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-    // }
 }
 //-------------------------------------------------------------------------------------
 bool Client::mouseMoved(const OIS::MouseEvent &evt)

@@ -11,6 +11,7 @@ PlayerCamera::PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Came
     // create nodes for cameras
     mCameraNode = mCamSceneMgr->getRootSceneNode()->createChildSceneNode(nym);
     mTargetNode = mCamSceneMgr->getRootSceneNode()->createChildSceneNode(nym + "_target");
+    pCamera->setPosition(mCameraNode->getPosition());
 
     mCameraNode->setAutoTracking(true, mTargetNode); // The camera will always look at the camera target
     mCameraNode->setFixedYawAxis(true); // Needed because of auto tracking

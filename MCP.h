@@ -68,9 +68,6 @@ protected:
 	bool updateClient(const Ogre::FrameEvent& evt);
 	void updateClientCamera(Ogre::Real elapseTime);
 	bool processAndSendClientInput(const Ogre::FrameEvent& evt);
-	bool resetClientState(const Ogre::FrameEvent& evt, vector<MCP_Packet> &packList);
-	bool interpretClientPacket(MCP_Packet pack);
-	bool interpretServerPacket(MCP_Packet pack);
 	void updateRemovedTiles(void);
 	virtual bool mouseMoved(const OIS::MouseEvent &evt);
 	virtual bool mousePressed(const OIS::MouseEvent &evt, OIS::MouseButtonID id);

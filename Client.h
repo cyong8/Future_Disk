@@ -52,10 +52,9 @@ private:
 	bool gameStart;
 
 	Ogre::Light* pointLight;
-	bool resetMovementState(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, vector<MCP_Packet> &packList);
 	void updateScene(void);
 	void updateCamera(Ogre::Real elapseTime);
-	void interpretServerPacket(MCP_Packet packList);
+	void interpretServerPacket(char* packList);
 	bool mouseMoved(const OIS::MouseEvent &evt);
 };
 
