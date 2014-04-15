@@ -19,6 +19,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	if (playerID == 1)
 	{
+		printf("player id inside player creation: %d\n\n\n", playerID);
 		playerSide == "Negative Side";
 		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 	}
@@ -57,16 +58,20 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	mass = 0.5f; // Set mass of player
 
 	// initialize Cameras
-	if (playerSide == "Negative Side")
+	if (playerID == 1)
 	{
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
 	}
-	else
+	else if (playerID == 2)
 	{	
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
 	}
+	else if (playerID == 3)
+		;
+	else if (playerID == 4)
+		;
 
  	// DEBUGGING 
 	// Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
@@ -193,7 +198,7 @@ void Player::decreaseJump()
 //-------------------------------------------------------------------------------------
 void Player::initializeStates()
 {
-	int i = Forward;
+	int i = LEFT;
 	while (i > 0)
 	{
 		states.push_back(false);
@@ -215,15 +220,15 @@ Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 {
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 
-	if (states[Left])
+	if (states[LEFT])
 		velocityVector += Ogre::Vector3(m, 0.0f, 0.0f);
-	if (states[Right])
+	if (states[RIGHT])
 		velocityVector += Ogre::Vector3(-m, 0.0f, 0.0f);
-	if (states[Back])
+	if (states[BACK])
 		velocityVector += Ogre::Vector3(0.0f, 0.0f, -m);
-	if (states[Forward])
+	if (states[FORWARD])
 		velocityVector += Ogre::Vector3(0.0f, 0.0f, m);
-	if (states[Boost])
+	if (states[BOOST])
 		velocityVector *= sprintFactor;
 
 	return velocityVector;

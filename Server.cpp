@@ -32,6 +32,7 @@ Server::~Server(void)
 void Server::createScene()
 {
     gameRoom = new Room(sSceneMgr, gameSimulator, 0);
+    // sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
     /********************  OBJECT CREATION  ********************/
 /*	Add Players when people connect
@@ -71,11 +72,11 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
     if (!processUnbufferedInput(evt))
         exit(2);
 
-    // gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
-    // gameSimulator->parseCollisions(); // check collisions
+    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+    gameSimulator->parseCollisions(); // check collisions
 
 
-    if (gameNetwork->checkSockets()) //&& clientGameStart)
+    if (gameNetwork->checkSockets(-1)) // CHECK FOR NEW PLAYERS
     {
         if (gameNetwork->establishConnection() == 1) // attempt to establish a connection at each frame
         {
@@ -89,25 +90,15 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
             playerList.push_back(new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients));
             playerList[numberOfClients-1]->addToSimulator();
         }
-
-        int i = 0;
-        vector<MCP_Packet> packList;
-        packList = gameNetwork->receivePacket(0);
-       
-        while (packList.size() > i && packList[i].packetID != 'n')
-        {
-            printf("pack.packetID (inside while) = %c\n\n", packList[i].packetID);
-            interpretClientPacket(packList[i]);
-            i++;
-        }
     }        
-
     updateRemovedTiles();
     // if (mShutDown)
            // exit(2);                  
-
-    for (int i = 0; i < numberOfClients; i++)
+    for (int i = 0; i < numberOfClients; i++)  // CHECK FOR ACTIVITY FROM CURRENT PLAYERS
     {
+        if (gameNetwork->checkSockets(i))
+            interpretClientPacket(i);            
+
         updateClientVelocity(playerList[i]);
         restrictPlayerMovement(playerList[i]);
 
@@ -154,21 +145,26 @@ void Server::updateClientVelocity(Player* p)
 //-------------------------------------------------------------------------------------
 bool Server::constructAndSendGameState(int socketID)
 {
-	vector<MCP_Packet> packList;
+    char* buff = (char*)malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
+    int indexIntoBuff = 0;
 
+    /* Sending each player's position to clients */
     for (int i = 0; i < numberOfClients; i++)
     {
-        PLAYER_packet pack;
-        memset(&pack, 0, sizeof(PLAYER_packet));
+        S_PLAYER_packet pack;
+     
+        memset(&pack, 0, sizeof(S_PLAYER_packet));
 
-        pack.packetID = (char)(((int)'0') + PLAYER);
+        pack.packetID = (char)(((int)'0') + S_PLAYER);
         pack.playID = (char)(((int)'0') + i);
+        printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
         pack.x = playerList[i]->getSceneNode()->getPosition().x;
         pack.y = playerList[i]->getSceneNode()->getPosition().y;
         pack.z = playerList[i]->getSceneNode()->getPosition().z;
         pack.orientation = playerList[i]->getSceneNode()->getOrientation();
 
-        packList.push_back(pack);
+        memcpy(buff + indexIntoBuff, &pack, sizeof(S_PLAYER_packet));
+        indexIntoBuff += sizeof(S_PLAYER_packet);
     }
 
     // if ()
@@ -220,6 +216,7 @@ bool Server::constructAndSendGameState(int socketID)
     if (gameDisk != NULL)
     {
         DISK_packet pack;
+        memset(&pack, 0, sizeof(DISK_packet));
 
         pack.packetID = (char)(((int)'0') + DISK);
         pack.diskID = (char)((int)'0');
@@ -228,21 +225,22 @@ bool Server::constructAndSendGameState(int socketID)
         pack.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
         pack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
 
-        packList.push_back(pack);
+        memcpy(buff + indexIntoBuff, &pack, sizeof(DISK_packet));
+        indexIntoBuff += sizeof(DISK_packet);
     }
-    if (gameSimulator->checkGameStart())
+    if (gameSimulator->checkGameStart()) // Don't want to do every frame
     {
         GAMESTATE_packet pack;
+        memset(&pack, 0, sizeof(GAMESTATE_packet));
+
         pack.packetID = (char)(((int)'0') + GAMESTATE);   
-        packList.push_back(pack);
+        memcpy(buff + indexIntoBuff, &pack, sizeof(GAMESTATE_packet));
+        indexIntoBuff += sizeof(GAMESTATE_packet);
     }
 
-    MCP_Packet pack;
+    buff[indexIntoBuff] = 'n';
 
-    pack.packetID = 'n';
-    packList.push_back(pack);
-
-    gameNetwork->sendPacket(packList, socketID);
+    gameNetwork->sendPacket(buff, socketID);
 }
 //-------------------------------------------------------------------------------------
 void Server::updateRemovedTiles() // HACKED
@@ -313,76 +311,130 @@ void Server::restrictPlayerMovement(Player* p)
     }
 }
 //-------------------------------------------------------------------------------------
-bool Server::interpretClientPacket(MCP_Packet pack)
+bool Server::interpretClientPacket(int playerID)
 {
+    int indexIntoBuff = 0;
+    char* buff = gameNetwork->receivePacket(playerID);
     // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
-    char typeInput = pack.packetID;
     
 //    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
-    
-    if (typeInput == 'w')                                       // Forward
+    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 'n')
     {
-        // if (hostPlayer->checkState(Forward))
-        //     hostPlayer->toggleState(Forward, false);
-        // else
-        //     hostPlayer->toggleState(Forward, true);
-    }
-    if (typeInput == 'a')                                       // Left
-    {
-        // if (hostPlayer->checkState(Left))
-        //     hostPlayer->toggleState(Left, false);
-        // else
-        //     hostPlayer->toggleState(Left, true);
-    }
-    if (typeInput == 's')                                       // Backwards
-    {
-        // if (hostPlayer->checkState(Back))
-        //     hostPlayer->toggleState(Back, false);
-        // else
-        //     hostPlayer->toggleState(Back, true);
-    }
-    if (typeInput == 'd')                                       // Right
-    {
-        // if (hostPlayer->checkState(Right))
-        //     hostPlayer->toggleState(Right, false);
-        // else
-        //     hostPlayer->toggleState(Right, true);
-    }
-    if (typeInput == 'j') //&& !clientPlayer->groundConstantSet)   // Jump
-    {
-        // clientPlayer->performJump();
-    }
-    if (typeInput == 'v')                                       // View Mode Toggle
-    {
-        // clientVKeyDown = !clientVKeyDown;
-    }
-    if (typeInput == 'b')                                       // speed boost
-    {
-        // if (hostPlayer->checkState(Boost))
-        //     hostPlayer->toggleState(Boost, false);
-        // else
-        //     hostPlayer->toggleState(Boost, true);
-    }
-    if (typeInput == 't') //&& clientPlayer->checkHolding())       // Player tried to throw
-    {
-        gameSimulator->setThrowFlag();
-    }
-    if (typeInput == 'o')
-    {
-        // clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
+        int packetID = buff[indexIntoBuff] - '0';
 
-        // btQuaternion rotationQ;
-        // btTransform transform = clientPlayer->getBody()->getCenterOfMassTransform();
+        if (packetID == INPUT)
+        {
+            INPUT_packet i;
 
-        // rotationQ = btQuaternion(clientPlayer->getSceneNode()->getOrientation().getYaw().valueRadians(), 0, 0);
-        // transform.setRotation(rotationQ);
+            memcpy(&i, buff+indexIntoBuff, sizeof(INPUT_packet));
 
-        // clientPlayer->getBody()->setCenterOfMassTransform(transform);
+            // interpret i
+            int pID = i.playID - '0';
+            keyID inputID = static_cast<keyID>(i.key - '0');
+
+            processClientInput(pID, inputID);
+
+            indexIntoBuff += sizeof(INPUT_packet);
+        }
+        else if (packetID == C_PLAYER)
+        {   
+            C_PLAYER_packet p;
+
+            memcpy(&p, buff+indexIntoBuff, sizeof(C_PLAYER_packet));
+
+            int pID = p.playID - '0';
+            Ogre::Quaternion quat = p.orientation;
+
+            // interpret p
+            Player* cp = playerList[pID];
+
+            cp->getSceneNode()->_setDerivedOrientation(p.orientation);
+
+            btQuaternion rotationQ;
+            btTransform transform = cp->getBody()->getCenterOfMassTransform();
+
+            rotationQ = btQuaternion(cp->getSceneNode()->getOrientation().getYaw().valueRadians(), 0, 0);
+            transform.setRotation(rotationQ);
+
+            cp->getBody()->setCenterOfMassTransform(transform);
+
+            indexIntoBuff += sizeof(C_PLAYER_packet);
+        }
+        else if (packetID == GAMESTATE)
+        {
+            GAMESTATE_packet g;
+
+            memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
+
+            // interpret g
+
+            indexIntoBuff += sizeof(GAMESTATE_packet);
+        }
     }
-    if (typeInput == 'S')
-    {
-        // clientPlayer->getPlayerSightNode()->setPosition(Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate));
-    }
+
+    // if (typeInput == 'w')                                       // Forward
+    // {
+    //     // if (hostPlayer->checkState(Forward))
+    //     //     hostPlayer->toggleState(Forward, false);
+    //     // else
+    //     //     hostPlayer->toggleState(Forward, true);
+    // }
+    // if (typeInput == 'a')                                       // Left
+    // {
+    //     // if (hostPlayer->checkState(Left))
+    //     //     hostPlayer->toggleState(Left, false);
+    //     // else
+    //     //     hostPlayer->toggleState(Left, true);
+    // }
+    // if (typeInput == 's')                                       // Backwards
+    // {
+    //     // if (hostPlayer->checkState(Back))
+    //     //     hostPlayer->toggleState(Back, false);
+    //     // else
+    //     //     hostPlayer->toggleState(Back, true);
+    // }
+    // if (typeInput == 'd')                                       // Right
+    // {
+    //     // if (hostPlayer->checkState(Right))
+    //     //     hostPlayer->toggleState(Right, false);
+    //     // else
+    //     //     hostPlayer->toggleState(Right, true);
+    // }
+    // if (typeInput == 'j') //&& !clientPlayer->groundConstantSet)   // Jump
+    // {
+    //     // clientPlayer->performJump();
+    // }
+    // if (typeInput == 'v')                                       // View Mode Toggle
+    // {
+    //     // clientVKeyDown = !clientVKeyDown;
+    // }
+    // if (typeInput == 'b')                                       // speed boost
+    // {
+    //     // if (hostPlayer->checkState(Boost))
+    //     //     hostPlayer->toggleState(Boost, false);
+    //     // else
+    //     //     hostPlayer->toggleState(Boost, true);
+    // }
+    // if (typeInput == 't') //&& clientPlayer->checkHolding())       // Player tried to throw
+    // {
+    //     gameSimulator->setThrowFlag();
+    // }
+    // if (typeInput == 'o')
+    // {
+    //     // clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
+
+    //     // btQuaternion rotationQ;
+    //     // btTransform transform = clientPlayer->getBody()->getCenterOfMassTransform();
+
+    //     // rotationQ = btQuaternion(clientPlayer->getSceneNode()->getOrientation().getYaw().valueRadians(), 0, 0);
+    //     // transform.setRotation(rotationQ);
+
+    //     // clientPlayer->getBody()->setCenterOfMassTransform(transform);
+    // }
+    // if (typeInput == 'S')
+    // {
+    //     // clientPlayer->getPlayerSightNode()->setPosition(Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate));
+    // }
 
     return false;
 }
@@ -392,6 +444,52 @@ void Server::keyPressed(const OIS::KeyEvent &evt)
 
 }
 //-------------------------------------------------------------------------------------
+void Server::processClientInput(int playerIndex, keyID keyPressed)
+{
+    Player* p = playerList[playerIndex];
+
+    switch(keyPressed)
+    {
+        case W:
+            if (p->checkState(FORWARD))
+                p->setState(FORWARD, false);
+            else
+                p->setState(FORWARD, true);
+            break;
+        case A:
+            if (p->checkState(LEFT))
+                p->setState(LEFT, false);
+            else
+                p->setState(LEFT, true);
+            break;
+        case S:
+            if (p->checkState(BACK))
+                p->setState(BACK, false);
+            else
+                p->setState(BACK, true);
+            break;
+        case D:
+            if (p->checkState(RIGHT))
+                p->setState(RIGHT, false);
+            else
+                p->setState(RIGHT, true);
+            break;
+        case SPACE: // ATTEMPT TO PERFORM JUMP
+            break;
+        case SHIFT: 
+            if (p->checkState(BOOST))
+                p->setState(BOOST, false);
+            else
+                p->setState(BOOST, true);
+            break;
+        case MOUSECLICK:  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
+            break;
+        case ESC:  // GAME STATE CHANGE
+            break;
+        case ENTER: // GAME STATE CHANGE
+            break;
+    }
+}
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

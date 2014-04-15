@@ -40,7 +40,7 @@ This source file is part of the
 #include <vector>
 #include "btBulletDynamicsCommon.h"
 
-#include <assert.h>
+#include <cassert>
 #include <time.h>
 
 #include <CEGUI/CEGUI.h>
@@ -56,6 +56,9 @@ using namespace std;
 #if OGRE_PLATFORM == OGRE_PLATFORM_APPLE_IOS || OGRE_PLATFORM == OGRE_PLATFORM_APPLE
 #   include <macUtils.h>
 #endif
+
+enum Panel{SCORE, INSTRUCT, OBJECTIVE, POWER, GAMEOVER, GAMEOVERWIN, GAMEOVERLOSS};
+enum Label{PAUSE};
 
 #ifdef OGRE_IS_IOS
 class BaseApplication : public Ogre::FrameListener, public Ogre::WindowEventListener, OIS::KeyListener, OIS::MultiTouchListener, OgreBites::SdkTrayListener
@@ -75,7 +78,8 @@ public:
     
     virtual OgreBites::SdkTrayManager* getTrayManager(void);
     virtual Ogre::RenderWindow* getRenderWindow(void);
-    virtual OgreBites::ParamsPanel* getPowerUpPanel(void);
+    virtual OgreBites::ParamsPanel* getPanel(Panel p);
+    virtual OgreBites::Label* getLabel(Label l);
 
 protected:
     virtual bool setup();
@@ -116,8 +120,8 @@ protected:
 
     // OgreBites
     OgreBites::ParamsPanel* scorePanel;       // scoring panel for TronGame
-    OgreBites::ParamsPanel* instructPanel;
     OgreBites::ParamsPanel* objectivePanel;
+    OgreBites::ParamsPanel* instructPanel;
     OgreBites::ParamsPanel* powerUpPanel;
     OgreBites::Label* startLabel;
     OgreBites::Label* pauseLabel;

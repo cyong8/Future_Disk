@@ -56,9 +56,6 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)   // Need to make a soloMode class
 
     gui->removePanel(objectivePanel);
     gui->removePanel(instructPanel);
-    gui->removePanel(gameOverPanel);
-    gui->removePanel(gameOverWinPanel);
-    gui->removePanel(gameOverLossPanel); 
 
     // time(&initTime);     
 
@@ -82,9 +79,6 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
     gui->removePanel(objectivePanel);
     gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
-    gui->removePanel(gameOverPanel);
-    gui->removePanel(gameOverWinPanel);
-    gui->removePanel(gameOverLossPanel);
     
     // Create Server Object
     gameServer = new Server(this);//gameMusic, mSceneMgr);
@@ -110,9 +104,6 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     gui->removePanel(objectivePanel);
     gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
-    gui->removePanel(gameOverPanel);
-    gui->removePanel(gameOverWinPanel);
-    gui->removePanel(gameOverLossPanel);
 
     // Create Client Object
     mainClient = new Client(ip, mSceneMgr);
