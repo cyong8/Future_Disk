@@ -15,6 +15,8 @@ class PlayerCamera;
 class Disk;
 class Music;
 
+enum gameState{NOTSTARTED, STARTED, PAUSED, OVER};
+
 class Simulator
 {
 	protected:
@@ -38,7 +40,10 @@ class Simulator
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
+		
 		bool gameStart;
+		enum gameState gameState;
+
 		bool player1CanCatch;
 	    bool player2CanCatch;
 		bool giveDisk;

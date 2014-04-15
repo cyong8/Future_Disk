@@ -17,6 +17,12 @@ public:
 	bool frameRenderingQueued(const Ogre::FrameEvent& evt);
 	bool processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 
+	void updatePlayerVelocity(Player* p);
+	void updateCamera(Ogre::Real elapseTime);
+	bool mouseMoved(const OIS::MouseEvent &evt);
+
+	void createOverlays(PlayerCamera* playCam);
+
 private:
 	Ogre::SceneManager* sceneMgr;
 	Network* gameNetwork;
@@ -28,6 +34,8 @@ private:
 	bool gameStart;
 	bool gameOver;
 	bool gamePause;
+
+	bool clientOrientationChange;
 
 	/* Game Functionality Constants */
 	Ogre::Real mMove; 			// Move Constant
@@ -61,9 +69,6 @@ private:
 	time_t gapEndTime;
 
 	Ogre::Light* pointLight;
-	void updatePlayerVelocity(Player* p);
-	void updateCamera(Ogre::Real elapseTime);
-	bool mouseMoved(const OIS::MouseEvent &evt);
 
 };
 

@@ -17,7 +17,10 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	viewChangeP1 = false;
 	viewChangeP2 = false;
 	throwFlag = false;
+
+	gameState = NOTSTARTED;
 	gameStart = false;
+	
 	player1CanCatch = true;
     player2CanCatch = true;
     wallHitAfterThrow = true;
@@ -423,6 +426,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
+			gameState = STARTED;
+			printf("game started -> %d\n", gameState);
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
 	}

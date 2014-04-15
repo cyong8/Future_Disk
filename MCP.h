@@ -59,7 +59,6 @@ public:
 	Ogre::SceneManager* getSceneManager(void);
 	Music* getMusicObject(void);
 
-
 protected:
 	virtual void createScene(void);
 	void createSoloModeScene(void);

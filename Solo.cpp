@@ -32,13 +32,10 @@ void Solo::createScene()
 {
     gameRoom = new Room(sceneMgr, gameSimulator, 0);
 
-    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(2, 2, 2), 1);
+    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1);
     player->addToSimulator();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
-    //pCam->initializePosition(player->getSceneNode()->_getDerivedPosition() - Ogre::Vector3(1.0f, 1.0f, 1.0f), player->getSceneNode()->getPosition());
-
-    //pCamNode->setPosition(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z)
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(player);
 
@@ -68,7 +65,7 @@ void Solo::createScene()
 
     gameStart = true;
 
-    // createOverlays(pCam); // in MCP
+    createOverlays(pCam); // in MCP
 }
 //-------------------------------------------------------------------------------------
 bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -83,7 +80,7 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if(!gameStart && !gameOver) // Game not started
     {
-        MasterControl->gui->removeLabel(MasterControl->gui->getLabel(PAUSE));
+        MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));
         MasterControl->gui->removePanel(MasterControl->getPanel(GAMEOVER));
         printf("!gamestart && !gameOver");
     }
@@ -116,7 +113,7 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
     }
 
     //updateRemovedTiles();
-    //updatePlayerVelocity(player);
+    updatePlayerVelocity(player);
     //restrictPlayerMovement(player);
 
     if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
@@ -130,19 +127,19 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     updateCamera(evt.timeSinceLastFrame);
 
-    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
+    //timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
 }
 //-------------------------------------------------------------------------------------
 void Solo::updatePlayerVelocity(Player* p)
 {
 	if (gameSimulator->checkGameStart())
     {
-        Ogre::Vector3 velocityVector;
-        velocityVector = p->fillClientVelocityVector(mMove, sprintFactor); // p1 was hostPlayer
+        //Ogre::Vector3 velocityVector;
+        //velocityVector = p->fillClientVelocityVector(mMove, sprintFactor); // p1 was hostPlayer
         //velocityVector = p->getSceneNode()->getOrientation() * velocityVector;  // p2 was player
-        btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
+        //btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
         // No longer named player/hostPlayer - receive player id in packet
-        player->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, player->getBody()->getLinearVelocity().getY(), 0.0f)));
+        //player->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, player->getBody()->getLinearVelocity().getY(), 0.0f)));
     }
 }
 //-------------------------------------------------------------------------------------
@@ -220,17 +217,17 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
         
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown) // if 'v' is pressed and was not pressed last frame - go to aim mode
         {
-            PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
+            //PlayerCamera* pc = gameSimulator->getPlayerCamera("soloCamera");
             gameSimulator->toggleViewChange("Player1");
-            pc->toggleThirdPersonView();
+            pCam->toggleThirdPersonView();
             vKeyDown = true;
             //showTrajectory(pc);
         }
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown) // if 'v' is not pressed and was pressed last frame - exit aim mode
         {
-            PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
+            //PlayerCamera* pc = gameSimulator->getPlayerCamera("soloCamera");
             gameSimulator->toggleViewChange("Player1");
-            pc->toggleThirdPersonView();
+            pCam->toggleThirdPersonView();
             vKeyDown = false;
             //mSceneMgr->getRootSceneNode()->detachObject(trajectory);
             //trajectory->clear();
@@ -284,8 +281,9 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
                 spacePressedLast = false;
             if(keyWasPressed && !p->checkMovementRestriction())
             {   // Rotate the velocity vector by the orientation of the player
+                
                 Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
-                trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
+                trueVelocity = p->getSceneNode()->_getDerivedOrientation() * trueVelocity; 
                 btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
 
                 if (turboMode)
@@ -295,4 +293,37 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
             }
         }
     }
+}
+
+void Solo::createOverlays(PlayerCamera* playCam) // might move to Client and Server
+{
+    /********************    MENUS    ********************/
+    Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
+    
+    Ogre::Overlay* crossHairVertOverlay = overlayManager->create("crossHairVert"); // Create an overlay for the vertical crosshair
+
+    // Create an overlay container for the vertical crosshair
+    Ogre::OverlayContainer* crossHairVertContainer = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "VerticalPanel"));
+    crossHairVertContainer->setPosition(0.5f, 0.4f);
+    crossHairVertContainer->setDimensions(0.001f, 0.2f);
+    crossHairVertContainer->setMaterialName("BaseWhite");
+    crossHairVertContainer->getMaterial()->setReceiveShadows(false);
+
+    crossHairVertOverlay->add2D( crossHairVertContainer ); // Add crossHairVertContainer to the crossHairVertOverlay
+
+    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create("crossHairHoriz"); // Create an overlay for the horizontal crosshair
+
+    // Create an overlay container for the horizontal crosshair
+    Ogre::OverlayContainer* crossHairHorizContainer = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "HorizontalPanel"));
+    crossHairHorizContainer->setPosition(0.425, 0.5);
+    crossHairHorizContainer->setDimensions(0.15, 0.001);
+    crossHairHorizContainer->setMaterialName("BaseWhite");
+    crossHairHorizContainer->getMaterial()->setReceiveShadows(false);
+
+    crossHairHorizOverlay->add2D(crossHairHorizContainer);     // Add the crossHairHorizContainer to the crossHairHorizOverlay
+
+    crossHairVertOverlay->hide();    // Hide the Crosshair till 
+    crossHairHorizOverlay->hide();   // til Aim View is activated 
+
+    playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }

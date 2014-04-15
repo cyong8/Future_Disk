@@ -17,13 +17,13 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	groundConstantSet = false;
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 
-	if (playerID == 1)
+	if (playerID == 2)
 	{
 		printf("player id inside player creation: %d\n\n\n", playerID);
 		playerSide == "Negative Side";
 		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 	}
-	else if (playerID == 2)
+	else if (playerID == 1)
 	{
 		playerSide == "Positive Side";
 		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);
@@ -60,13 +60,13 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	// initialize Cameras
 	if (playerID == 1)
 	{
-		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
-		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
 	}
 	else if (playerID == 2)
 	{	
-		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
-		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
 	}
 	else if (playerID == 3)
 		;
