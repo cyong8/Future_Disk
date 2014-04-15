@@ -33,7 +33,8 @@ MCP::~MCP(void)
 void MCP::createScene(void)
 {
     gameServer = NULL;
-    mainClient = NULL;  
+    mainClient = NULL;
+    solo = NULL;  
 
     gameMusic = new Music();    // Initialize Music
     // gameMusic->playMusic("Start");
@@ -65,7 +66,8 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)   // Need to make a soloMode class
 
     gameMusic->playMusic("Play");
     
-    // createSoloModeScene();    
+    // createSoloModeScene();
+    solo = new Solo(this);    
     return true;
 }
 //-------------------------------------------------------------------------------------
@@ -95,7 +97,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     CEGUI::WindowManager::WindowIterator wIterator = wmgr.getIterator();  
     wIterator++;
-  
+
     std::string ip_string = wIterator.getCurrentValue()->getText().c_str();
     char* ip = new char[ip_string.length()+1];
     std::memcpy(ip, wIterator.getCurrentValue()->getText().c_str(), ip_string.length()+1);
@@ -133,6 +135,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 
     if (mainClient != NULL)
         mainClient->frameRenderingQueued(evt, mKeyboard, mMouse);
+
+    if(solo != NULL)
+        solo->frameRenderingQueued(evt);
 
     /* Call Client and Server frameRenderingQueued */
     
@@ -231,6 +236,9 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
+
+    //if(solo != NULL)
+        //solo->processUnbufferedInput(evt, mKeyboard, mMouse);
     /********************  KEY VARIABLES ********************/    
     // static bool mMouseDown = false;                                    // If a mouse button is depressed
     // static bool pausePressedLast = false;                              // Was pause pressed last frame

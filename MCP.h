@@ -17,12 +17,14 @@
 #include "Server.h"
 #include "Client.h"
 #include "GUI.h"
+#include "Solo.h"
 
 class Simulator;
 class Music;
 class GUI;
 class Server;
 class Client;
+class Solo;
 
 class MCP : public BaseApplication
 {
@@ -46,6 +48,9 @@ public:
 	MCP(void);
 	virtual ~MCP(void);
 	
+	// Solo class in the event of single player
+	Solo* solo;
+
 	// Methods for the GUI class to access
 	bool soloMode(const CEGUI::EventArgs &e);
 	bool hostGame(const CEGUI::EventArgs &e);

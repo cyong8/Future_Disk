@@ -67,12 +67,12 @@ void Simulator::addObject (GameObject* o)
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
-		// if (o->getGameObjectName() == "Player1")
-		// {
-		// 	setPlayer((Player*)o);
-		// 	player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
-		// 	player1Cam->setPlayer((Player*)o);
-		// }
+		if (o->getGameObjectName() == "Player1")
+		{
+			setPlayer((Player*)o);
+			//player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
+			//player1Cam->setPlayer((Player*)o);
+		}
 		// if (o->getGameObjectName() == "Player2")
 		// 	setPlayer((Player*)o);
 
@@ -379,7 +379,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
 	// Wall
 	if (o->typeName == "Wall")
-	{	if (p1 != NULL)
+	{	
+		if (p1 != NULL)
 			if (!p1->checkHolding())
 				wallHitAfterThrow = true;
 		if (p2 != NULL)
