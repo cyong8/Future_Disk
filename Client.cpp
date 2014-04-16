@@ -11,9 +11,6 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
-    // for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
-    //     playerList[i] = NULL;
-
 	gameNetwork = new Network(CLIENT, IP);
 	gameMusic = new Music();
 
@@ -37,7 +34,7 @@ void Client::createScene()
 
     sprintf(playerBuffer, "Player%d", playerID);
     clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID);
-    playerList[playerID] = clientPlayer;
+    playerList[playerID-1] = clientPlayer;
     numPlayers++;
 
 	sprintf(cameraBuffer, "Player%dCam", playerID);
@@ -67,10 +64,15 @@ void Client::createScene()
 bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     if (gameNetwork->checkSockets(0))
+    {
         updateScene();
+    }
 
     if (!processUnbufferedInput(evt, mKeyboard, mMouse))
+    {
+        // send a packet telling the server you're leaving
         exit(2);
+    }
 
     updateCamera(evt.timeSinceLastFrame);
 }
@@ -186,9 +188,13 @@ void Client::updateScene() // Receive packets and interpret them
 void Client::updateCamera(Ogre::Real elapseTime)
 {
 	if (pCam->isInAimMode())
+    {
         pCam->update(elapseTime, clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
     else
+    {
         pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());      
+    }
 }
 //-------------------------------------------------------------------------------------
 void Client::interpretServerPacket(char* packList)
@@ -196,13 +202,15 @@ void Client::interpretServerPacket(char* packList)
     int indexIntoBuff = 0;
     Ogre::Vector3 newPos;
     Ogre::Quaternion newQuat;
-
-    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && packList[indexIntoBuff] != 'n')
+    
+    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && packList[indexIntoBuff] != 0x00)
     {
+        // printf("INTERPRETTING A PACKET!\n\n");
         char packType = packList[indexIntoBuff];
         /* UPDATE DISK */
         if (packType == (char)(((int)'0') + DISK))
         {
+            printf("updating disk\n");
             DISK_packet d;
             memcpy(&d, packList + indexIntoBuff, sizeof(DISK_packet));
 
@@ -218,32 +226,34 @@ void Client::interpretServerPacket(char* packList)
             gameDisk->getSceneNode()->_setDerivedPosition(newPos);
             gameDisk->getSceneNode()->_setDerivedOrientation(newQuat);
             gameDisk->getSceneNode()->needUpdate();
+
             indexIntoBuff += sizeof(DISK_packet);
         }
         /* UPDATE PLAYERS */
+        // else if (packType == (char)(((int)'0') + S_PLAYER))
         else if (packType == (char)(((int)'0') + S_PLAYER))
         {
             S_PLAYER_packet p;
-            memcpy(&p, packList + indexIntoBuff, sizeof(S_PLAYER_packet));
+
+            memcpy(&p, packList, sizeof(S_PLAYER_packet));
 
             newPos = Ogre::Vector3(p.x, p.y, p.z);
             newQuat = p.orientation;
 
             int newPlayerID = p.playID - '0';
-            printf("New Player ID: %d from %c\n\n", newPlayerID, p.playID);
-
             if (playerList[newPlayerID] == NULL)
             {
+                printf("*****ADDING NEW PLAYER\n\n");
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
                 playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
                 numPlayers++;
             }
-
+            printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
-            playerList[newPlayerID]->getSceneNode()->_setDerivedOrientation(newQuat);
-            playerList[newPlayerID]->getSceneNode()->needUpdate();
+            // playerList[newPlayerID]->getSceneNode()->_setDerivedOrientation(newQuat);
+            // playerList[newPlayerID]->getSceneNode()->needUpdate();
 
             indexIntoBuff += sizeof(S_PLAYER_packet);
         }
@@ -281,40 +291,38 @@ void Client::interpretServerPacket(char* packList)
         //     gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
         // }
         /* BEGIN GAME */ 
-        else if(packType == (char)(((int)'0') + GAMESTATE))
-        {
-            gameStart = true;
-        }
+        // else if(packType == (char)(((int)'0') + GAMESTATE))
+        // {
+        //     gameStart = true;
+        // }
     }
 }
 //-------------------------------------------------------------------------------------
-bool Client::mouseMoved(const OIS::MouseEvent &evt)
+bool Client::mouseMoved(Ogre::Real revX, Ogre::Real revY)
 {
-    CEGUI::System &sys = CEGUI::System::getSingleton();
-    sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
-    // Scroll wheel.
-    if (evt.state.Z.rel)
-        sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
-
     Ogre::SceneNode* pSceneNode = clientPlayer->getSceneNode();
     Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = clientPlayer->getPlayerCameraNode();
     Ogre::Vector3 sightHeight;
 
+
+    printf("state relative X = %f, state relative y = %f\n\n", revX, revY);
+
     if (pCam->isInAimMode())
     {   
-        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * evt.state.X.rel), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
+        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * revX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
        	clientOrientationChange = true;
     }
     else
     {
-        pSceneNode->yaw(Ogre::Degree(-mRotate * evt.state.X.rel), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
+        pSceneNode->yaw(Ogre::Degree(-mRotate * revX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
         clientOrientationChange = true;
     }
+
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
-    pCamNode->setPosition(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z);
+    pCamNode->setPosition(Ogre::Vector3(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z));
 
     return true;
 }

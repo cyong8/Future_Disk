@@ -12,13 +12,15 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     srand(time(0));
     time(&gapStartTime);
     time(&gapEndTime);
-
+    
 	timeSinceLastStateUpdate = 0.01f;
     mMove = 5.0f;
     mRotate = 0.1f;
     sprintFactor = 2.0f;
     gameDisk = NULL;
     numberOfClients = 0;
+
+    playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
     printf("Create host scene!\n\n");
 
@@ -32,7 +34,7 @@ Server::~Server(void)
 void Server::createScene()
 {
     gameRoom = new Room(sSceneMgr, gameSimulator, 0);
-    // sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
+    sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
     /********************  OBJECT CREATION  ********************/
 /*	Add Players when people connect
@@ -54,7 +56,7 @@ void Server::createScene()
     sSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
     
     pointLight = sSceneMgr->createLight("pointLight");  // Point light
-    pointLight->setType(Ogre::Light::LT_POINT);
+    pointLight->setType(Ogre::Light::LT_POINT); // change to directional light
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
@@ -87,7 +89,8 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
             char playerBuffer[25];
             sprintf(playerBuffer, "Player%d", numberOfClients);
 
-            playerList.push_back(new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients));
+            Player * newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients);
+            playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
     }        
@@ -97,10 +100,10 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
     for (int i = 0; i < numberOfClients; i++)  // CHECK FOR ACTIVITY FROM CURRENT PLAYERS
     {
         if (gameNetwork->checkSockets(i))
-            interpretClientPacket(i);            
+            interpretClientPacket(i);
 
-        updateClientVelocity(playerList[i]);
-        restrictPlayerMovement(playerList[i]);
+        // updateClientVelocity(playerList[i]);
+        // restrictPlayerMovement(playerList[i]);
 
         if (timeSinceLastStateUpdate < 0.0f)
             constructAndSendGameState(i);
@@ -143,30 +146,45 @@ void Server::updateClientVelocity(Player* p)
     }
 }
 //-------------------------------------------------------------------------------------
-bool Server::constructAndSendGameState(int socketID)
+bool Server::constructAndSendGameState(int clientIndex)
 {
-    char* buff = (char*)malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
-    int indexIntoBuff = 0;
-
+    char* buff;
     /* Sending each player's position to clients */
-    for (int i = 0; i < numberOfClients; i++)
-    {
-        S_PLAYER_packet pack;
+    // for (int i = 0; i < numberOfClients; i++)
+    // {
+    //     S_PLAYER_packet pack;
      
-        memset(&pack, 0, sizeof(S_PLAYER_packet));
+    //     memset(&pack, 0, sizeof(S_PLAYER_packet));
 
-        pack.packetID = (char)(((int)'0') + S_PLAYER);
-        pack.playID = (char)(((int)'0') + i);
-        printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
-        pack.x = playerList[i]->getSceneNode()->getPosition().x;
-        pack.y = playerList[i]->getSceneNode()->getPosition().y;
-        pack.z = playerList[i]->getSceneNode()->getPosition().z;
-        pack.orientation = playerList[i]->getSceneNode()->getOrientation();
+    //     pack.packetID = (char)(((int)'0') + S_PLAYER);
+    //     pack.playID = (char)(((int)'0') + i);
+    //     printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
+    //     pack.x = playerList[i]->getSceneNode()->getPosition().x;
+    //     pack.y = playerList[i]->getSceneNode()->getPosition().y;
+    //     pack.z = playerList[i]->getSceneNode()->getPosition().z;
+    //     pack.orientation = playerList[i]->getSceneNode()->getOrientation();
 
-        memcpy(buff + indexIntoBuff, &pack, sizeof(S_PLAYER_packet));
-        indexIntoBuff += sizeof(S_PLAYER_packet);
-    }
+    //     memcpy(buff + indexIntoBuff, &pack, sizeof(S_PLAYER_packet));
+    //     indexIntoBuff += sizeof(S_PLAYER_packet);
+    // }
+    S_PLAYER_packet pack;
+     
+    memset(&pack, 0, sizeof(S_PLAYER_packet));
 
+    pack.packetID = (char)(((int)'0') + S_PLAYER);
+    pack.playID = (char)(((int)'0') + clientIndex);
+    printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
+    pack.x = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().x;
+    pack.y = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().y;
+    pack.z = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().z;
+    printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
+    pack.orientation = playerList[clientIndex]->getSceneNode()->_getDerivedOrientation();
+
+    buff = (char*)malloc(sizeof(S_PLAYER_packet));
+    memcpy(buff, &pack, sizeof(S_PLAYER_packet));
+
+    gameNetwork->sendPacket(buff, clientIndex);
+    
     // if ()
     // pack.id = 'P';
     // pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
@@ -215,6 +233,8 @@ bool Server::constructAndSendGameState(int socketID)
     // }
     if (gameDisk != NULL)
     {
+        buff = (char*)malloc(sizeof(DISK_packet));
+
         DISK_packet pack;
         memset(&pack, 0, sizeof(DISK_packet));
 
@@ -225,22 +245,18 @@ bool Server::constructAndSendGameState(int socketID)
         pack.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
         pack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
 
-        memcpy(buff + indexIntoBuff, &pack, sizeof(DISK_packet));
-        indexIntoBuff += sizeof(DISK_packet);
+        memcpy(buff, &pack, sizeof(DISK_packet));
+        gameNetwork->sendPacket(buff, clientIndex);
     }
-    if (gameSimulator->checkGameStart()) // Don't want to do every frame
-    {
-        GAMESTATE_packet pack;
-        memset(&pack, 0, sizeof(GAMESTATE_packet));
+    // if (gameSimulator->checkGameStart()) // Don't want to do every frame
+    // {
+    //     GAMESTATE_packet pack;
+    //     memset(&pack, 0, sizeof(GAMESTATE_packet));
 
-        pack.packetID = (char)(((int)'0') + GAMESTATE);   
-        memcpy(buff + indexIntoBuff, &pack, sizeof(GAMESTATE_packet));
-        indexIntoBuff += sizeof(GAMESTATE_packet);
-    }
-
-    buff[indexIntoBuff] = 'n';
-
-    gameNetwork->sendPacket(buff, socketID);
+    //     pack.packetID = (char)(((int)'0') + GAMESTATE);   
+    //     memcpy(buff + indexIntoBuff, &pack, sizeof(GAMESTATE_packet));
+    //     indexIntoBuff += sizeof(GAMESTATE_packet);
+    // }
 }
 //-------------------------------------------------------------------------------------
 void Server::updateRemovedTiles() // HACKED

@@ -16,6 +16,7 @@ public:
 	void createScene(void);
 	bool frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 	bool processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
+	bool mouseMoved(Ogre::Real revX, Ogre::Real revY);
 	Player* getPlayer(void);
 
 private:
@@ -24,6 +25,9 @@ private:
 	/* Client's controlled player */
 	Player* clientPlayer;
 	int playerID;
+
+	/* Client's Player Camera */
+	PlayerCamera* pCam;
 
 	/* Other Objects in the Scene */
 		/* Room */
@@ -40,8 +44,6 @@ private:
 		/* Disk */
 	Disk* gameDisk;
 
-	/* Players Camera */
-	PlayerCamera* pCam;
 
 	Network* gameNetwork;
 	Music* gameMusic;
@@ -55,7 +57,6 @@ private:
 	void updateScene(void);
 	void updateCamera(Ogre::Real elapseTime);
 	void interpretServerPacket(char* packList);
-	bool mouseMoved(const OIS::MouseEvent &evt);
 };
 
 #endif // #ifndef __Client_h_

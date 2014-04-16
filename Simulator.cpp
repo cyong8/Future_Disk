@@ -8,10 +8,7 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
-	p1 = NULL;
-	p2 = NULL;
 	diskSpeedFactor = 15.0f;
-
 	score = 0;
 	soundedJump = false;
 	viewChangeP1 = false;
@@ -25,6 +22,8 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	setDisk = false;
+
+	playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
 	gameMusic = music;
 	sceneMgr = mSceneMgr;
@@ -66,14 +65,7 @@ void Simulator::addObject (GameObject* o)
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
-		// if (o->getGameObjectName() == "Player1")
-		// {
-		// 	setPlayer((Player*)o);
-		// 	player1Cam->initializePosition(((Player*)o)->getPlayerCameraNode()->_getDerivedPosition(), ((Player*)o)->getPlayerSightNode()->_getDerivedPosition());
-		// 	player1Cam->setPlayer((Player*)o);
-		// }
-		// if (o->getGameObjectName() == "Player2")
-		// 	setPlayer((Player*)o);
+		playerList[((Player*)o)->getPlayerID() - 1] = (Player*)o; // P1 = playerList[0], P2 = playerList[1]...
 
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 	}
@@ -163,32 +155,41 @@ void Simulator::removeObject(Ogre::String name)
 //-------------------------------------------------------------------------------------
 void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, const Ogre::Real fixedTimestep)
 {
-	// Ogre::Vector3 sightPosBeforeSim1;
-	// Ogre::Vector3 sightPosBeforeSim2;
-	// if (p1)
-	// 	// keep track of sight node position to reapply it after simulator is stepped 
-	// 	sightPosBeforeSim1 = p1->getPlayerSightNode()->getPosition(); 
+	bool diskHeld = false;
 
 	dynamicsWorld->stepSimulation(elapseTime, maxSubSteps, fixedTimestep);
 
-	// if (p1)
-	// 	p1->getPlayerSightNode()->setPosition(sightPosBeforeSim1);
-	// update the rotation of the disk scene node
-	//gameDisk->rotateOffWall();
-	// if (player1Cam)
-	// 	updatePlayerCamera(player1Cam, elapseTime);
-	if (p1 != NULL)
+	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
 	{
-		if (p1->checkHolding())
-			performThrow(p1);
-		
+		Player* localPlayer = playerList[i];
+
+		if (localPlayer != NULL)
+		{
+			if (localPlayer->checkHolding())
+			{
+				performThrow(localPlayer);
+				diskHeld = true;
+			}
+			else
+			{ 
+				if (wallHitAfterThrow) // HARD CODE PLAYER FLAG
+				{
+					if (i == 0)
+						player1CanCatch = true;
+					else if (i == 1)
+						player2CanCatch = true;
+				}
+
+			}
+			if (localPlayer->jumpPowerActive)
+			{
+				localPlayer->jumpTimer--;
+				if (localPlayer->jumpTimer <= 0)
+					localPlayer->decreaseJump();
+			}
+		}
 	}
-    if(p2 != NULL)
-	{
-    	if (p2->checkHolding())
-    		performThrow(p2);
-	}
-	else	// Speed disk back up in order to mimic inelasticity
+	if (!diskHeld)	// Speed disk back up in order to mimic inelasticity
 	{	
 		if (gameDisk != NULL)
 		{
@@ -203,25 +204,22 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
 			{
-				if (p2 != NULL)
-					;
-
 				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
 			}
 		}
 	}
-    if (p1 != NULL && p1->jumpPowerActive) 
-    {
-        p1->jumpTimer--;
-        if (p1->jumpTimer <= 0)
-            p1->decreaseJump();
-    }
-    if (p2 != NULL && p2->jumpPowerActive) 
-    {
-        p2->jumpTimer--;
-        if (p2->jumpTimer <= 0)
-            p2->decreaseJump();
-    }
+    // if (p1 != NULL && p1->jumpPowerActive) 
+    // {
+    //     p1->jumpTimer--;
+    //     if (p1->jumpTimer <= 0)
+    //         p1->decreaseJump();
+    // }
+    // if (p2 != NULL && p2->jumpPowerActive) 
+    // {
+    //     p2->jumpTimer--;
+    //     if (p2->jumpTimer <= 0)
+    //         p2->decreaseJump();
+    // }
 }
 //-------------------------------------------------------------------------------------
 void Simulator::parseCollisions(void)
@@ -230,7 +228,6 @@ void Simulator::parseCollisions(void)
 	int i;
 	int groundCheck1 = false; //checking Tile taking care of multiple collisions
 	int groundCheck2 = false;
-	Player* colP;
 
 	for (i=0;i<numManifolds;i++)
 	{
@@ -257,17 +254,18 @@ void Simulator::parseCollisions(void)
 		}
 		contactManifold->clearManifold();
 	}
-	if (!groundCheck1)
+
+	if (!groundCheck1)	 // HARD CODE PLAYER FLAG
 		soundedJump = true;
 	else
-		if (p1 != NULL)
-			p1->groundConstantSet = false;
+		if (playerList[0] != NULL)
+			playerList[0]->groundConstantSet = false;
 
 	if (!groundCheck2)
 		soundedJump = true;
 	else
-		if (p2 != NULL)
-			p2->groundConstantSet = false;
+		if (playerList[1] != NULL) 
+			playerList[1]->groundConstantSet = false;
 
 	if ((groundCheck1 || groundCheck2) && gameDisk == NULL)
     	setDisk = true;
@@ -276,30 +274,6 @@ void Simulator::parseCollisions(void)
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
 		soundedJump = false;
 	}
-}
-//-------------------------------------------------------------------------------------
-void Simulator::setPlayer(Player* p)
-{
-	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player1", true))
-		this->p1 = p;
-	if (Ogre::StringUtil::match(p->getGameObjectName(), "Player2", true))
-		this->p2 = p;
-}
-//-------------------------------------------------------------------------------------
-PlayerCamera* Simulator::getPlayerCamera(Ogre::String name)
-{
-	if (Ogre::StringUtil::match(name, "P1Cam", true))
-		return this->player1Cam;
-	if (Ogre::StringUtil::match(name, "P2Cam", true))
-		return this->player2Cam;
-}
-//-------------------------------------------------------------------------------------
-void Simulator::toggleViewChange(Ogre::String name)
-{
-	if (Ogre::StringUtil::match(name, "Player1", true))
-		viewChangeP1 = !viewChangeP1;
-	if (Ogre::StringUtil::match(name, "Player2", true))
-		viewChangeP2 = !viewChangeP2;
 }
 //-------------------------------------------------------------------------------------
 void Simulator::setThrowFlag()
@@ -335,17 +309,17 @@ void Simulator::performThrow(Player* p)
 		gameDisk->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
-		if (p->getGameObjectName() == "Player1")
+		for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)	// HARD CODE PLAYER FLAG
 		{
-			player1CanCatch = false;
-			player2CanCatch = true;
-			playerLastThrew = p->getGameObjectName();
-		}
-		if (p->getGameObjectName() == "Player2")
-		{
-			player1CanCatch = true;
-			player2CanCatch = false;
-			playerLastThrew = p->getGameObjectName();
+			if (p->getGameObjectName() == playerList[i]->getGameObjectName())
+			{
+				if (i == 1)
+					player1CanCatch = false;
+				else if (i == 2)
+					player2CanCatch = false;
+
+				playerLastThrew = p->getGameObjectName();
+			}
 		}
 
     	p->setHolding(false);
@@ -353,9 +327,9 @@ void Simulator::performThrow(Player* p)
     else // Update position relative to the Player
     {
     	Ogre::Vector3 dpos;
-    	float newDiskZ= -p->getPlayerDimensions().z;
+    	float newDiskZ= -p->getPlayerDimensions().z;  // HARD CODE PLAYER FLAG
     	if(p->getGameObjectName() == "Player2")
-    			newDiskZ = p->getPlayerDimensions().z;
+    		newDiskZ = p->getPlayerDimensions().z;
 
     	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
 		gameDisk->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
@@ -378,12 +352,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 {
 	// Wall
 	if (o->typeName == "Wall")
-	{	if (p1 != NULL)
-			if (!p1->checkHolding())
-				wallHitAfterThrow = true;
-		if (p2 != NULL)
-			if (p2->checkHolding())
-				wallHitAfterThrow = true;
+	{	
+		wallHitAfterThrow = true;
+		
 		if (previousWallHit == "NULL")
 		{
 			// gameDisk->needsOrientationUpdate = true;
@@ -398,27 +369,26 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
-
-		if (p1 != NULL)
-			if (!player1CanCatch && !p1->checkHolding())
-				player1CanCatch = true;
-		if (p2 != NULL)
-			if (!player2CanCatch && !p2->checkHolding())
-				player2CanCatch = true;
+		// if (p1 != NULL)
+		// 	if (!player1CanCatch && !p1->checkHolding())
+		// 		player1CanCatch = true;
+		// if (p2 != NULL)
+		// 	if (!player2CanCatch && !p2->checkHolding())
+		// 		player2CanCatch = true;
 	}
 	// Player
 	else if (o->typeName == "Player")
 	{
-		if (((Player*)o)->checkHolding() == false)
+		if (((Player*)o)->checkHolding() == false)  // HARD CODE PLAYER FLAG
 		{
 			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
 			{
-				((Player*)o)->attachDisk((Disk*)disk);
+				// ((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			if (player2CanCatch && ((Player*)o)->getGameObjectName() == "Player2")
 			{
-				((Player*)o)->attachDisk((Disk*)disk);
+				// ((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
@@ -461,7 +431,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !p1->checkHolding())
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow) //&& !p1->checkHolding())  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
@@ -506,42 +476,41 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
 {
 }
-//-------------------------------------------------------------------------------------
-void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime)
-{
-	if (cam->name == "P1Cam")
-	{
-		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
-		{
-			toggleViewChange(p1->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
+// void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime) // CAN REMOVE - JUST EXAMPLE FOR CLIENT
+// {
+// 	if (cam->name == "P1Cam")
+// 	{
+// 		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
+// 		{
+// 			toggleViewChange(p1->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
 
-			if(player1Cam->isInAimMode()) // Go into Aim view
-				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			else // Return from Aim view
-				player1Cam->initializePosition(p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-		}
-		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
-		{
-			if (player1Cam->isInAimMode())
-				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-			else
-				player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());			
-		}
-	}
-}
+// 			if(player1Cam->isInAimMode()) // Go into Aim view
+// 				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+// 			else // Return from Aim view
+// 				player1Cam->initializePosition(p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+// 		}
+// 		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
+// 		{
+// 			if (player1Cam->isInAimMode())
+// 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
+// 			else
+// 				player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());			
+// 		}
+// 	}
+// }
 //-------------------------------------------------------------------------------------
 bool Simulator::checkGameStart()
 {
 	return gameStart;
 }
 //---------------------------------------------------------------------------------------
-void Simulator::restoreTile() {
-    if (p1 != NULL && p1->getGameObjectName() == playerLastThrew && hostRemoveIndexes.size() > 0) {
+void Simulator::restoreTile() { // HARD CODE PLAYER FLAG
+    if (playerList[0] != NULL && playerList[0]->getGameObjectName() == playerLastThrew && hostRemoveIndexes.size() > 0) {
         hostTileList[hostRemoveIndexes.back()]->addToSimulator();
         hostRemoveIndexes.pop_back();
         gameMusic->playMusic("Restore");
     }
-    else if (p2 != NULL && p2->getGameObjectName() == playerLastThrew && clientRemoveIndexes.size() > 0) {
+    else if (playerList[1] != NULL && playerList[0]->getGameObjectName() == playerLastThrew && clientRemoveIndexes.size() > 0) {
         clientTileList[clientRemoveIndexes.back()]->addToSimulator();
         clientRemoveIndexes.pop_back();
         gameMusic->playMusic("Restore");

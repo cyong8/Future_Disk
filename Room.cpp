@@ -6,6 +6,8 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident)
 	char cTileNameBuffer[100];
 	char hTileNameBuffer[100];
 
+	mSceneMgr->setSkyBox(true, "Examples/SpaceSkyBox", false);
+
 	floorLength = 35.0f;	// want to remove
 	
 	/* Room Dimensions */

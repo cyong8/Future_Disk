@@ -340,65 +340,8 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     if (evt.state.Z.rel)
         sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
 
-    // if (!gameStart || gamePause) // restrict movements before the game has started or during pause
-    //     return false;
-
-    // Player* p;    
-    // if(clientServerIdentifier == 0)
-    //     p = hostPlayer;
-    // if(clientServerIdentifier == 1)
-    //     p = clientPlayer;
-
-    // Ogre::SceneNode* pSceneNode = p->getSceneNode();
-    // Ogre::SceneNode* pSightNode = p->getPlayerSightNode();
-    // Ogre::SceneNode* pCamNode = p->getPlayerCameraNode();
-    // Ogre::Vector3 sightHeight;
-
-    // btRigidBody* pBody;
-    // btTransform transform;
-    // btQuaternion rotationQ;
-
-    // if (clientServerIdentifier == 0)
-    // {
-    //     pBody = p->getBody();
-    //     transform = pBody->getCenterOfMassTransform();
-    // }
-    // if (clientServerIdentifier == 1 && gameDisk == NULL)
-    //     return true;
-    // if (vKeyDown)
-    // {   
-    //     pSceneNode->yaw(Ogre::Degree((-mRotate/2) * evt.state.X.rel), Ogre::Node::TS_WORLD);
-    //     sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
-    //     if (clientServerIdentifier == 0)
-    //     {
-    //         rotationQ = btQuaternion(pSceneNode->getOrientation().getYaw().valueRadians(), 0, 0);
-    //         transform.setRotation(rotationQ);
-    //         pBody->setCenterOfMassTransform(transform);
-    //     }
-    //     else
-    //         clientOrientationChange = true;
-    //     /*if (p->checkHolding()) {
-    //         mSceneMgr->getRootSceneNode()->detachObject(trajectory);
-    //         trajectory->clear();
-    //         showTrajectory(pCam);
-    //     }*/
-    // }
-    // else
-    // {
-    //     pSceneNode->yaw(Ogre::Degree(-mRotate * evt.state.X.rel), Ogre::Node::TS_WORLD);
-    //     sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
-    //     if (clientServerIdentifier == 0)
-    //     {
-    //         rotationQ = btQuaternion(pSceneNode->getOrientation().getYaw().valueRadians(), 0, 0);
-    //         transform.setRotation(rotationQ);
-    //         pBody->setCenterOfMassTransform(transform);
-    //     }
-    //     else
-    //         clientOrientationChange = true;
-    // }
-    // // p->getPlayerCameraNode()->setPosition(p->getPlayerCameraNode()->getPosition() + Ogre::Vector3(0.0f, 0.0f, 12.5f));
-    // pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
-    // pCamNode->setPosition(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z);
+    if (mainClient != NULL)
+        mainClient->mouseMoved(evt.state.X.rel, evt.state.Y.rel);
 
     return true;
 }

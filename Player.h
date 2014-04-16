@@ -25,6 +25,7 @@ public:
 	Ogre::SceneNode* getPlayerCameraNode(void); // Get the camera node attached to the player
 	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
 	
+	int getPlayerID(void);
 	void setGroundY(float y);
 	Ogre::Real getGroundY(void);
 	bool performJump(void);
@@ -37,6 +38,7 @@ public:
 	bool checkState(int index);
 	void setState(int index, bool value);
 	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
+
 	int jumpTimer;
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
@@ -53,7 +55,8 @@ protected:
 	Ogre::Real prevGroundY;
 	Ogre::String playerSide;
 	bool isHolding;
-	bool movementRestricted;		
+	bool movementRestricted;	
+	int playerID;	
 };
 
 #endif // #ifndef __Player_h_

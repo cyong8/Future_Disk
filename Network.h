@@ -37,14 +37,14 @@ enum keyID
 
 enum packID
 {
-	C_PLAYER,
-	S_PLAYER,
-	DISK,
-	INPUT,
-	POWERUP,
-	TILE,
-	GAMESTATE,
-	EXPANSION
+	C_PLAYER = 1,
+	S_PLAYER = 2,
+	DISK = 3,
+	INPUT = 4,
+	POWERUP = 5,
+	TILE = 6,
+	GAMESTATE = 7,
+	EXPANSION = 8
 };
 
 enum powerUpID
@@ -72,13 +72,6 @@ struct S_PLAYER_packet
 	// orientation of each player
 	Ogre::Quaternion orientation;
 };
-struct INPUT_packet 
-{
-	char packetID;
-	char playID;
-	// keypressed
-	char key;
-};
 struct DISK_packet 
 {
 	char packetID;
@@ -89,6 +82,13 @@ struct DISK_packet
 	float z;
 	// orientation of the disk
 	Ogre::Quaternion orientation;
+};
+struct INPUT_packet 
+{
+	char packetID;
+	char playID;
+	// keypressed
+	char key;
 };
 struct POWERUP_packet 
 {
@@ -133,6 +133,7 @@ public:
 	void sendPacket(char* packList, int socketID);
 	char* receivePacket(int socketID);
 	bool checkSockets(int socketID);
+	int getPacketSize(char type);
 
 private:
 	SDLNet_SocketSet iSet;

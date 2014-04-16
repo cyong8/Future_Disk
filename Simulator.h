@@ -28,9 +28,8 @@ class Simulator
 		Ogre::SceneManager* sceneMgr;
 		vector<GameObject*> objList;
 		vector<Target*> targetList;
-
-		Player* p1;
-		Player* p2;
+		vector<Player*> playerList;
+		
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
 		Ogre::String playerLastThrew;
@@ -56,10 +55,7 @@ class Simulator
 		void stepSimulation(const Ogre::Real elapsedTime, int maxSubSteps = 1, const Ogre::Real fixedTimestep = 1.0f/60.0f);
 		void parseCollisions(void);
 		void setCamera(PlayerCamera* pcam);
-		void setPlayer(Player* p);
 		GameObject* getGameObject(Ogre::String name);
-		PlayerCamera* getPlayerCamera(Ogre::String name);
-		void toggleViewChange(Ogre::String name);
 		void setThrowFlag(void);
 		void performThrow(Player* p);
 		int tallyScore(void);
@@ -68,7 +64,6 @@ class Simulator
 		void handleDiskCollisions(GameObject* disk, GameObject* o);
 		void adjustDiskOrientation(Disk *d, btVector3 currVelocity, Ogre::String wallName);
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
-		void updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime);
 		bool checkGameStart(void);
 		void restoreTile(void);
 		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);

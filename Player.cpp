@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "Disk.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID) 
 	: GameObject(nym, mgr, sim)
 {
 	initializeStates();
@@ -16,17 +16,17 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
+	playerID = playID;
 
 	if (playerID == 1)
 	{
-		printf("player id inside player creation: %d\n\n\n", playerID);
-		playerSide == "Negative Side";
-		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
+		playerSide == "Positive Side";
+		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);	
 	}
 	else if (playerID == 2)
 	{
-		playerSide == "Positive Side";
-		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);
+		playerSide == "Negative Side";
+		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 	}
 	else if (playerID == 3)
 	{
@@ -37,11 +37,13 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 		playerSide == "Right Side";
 	}
 
-	if (nym == "Player1") {
+	if (nym == "Player1") 
+	{
 	    tailParticle = mgr->createParticleSystem("CyanSun1", "Examples/CyanSun");
 	    particleNode = rootNode->createChildSceneNode("PlayerParticle1");
     }
-    else {
+    else 
+    {
         tailParticle = mgr->createParticleSystem("CyanSun2", "Examples/CyanSun");
         particleNode = rootNode->createChildSceneNode("PlayerParticle2");
     }
@@ -60,13 +62,15 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	// initialize Cameras
 	if (playerID == 1)
 	{
-		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
-		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
+		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, -15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 4.0f, 15.00));
 	}
 	else if (playerID == 2)
 	{	
-		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, -1350.0f));
-		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, 1350.0f));
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
 	}
 	else if (playerID == 3)
 		;
@@ -150,6 +154,11 @@ Ogre::SceneNode* Player::getPlayerCameraNode()
 Ogre::Vector3 Player::getPlayerDimensions()
 {
 	return dimensions;
+}
+//-------------------------------------------------------------------------------------
+int Player::getPlayerID(void)
+{
+	return playerID;
 }
 //-------------------------------------------------------------------------------------
 void Player::setGroundY(Ogre::Real y)
