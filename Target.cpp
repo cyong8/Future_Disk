@@ -11,7 +11,7 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	/*ParticleSystem* particleSystem = sceneManager->createParticleSystem("explosions", "explosionTemplate");
 	particleSystem->fastForward(1.0); 	// fast forward 1 second  to the point where the particle has been emitted
 	sceneNode->attachObject(particleSystem); // attach the particle system to a scene node
-*/
+	*/
 
 	//Ogre::Vector3 roomBounds = Ogre::Vector3(room->getWidth()/2, room->getHeight()/2, room->getFloorLength()/2);
 

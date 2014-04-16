@@ -18,12 +18,12 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 	playerID = playID;
 
-	if (playerID == 1)
+	if (playerID == 2)
 	{
 		playerSide == "Positive Side";
 		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);	
 	}
-	else if (playerID == 2)
+	else if (playerID == 1)
 	{
 		playerSide == "Negative Side";
 		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
