@@ -65,6 +65,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)   // Need to make a soloMode class
     
     // createSoloModeScene();
     solo = new Solo(this);    
+    
     return true;
 }
 //-------------------------------------------------------------------------------------

@@ -29,19 +29,23 @@ void Client::createScene()
 	char playerBuffer[25];
     char cameraBuffer[25];
 
+    /* GAME ROOM */
     gameRoom = new Room(cSceneMgr, NULL, 1);
     printf("\n\nPlayer ID: %d\n\n", playerID);
 
+    /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
     clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID);
     playerList[playerID-1] = clientPlayer;
     numPlayers++;
 
+    /* CLIENT'S PLAYER CAMERA */
 	sprintf(cameraBuffer, "Player%dCam", playerID);
     pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
     
+    /* TARGETS */
     Power = new Target("Power", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
     Speed = new Target("Speed", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
     JumpPower = new Target("Jump", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds()); // Create initial Power-up
