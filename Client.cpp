@@ -79,22 +79,28 @@ bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
 //-------------------------------------------------------------------------------------
 bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    bool result = false;
+    char* buff;
     static bool vKeydown = false;
 
-    // if (clientOrientationChange)
-    // {
-    //     clientOrientationChange = false;
-    //     pack.id = 'o';
-    //     pack.orientationQ = clientPlayer->getSceneNode()->_getDerivedOrientation();
-    //     packList.push_back(pack);
-    //     pack.id = 'S';
-    //     pack.x_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().x;
-    //     pack.y_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().y;
-    //     pack.z_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().z;
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
+    if (clientOrientationChange)
+    {
+        clientOrientationChange = false;
+       
+        C_PLAYER_packet pack;
+        pack.packetID =(char)(((int)'0') + C_PLAYER);
+        pack.playID = (char)(((int)'0') + playerID);
+        pack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
+       
+        buff = (char*)malloc(sizeof(C_PLAYER_packet));
+        memcpy(buff, &pack, sizeof(C_PLAYER_packet));
+
+        gameNetwork->sendPacket(buff, playerID);
+        // pack.id = 'S';
+        // pack.x_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().x;
+        // pack.y_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().y;
+        // pack.z_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().z;
+        // packList.push_back(pack);
+    }
     // if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     // {
     //     return false;

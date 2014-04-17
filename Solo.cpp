@@ -112,8 +112,6 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
         }
     }
 
-    //updateRemovedTiles();
-    updatePlayerVelocity(player);
     //restrictPlayerMovement(player);
 
     if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
@@ -128,19 +126,6 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
     updateCamera(evt.timeSinceLastFrame);
 
     //timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-}
-//-------------------------------------------------------------------------------------
-void Solo::updatePlayerVelocity(Player* p)
-{
-	if (gameSimulator->checkGameStart())
-    {
-        //Ogre::Vector3 velocityVector;
-        //velocityVector = p->fillClientVelocityVector(mMove, sprintFactor); // p1 was hostPlayer
-        //velocityVector = p->getSceneNode()->getOrientation() * velocityVector;  // p2 was player
-        //btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
-        // No longer named player/hostPlayer - receive player id in packet
-        //player->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, player->getBody()->getLinearVelocity().getY(), 0.0f)));
-    }
 }
 //-------------------------------------------------------------------------------------
 void Solo::updateCamera(Ogre::Real elapseTime)
@@ -218,7 +203,7 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown) // if 'v' is pressed and was not pressed last frame - go to aim mode
         {
             //PlayerCamera* pc = gameSimulator->getPlayerCamera("soloCamera");
-            gameSimulator->toggleViewChange("Player1");
+            // gameSimulator->toggleViewChange("Player1");
             pCam->toggleThirdPersonView();
             vKeyDown = true;
             //showTrajectory(pc);
@@ -226,7 +211,7 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown) // if 'v' is not pressed and was pressed last frame - exit aim mode
         {
             //PlayerCamera* pc = gameSimulator->getPlayerCamera("soloCamera");
-            gameSimulator->toggleViewChange("Player1");
+            // gameSimulator->toggleViewChange("Player1");
             pCam->toggleThirdPersonView();
             vKeyDown = false;
             //mSceneMgr->getRootSceneNode()->detachObject(trajectory);

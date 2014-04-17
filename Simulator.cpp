@@ -69,7 +69,7 @@ void Simulator::addObject (GameObject* o)
 	if(o->typeName == "Player")
 	{
 		playerList[((Player*)o)->getPlayerID() - 1] = (Player*)o; // P1 = playerList[0], P2 = playerList[1]...
-
+		printf("adding player at index: %d\n\n\n\n", ((Player*)o)->getPlayerID() - 1);
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 	}
 	if(o->typeName == "Disk")
@@ -386,12 +386,12 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		{
 			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
 			{
-				// ((Player*)o)->attachDisk((Disk*)disk);
+				((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			if (player2CanCatch && ((Player*)o)->getGameObjectName() == "Player2")
 			{
-				// ((Player*)o)->attachDisk((Disk*)disk);
+				((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;

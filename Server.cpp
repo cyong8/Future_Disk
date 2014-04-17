@@ -116,11 +116,11 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
         // printf("\t\t Client States: Shift - %d\n", p1->checkState(Boost));
     }
 
-    if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
-    {
-        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
-        gameDisk->addToSimulator();
-    }
+    // if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
+    // {
+    //     gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
+    //     gameDisk->addToSimulator();
+    // }
 
     if (timeSinceLastStateUpdate < 0.0f)
         timeSinceLastStateUpdate = 0.01f;

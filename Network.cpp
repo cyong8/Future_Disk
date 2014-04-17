@@ -164,13 +164,11 @@ void Network::sendPacket(char* pack, int socketID)
 	int packSize = getPacketSize(pack[0]);
 
 	if (networkID == CLIENT)
+	{
 		numSent = SDLNet_TCP_Send(clientSocket, pack, packSize);
+	}
 	else if (networkID == SERVER)
 	{
-		S_PLAYER_packet s;
-    	memcpy(&s, pack, sizeof(S_PLAYER_packet));
-    	printf("\tS_packet Position: Ogre::Vector3(%f, %f, %f)\n", s.x, s.y, s.z);
-
 		numSent = SDLNet_TCP_Send(clientSocketList[socketID], pack, packSize);
 	}
 	if (!numSent)
@@ -193,14 +191,10 @@ char* Network::receivePacket(int socketID)
 	{
 		if ((numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER)) <= 0) 
 		{
-			//printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
+			printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 			return NULL;
 		}
 		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER); 
-		
-		S_PLAYER_packet s;
-    	memcpy(&s, buff, sizeof(S_PLAYER_packet));
-    	printf("\t**********8S_packet Position: Ogre::Vector3(%f, %f, %f)\n", s.x, s.y, s.z);
 
 		return buff;
 	}
@@ -210,7 +204,7 @@ char* Network::receivePacket(int socketID)
 		{
 			printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 			
-			buff[0] = 'n';
+			return NULL;
 		}
 		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 	}
@@ -226,7 +220,7 @@ bool Network::checkSockets(int socketID)
 			return false;
 		else 
 		{
-			printf("CHECKING SOCKET!\n\n");
+			// printf("CHECKING SOCKET!\n\n");
 			return true;
 		}
 	}
