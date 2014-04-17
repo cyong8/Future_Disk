@@ -39,6 +39,9 @@ public:
 	void setState(int index, bool value);
 	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
 
+	bool checkPlayerCanCatch(void);
+	bool togglePlayerCanCatch(void);
+
 	int jumpTimer;
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	

@@ -65,7 +65,7 @@ void Solo::createScene()
 
     gameStart = true;
 
-    createOverlays(pCam); // in MCP
+    // createOverlays(pCam); // in MCP
 }
 //-------------------------------------------------------------------------------------
 bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -136,13 +136,8 @@ void Solo::updateCamera(Ogre::Real elapseTime)
         pCam->update(elapseTime, player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());      
 }
 //-------------------------------------------------------------------------------------
-bool Solo::mouseMoved(Ogre::Real revX, Ogre::Real revY)
+bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
-    CEGUI::System &sys = CEGUI::System::getSingleton();
-    sys.injectMouseMove(revX, revY);
-    // Scroll wheel.
-    //if (evt.state.Z.rel)
-        //sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
 
     Ogre::SceneNode* pSceneNode = player->getSceneNode();
     Ogre::SceneNode* pSightNode = player->getPlayerSightNode();
@@ -151,15 +146,13 @@ bool Solo::mouseMoved(Ogre::Real revX, Ogre::Real revY)
 
     if (pCam->isInAimMode())
     {   
-        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * revX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
-        //clientOrientationChange = true;
+        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * relX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, relY, 0.0f);
     }
     else
     {
-        pSceneNode->yaw(Ogre::Degree(-mRotate * revX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
-        //clientOrientationChange = true;
+        pSceneNode->yaw(Ogre::Degree(-mRotate * relX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, relY, 0.0f);
     }
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
     pCamNode->setPosition(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z);

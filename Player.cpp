@@ -243,7 +243,13 @@ Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 
 	return velocityVector;
 }
-bool Player::playerCanCatch()
+//-------------------------------------------------------------------------------------
+bool Player::checkPlayerCanCatch()
 {
 	return playerCanCatch;
+}
+//-------------------------------------------------------------------------------------
+bool Player::togglePlayerCanCatch()
+{
+	playerCanCatch = !playerCanCatch;
 }

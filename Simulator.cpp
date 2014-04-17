@@ -84,6 +84,7 @@ void Simulator::addObject (GameObject* o)
 		//gameDisk->getSceneNode()->roll(90);
 		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
+
 		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 	}
@@ -211,18 +212,6 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			}
 		}
 	}
-    // if (p1 != NULL && p1->jumpPowerActive) 
-    // {
-    //     p1->jumpTimer--;
-    //     if (p1->jumpTimer <= 0)
-    //         p1->decreaseJump();
-    // }
-    // if (p2 != NULL && p2->jumpPowerActive) 
-    // {
-    //     p2->jumpTimer--;
-    //     if (p2->jumpTimer <= 0)
-    //         p2->decreaseJump();
-    // }
 }
 //-------------------------------------------------------------------------------------
 void Simulator::parseCollisions(void)
@@ -315,15 +304,19 @@ void Simulator::performThrow(Player* p)
 		for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)	// HARD CODE PLAYER FLAG
 		{
 			
-			if (p->getGameObjectName() == playerList[i]->getGameObjectName())
+			if (playerList[i] != NULL)
 			{
-				if (i == 1)
-					player1CanCatch = false;
-				else if (i == 2)
-					player2CanCatch = false;
+				if (p->getGameObjectName() == playerList[i]->getGameObjectName())
+				{
+					if (i == 1)
+						player1CanCatch = false;
+					else if (i == 2)
+						player2CanCatch = false;
 
+				}
 			}
 		}
+
 		playerLastThrew = p->getGameObjectName();
     	p->setHolding(false);
     }
@@ -380,6 +373,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		{
 			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
 			{
+				printf("ATTACHING DISK TO PLAYER!\n\n\n\n\n");
 				((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
@@ -430,7 +424,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[0]->checkHolding()) //&& !p1->checkHolding())  // HARD CODE PLAYER FLAG
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[0]->checkHolding())  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
