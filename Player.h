@@ -57,6 +57,7 @@ protected:
 	bool isHolding;
 	bool movementRestricted;	
 	int playerID;	
+	bool playerCanCatch;
 };
 
 #endif // #ifndef __Player_h_

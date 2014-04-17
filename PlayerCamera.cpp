@@ -28,8 +28,8 @@ PlayerCamera::~PlayerCamera()
 //-------------------------------------------------------------------------------------
 void PlayerCamera::toggleThirdPersonView()
 {
-    inAimMode = !inAimMode;    
- 
+    inAimMode = !inAimMode;
+    
     if (!inAimMode) // Restore SightNode to default position when the player leaves Aim View
     {
         overlay->hide();

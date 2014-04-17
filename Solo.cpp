@@ -136,13 +136,13 @@ void Solo::updateCamera(Ogre::Real elapseTime)
         pCam->update(elapseTime, player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());      
 }
 //-------------------------------------------------------------------------------------
-bool Solo::mouseMoved(const OIS::MouseEvent &evt)
+bool Solo::mouseMoved(Ogre::Real revX, Ogre::Real revY)
 {
     CEGUI::System &sys = CEGUI::System::getSingleton();
-    sys.injectMouseMove(evt.state.X.rel, evt.state.Y.rel);
+    sys.injectMouseMove(revX, revY);
     // Scroll wheel.
-    if (evt.state.Z.rel)
-        sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
+    //if (evt.state.Z.rel)
+        //sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
 
     Ogre::SceneNode* pSceneNode = player->getSceneNode();
     Ogre::SceneNode* pSightNode = player->getPlayerSightNode();
@@ -151,14 +151,14 @@ bool Solo::mouseMoved(const OIS::MouseEvent &evt)
 
     if (pCam->isInAimMode())
     {   
-        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * evt.state.X.rel), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
+        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * revX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
         //clientOrientationChange = true;
     }
     else
     {
-        pSceneNode->yaw(Ogre::Degree(-mRotate * evt.state.X.rel), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -evt.state.Y.rel, 0.0f);
+        pSceneNode->yaw(Ogre::Degree(-mRotate * revX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
         //clientOrientationChange = true;
     }
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);

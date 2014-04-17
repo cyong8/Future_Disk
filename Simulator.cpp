@@ -314,6 +314,7 @@ void Simulator::performThrow(Player* p)
 		throwFlag = false;
 		for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)	// HARD CODE PLAYER FLAG
 		{
+			
 			if (p->getGameObjectName() == playerList[i]->getGameObjectName())
 			{
 				if (i == 1)
@@ -321,10 +322,9 @@ void Simulator::performThrow(Player* p)
 				else if (i == 2)
 					player2CanCatch = false;
 
-				playerLastThrew = p->getGameObjectName();
 			}
 		}
-
+		playerLastThrew = p->getGameObjectName();
     	p->setHolding(false);
     }
     else // Update position relative to the Player
@@ -372,12 +372,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
-		// if (p1 != NULL)
-		// 	if (!player1CanCatch && !p1->checkHolding())
-		// 		player1CanCatch = true;
-		// if (p2 != NULL)
-		// 	if (!player2CanCatch && !p2->checkHolding())
-		// 		player2CanCatch = true;
 	}
 	// Player
 	else if (o->typeName == "Player")
@@ -405,7 +399,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (((Target*)o)->checkHitFlag() == false)
 		{
-			printf("COLLIDED WITH TILE!\n\n\n");
+			//printf("COLLIDED WITH TILE!\n\n\n");
 
 			// The 47.0f value is the x-width and y-height of the disk
 		    ((Target*)o)->toggleHitFlag();
@@ -436,7 +430,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow) //&& !p1->checkHolding())  // HARD CODE PLAYER FLAG
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[0]->checkHolding()) //&& !p1->checkHolding())  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 		removeObject(((Tile*)o)->getGameObjectName());
@@ -450,7 +444,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    destroyTiles(clientTileList, clientRemoveIndexes, index);
 		newRemovedTile = true;
 		gameDisk->resetPowerUp();
+		playerLastThrew = "Player1";
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
+
 	}
 }
 

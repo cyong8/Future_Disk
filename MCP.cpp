@@ -349,7 +349,7 @@ bool MCP::mouseMoved(const OIS::MouseEvent &evt)
     if (evt.state.Z.rel)
         sys.injectMouseWheelChange(evt.state.Z.rel / 120.0f);
     if(solo != NULL)
-        solo->mouseMoved(evt);
+        solo->mouseMoved(evt.state.X.rel, evt.state.Y.rel);
 
     if (mainClient != NULL)
         mainClient->mouseMoved(evt.state.X.rel, evt.state.Y.rel);
