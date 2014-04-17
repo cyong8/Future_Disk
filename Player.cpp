@@ -17,13 +17,14 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	groundConstantSet = false;
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 	playerID = playID;
+	playerCanCatch = true;
 
-	if (playerID == 2)
+	if (playerID == 1)
 	{
 		playerSide == "Positive Side";
 		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);	
 	}
-	else if (playerID == 1)
+	else if (playerID == 2)
 	{
 		playerSide == "Negative Side";
 		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
@@ -241,4 +242,14 @@ Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
 		velocityVector *= sprintFactor;
 
 	return velocityVector;
+}
+//-------------------------------------------------------------------------------------
+bool Player::checkPlayerCanCatch()
+{
+	return playerCanCatch;
+}
+//-------------------------------------------------------------------------------------
+bool Player::togglePlayerCanCatch()
+{
+	playerCanCatch = !playerCanCatch;
 }

@@ -19,7 +19,7 @@ public:
 
 	void updatePlayerVelocity(Player* p);
 	void updateCamera(Ogre::Real elapseTime);
-	bool mouseMoved(const OIS::MouseEvent &evt);
+	bool mouseMoved(Ogre::Real relX, Ogre::Real relY);
 
 	void createOverlays(PlayerCamera* playCam);
 
