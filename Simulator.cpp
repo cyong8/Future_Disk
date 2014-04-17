@@ -174,7 +174,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			}
 			else
 			{ 
-				if (wallHitAfterThrow) // HARD CODE PLAYER FLAG
+				if (wallHitAfterThrow) 	
 				{
 					if (!playerList[i]->checkPlayerCanCatch())
 						playerList[i]->togglePlayerCanCatch();

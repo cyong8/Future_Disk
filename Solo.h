@@ -14,7 +14,7 @@ public:
 	~Solo(void);
 	
 	void createScene(void);
-	bool frameRenderingQueued(const Ogre::FrameEvent& evt);
+	bool frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 	bool processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 
 	void updatePlayerVelocity(Player* p);

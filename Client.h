@@ -16,7 +16,7 @@ public:
 	void createScene(void);
 	bool frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 	bool processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
-	bool mouseMoved(Ogre::Real revX, Ogre::Real revY);
+	bool mouseMoved(Ogre::Real relX, Ogre::Real relY);
 	Player* getPlayer(void);
 
 private:

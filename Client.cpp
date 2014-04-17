@@ -203,7 +203,7 @@ void Client::updateCamera(Ogre::Real elapseTime)
     }
     else
     {
-        pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());      
+        pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
 }
 //-------------------------------------------------------------------------------------
@@ -308,7 +308,7 @@ void Client::interpretServerPacket(char* packList)
     }
 }
 //-------------------------------------------------------------------------------------
-bool Client::mouseMoved(Ogre::Real revX, Ogre::Real revY)
+bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
     Ogre::SceneNode* pSceneNode = clientPlayer->getSceneNode();
     Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
@@ -316,18 +316,18 @@ bool Client::mouseMoved(Ogre::Real revX, Ogre::Real revY)
     Ogre::Vector3 sightHeight;
 
 
-    printf("state relative X = %f, state relative y = %f\n\n", revX, revY);
+    printf("state relative X = %f, state relative y = %f\n\n", relX, relY);
 
     if (pCam->isInAimMode())
     {   
-        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * revX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
+        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * relX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -relY, 0.0f);
        	clientOrientationChange = true;
     }
     else
     {
-        pSceneNode->yaw(Ogre::Degree(-mRotate * revX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
+        pSceneNode->yaw(Ogre::Degree(-mRotate * relX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -relY, 0.0f);
         clientOrientationChange = true;
     }
 

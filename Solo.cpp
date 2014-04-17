@@ -65,14 +65,15 @@ void Solo::createScene()
 
     gameStart = true;
 
-    // createOverlays(pCam); // in MCP
+    createOverlays(pCam); // in MCP
 }
 //-------------------------------------------------------------------------------------
-bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
+bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     // else if (!gameStart) // may need
     //     gameStart = true;
     //bool ret = BaseApplication::frameRenderingQueued(evt);
+    processUnbufferedInput(evt, mKeyboard, mMouse);
 
     gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
     gameSimulator->parseCollisions(); // check collisions
@@ -120,9 +121,6 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
         gameDisk->addToSimulator();
     }
 
-    if (timeSinceLastStateUpdate < 0.0f)
-        timeSinceLastStateUpdate = 0.01f;
-
     updateCamera(evt.timeSinceLastFrame);
 
     //timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
@@ -142,19 +140,30 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
     Ogre::SceneNode* pSightNode = player->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = player->getPlayerCameraNode();
     Ogre::Vector3 sightHeight;
+    btRigidBody* pBody;
+    btTransform transform;
+    btQuaternion rotationQ;
+
+    pBody = player->getBody();
+    transform = pBody->getCenterOfMassTransform();
 
     if (pCam->isInAimMode())
     {   
         pSceneNode->yaw(Ogre::Degree((-mRotate /2) * relX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, relY, 0.0f);
+        sightHeight = Ogre::Vector3(0.0f, -relY, 0.0f);
     }
     else
     {
         pSceneNode->yaw(Ogre::Degree(-mRotate * relX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, relY, 0.0f);
+        sightHeight = Ogre::Vector3(0.0f, -relY, 0.0f);
     }
+
+    rotationQ = btQuaternion(pSceneNode->getOrientation().getYaw().valueRadians(), 0, 0);
+    transform.setRotation(rotationQ);
+    pBody->setCenterOfMassTransform(transform);
+    
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
-    pCamNode->setPosition(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z);
+    pCamNode->setPosition(Ogre::Vector3(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z));
 
     return true;
 }
@@ -194,16 +203,12 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
         
         if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown) // if 'v' is pressed and was not pressed last frame - go to aim mode
         {
-            //PlayerCamera* pc = gameSimulator->getPlayerCamera("soloCamera");
-            // gameSimulator->toggleViewChange("Player1");
             pCam->toggleThirdPersonView();
             vKeyDown = true;
             //showTrajectory(pc);
         }
         if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown) // if 'v' is not pressed and was pressed last frame - exit aim mode
         {
-            //PlayerCamera* pc = gameSimulator->getPlayerCamera("soloCamera");
-            // gameSimulator->toggleViewChange("Player1");
             pCam->toggleThirdPersonView();
             vKeyDown = false;
             //mSceneMgr->getRootSceneNode()->detachObject(trajectory);
