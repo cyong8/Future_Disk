@@ -21,6 +21,7 @@ public:
 	void updateCamera(Ogre::Real elapseTime);
 	bool mouseMoved(Ogre::Real relX, Ogre::Real relY);
 
+
 	void createOverlays(PlayerCamera* playCam);
 
 private:

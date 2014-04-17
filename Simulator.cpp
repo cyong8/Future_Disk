@@ -368,7 +368,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (((Target*)o)->checkHitFlag() == false)
 		{
-			printf("COLLIDED WITH TILE!\n\n\n");
+			//printf("COLLIDED WITH TILE!\n\n\n");
 
 			// The 47.0f value is the x-width and y-height of the disk
 		    ((Target*)o)->toggleHitFlag();
@@ -413,7 +413,9 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    destroyTiles(clientTileList, clientRemoveIndexes, index);
 		newRemovedTile = true;
 		gameDisk->resetPowerUp();
+		playerLastThrew = "Player1";
 		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
+
 	}
 }
 

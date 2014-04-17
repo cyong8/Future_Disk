@@ -136,6 +136,7 @@ void Solo::updateCamera(Ogre::Real elapseTime)
 //-------------------------------------------------------------------------------------
 bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
+
     Ogre::SceneNode* pSceneNode = player->getSceneNode();
     Ogre::SceneNode* pSightNode = player->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = player->getPlayerCameraNode();
