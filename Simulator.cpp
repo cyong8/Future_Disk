@@ -18,8 +18,6 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	gameState = NOTSTARTED;
 	gameStart = false;
 	
-	player1CanCatch = true;
-    player2CanCatch = true;
     wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
@@ -178,12 +176,9 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			{ 
 				if (wallHitAfterThrow) // HARD CODE PLAYER FLAG
 				{
-					if (i == 0)
-						player1CanCatch = true;
-					else if (i == 1)
-						player2CanCatch = true;
+					if (!playerList[i]->checkPlayerCanCatch())
+						playerList[i]->togglePlayerCanCatch();
 				}
-
 			}
 			if (localPlayer->jumpPowerActive)
 			{
@@ -301,20 +296,8 @@ void Simulator::performThrow(Player* p)
 		gameDisk->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
-		for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)	// HARD CODE PLAYER FLAG
-		{
-			if (playerList[i] != NULL)
-			{
-				if (p->getGameObjectName() == playerList[i]->getGameObjectName())
-				{
-					if (i == 1)
-						player1CanCatch = false;
-					else if (i == 2)
-						player2CanCatch = false;
 
-				}
-			}
-		}
+		p->togglePlayerCanCatch();
 
 		playerLastThrew = p->getGameObjectName();
     	p->setHolding(false);
@@ -370,20 +353,13 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 	{
 		if (((Player*)o)->checkHolding() == false)  // HARD CODE PLAYER FLAG
 		{
-			if (player1CanCatch && ((Player*)o)->getGameObjectName() == "Player1")
-			{
-				printf("ATTACHING DISK TO PLAYER!\n\n\n\n\n");
-				((Player*)o)->attachDisk((Disk*)disk);
-				gameMusic->playCollisionSound("Disk", "Player");
-			}
-			if (player2CanCatch && ((Player*)o)->getGameObjectName() == "Player2")
+			if (((Player*)o)->checkPlayerCanCatch())
 			{
 				((Player*)o)->attachDisk((Disk*)disk);
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
 			gameState = STARTED;
-			printf("game started -> %d\n", gameState);
 			gameMusic->playCollisionSound("Disk", "Player");
 		}
 	}
