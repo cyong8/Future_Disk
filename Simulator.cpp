@@ -312,7 +312,6 @@ void Simulator::performThrow(Player* p)
 						player1CanCatch = false;
 					else if (i == 2)
 						player2CanCatch = false;
-
 				}
 			}
 		}

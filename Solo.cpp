@@ -65,7 +65,7 @@ void Solo::createScene()
 
     gameStart = true;
 
-    // createOverlays(pCam); // in MCP
+    createOverlays(pCam); // in MCP
 }
 //-------------------------------------------------------------------------------------
 bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt)
@@ -133,7 +133,7 @@ void Solo::updateCamera(Ogre::Real elapseTime)
     if (pCam->isInAimMode())
         pCam->update(elapseTime, player->getSceneNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
     else
-        pCam->update(elapseTime, player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());      
+       pCam->update(elapseTime, player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());      
 }
 //-------------------------------------------------------------------------------------
 bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
@@ -143,6 +143,8 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
     Ogre::SceneNode* pSightNode = player->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = player->getPlayerCameraNode();
     Ogre::Vector3 sightHeight;
+
+    printf("state relative X = %f, state relative y = %f\n\n\n", relX, relY);
 
     if (pCam->isInAimMode())
     {   
