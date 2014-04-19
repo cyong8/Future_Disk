@@ -15,9 +15,10 @@ public:
 
 	void createScene(void);
 	bool frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
-	bool processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
+	void processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 	bool mouseMoved(Ogre::Real relX, Ogre::Real relY);
 	Player* getPlayer(void);
+	void createOverlays(PlayerCamera* playCam);
 
 private:
 	Ogre::SceneManager* cSceneMgr;
@@ -52,6 +53,7 @@ private:
 	bool clientOrientationChange;
 	Ogre::Real mRotate;
 	bool gameStart;
+	float timeSinceLastStateUpdate;
 
 	Ogre::Light* pointLight;
 	void updateScene(void);

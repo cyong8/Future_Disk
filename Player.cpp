@@ -210,7 +210,7 @@ void Player::decreaseJump()
 //-------------------------------------------------------------------------------------
 void Player::initializeStates()
 {
-	int i = LEFT;
+	int i = VIEWMODE;
 	while (i > 0)
 	{
 		states.push_back(false);

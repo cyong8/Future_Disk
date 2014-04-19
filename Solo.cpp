@@ -65,7 +65,7 @@ void Solo::createScene()
 
     gameStart = true;
 
-    createOverlays(pCam); // in MCP
+    createOverlays(pCam);
 }
 //-------------------------------------------------------------------------------------
 bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)

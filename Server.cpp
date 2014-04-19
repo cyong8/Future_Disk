@@ -100,7 +100,9 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
     for (int i = 0; i < numberOfClients; i++)  // CHECK FOR ACTIVITY FROM CURRENT PLAYERS
     {
         if (gameNetwork->checkSockets(i))
-            interpretClientPacket(i);
+        {
+            interpretClientPacket(i);   
+        }
 
         // updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
@@ -173,11 +175,11 @@ bool Server::constructAndSendGameState(int clientIndex)
 
     pack.packetID = (char)(((int)'0') + S_PLAYER);
     pack.playID = (char)(((int)'0') + clientIndex);
-    printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
+    // printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
     pack.x = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().x;
     pack.y = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().y;
     pack.z = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().z;
-    printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
+    // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
     pack.orientation = playerList[clientIndex]->getSceneNode()->_getDerivedOrientation();
 
     buff = (char*)malloc(sizeof(S_PLAYER_packet));
@@ -333,8 +335,11 @@ bool Server::interpretClientPacket(int playerID)
     char* buff = gameNetwork->receivePacket(playerID);
     // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
     
-//    printf("\t\t*****Client sending sequence %c\n\n", pack.id);
-    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 'n')
+    if (buff == NULL)
+        return false;
+
+   printf("\t\t*****Client sending sequence\n\n");
+    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != '0')
     {
         int packetID = buff[indexIntoBuff] - '0';
 
@@ -355,7 +360,7 @@ bool Server::interpretClientPacket(int playerID)
         else if (packetID == C_PLAYER)
         {   
             C_PLAYER_packet p;
-
+            printf("FOUND CLIENT PLAYER PACKET!!!\n\n\n");
             memcpy(&p, buff+indexIntoBuff, sizeof(C_PLAYER_packet));
 
             int pID = p.playID - '0';

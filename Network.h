@@ -122,6 +122,19 @@ struct EXPANSION_packet  // deal with this later
 	// size and shape of room, which is dependent on the number of players
 };
 
+class Connection
+{
+public:
+	TCPsocket sock;
+	bool active;
+
+	Connection()
+	{
+		sock = NULL;
+		active = true;
+	}
+};
+
 class Network
 {
 public:
@@ -130,17 +143,15 @@ public:
 	void startListening(void);
 	int establishConnection(void);
 	void acceptClient(void);
-	void sendPacket(char* packList, int socketID);
+	void sendPacket(char* pack, int socketID);
 	char* receivePacket(int socketID);
 	bool checkSockets(int socketID);
 	int getPacketSize(char type);
 
 private:
-	SDLNet_SocketSet iSet;
 	SDLNet_SocketSet clientSet;
 	TCPsocket init_serverSocket;
-	TCPsocket TCP_gameSocket;
-	UDPsocket UDP_gameSocket;
+
 	IPaddress serverIP;
 	IPaddress* clientIP;
 	char* serverIP_c;
@@ -148,15 +159,13 @@ private:
 	int UDP_channel;
 	identifier networkID;
 	int numberOfConnections;
-	bool connectionEstablished;
 	int playerID;
 
 	/* Client Specific Variables */
 	TCPsocket clientSocket;
 
 	/* Server Specific Variables */
-	vector<TCPsocket> clientSocketList;
-
+	vector<Connection> connections;
 };
 
 #endif // #ifndef __Network_h_
