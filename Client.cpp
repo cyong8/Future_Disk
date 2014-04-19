@@ -8,6 +8,7 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
     gameStart = false;
     gameDisk = NULL;
     numPlayers = 0;
+    timeSinceLastStateUpdate = 0.01;
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
@@ -72,21 +73,22 @@ bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
         updateScene();
     }
 
-    if (!processUnbufferedInput(evt, mKeyboard, mMouse))
-    {
-        // send a packet telling the server you're leaving
-        exit(2);
-    }
+    processUnbufferedInput(evt, mKeyboard, mMouse);
+
+    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
+
+    if (timeSinceLastStateUpdate < 0.0f)
+        timeSinceLastStateUpdate = 0.01f;
 
     updateCamera(evt.timeSinceLastFrame);
 }
 //-------------------------------------------------------------------------------------
-bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
+void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     char* buff;
     static bool vKeydown = false;
 
-    if (clientOrientationChange)
+    if (clientOrientationChange && timeSinceLastStateUpdate < 0.0f)
     {
         clientOrientationChange = false;
        
@@ -99,44 +101,87 @@ bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
         memcpy(buff, &pack, sizeof(C_PLAYER_packet));
 
         gameNetwork->sendPacket(buff, playerID);
-        // pack.id = 'S';
-        // pack.x_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().x;
-        // pack.y_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().y;
-        // pack.z_coordinate = clientPlayer->getPlayerSightNode()->_getDerivedPosition().z;
-        // packList.push_back(pack);
     }
-    // if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-    // {
-    //     return false;
-    // }
-    // if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(Forward))                              // Forward - implemented
-    // {
-    //     clientPlayer->setState(Forward, true);
-    //     pack.id = 'w';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(Left))                                 // Left - implemented
-    // {
-    //     clientPlayer->setState(Left, true);
-    //     pack.id = 'a';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(Back))                                 // Backwards - implemented
-    // {
-    //     clientPlayer->setState(Back, true);
-    //     pack.id = 's';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(Right))                                 // Right - implemented
-    // {
-    //     clientPlayer->setState(Right, true);
-    //     pack.id = 'd';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
+    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    {
+
+    }
+    /* MOVE FORWARD */
+    if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(FORWARD, true);
+        pack.key = 'w';
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(FORWARD, false);
+        pack.key = 'w';
+    }
+    /* MOVE LEFT */
+    if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(LEFT, true);
+        pack.key = 'a';
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(LEFT, false);
+        pack.key = 'a';
+    }
+    /* MOVE BACK */
+    if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(BACK, true);
+        pack.key = 's';
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(BACK, false);
+        pack.key = 's';
+    }
+    /* MOVE RIGHT */
+    if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(RIGHT, true);
+        pack.key = 'd';
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
+    {
+        INPUT_packet pack;
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(RIGHT, false);
+        pack.key = 'd';
+    }
     // if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
     // {
     //     clientPlayer->setState(Jump, true);
@@ -184,8 +229,6 @@ bool Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
     //     packList.push_back(pack);
     //     gameNetwork->sendPacket(packList, 0);
     // }
-
-    return true;
 }
 //-------------------------------------------------------------------------------------
 void Client::updateScene() // Receive packets and interpret them
@@ -203,7 +246,7 @@ void Client::updateCamera(Ogre::Real elapseTime)
     }
     else
     {
-        pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());      
+        pCam->update(elapseTime, clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
 }
 //-------------------------------------------------------------------------------------
@@ -260,7 +303,7 @@ void Client::interpretServerPacket(char* packList)
                 playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
                 numPlayers++;
             }
-            printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
+            // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
             // playerList[newPlayerID]->getSceneNode()->_setDerivedOrientation(newQuat);
             // playerList[newPlayerID]->getSceneNode()->needUpdate();
@@ -308,26 +351,23 @@ void Client::interpretServerPacket(char* packList)
     }
 }
 //-------------------------------------------------------------------------------------
-bool Client::mouseMoved(Ogre::Real revX, Ogre::Real revY)
+bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
     Ogre::SceneNode* pSceneNode = clientPlayer->getSceneNode();
     Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = clientPlayer->getPlayerCameraNode();
     Ogre::Vector3 sightHeight;
 
-
-    printf("state relative X = %f, state relative y = %f\n\n", revX, revY);
-
     if (pCam->isInAimMode())
     {   
-        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * revX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
+        pSceneNode->yaw(Ogre::Degree((-mRotate /2) * relX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -relY, 0.0f);
        	clientOrientationChange = true;
     }
     else
     {
-        pSceneNode->yaw(Ogre::Degree(-mRotate * revX), Ogre::Node::TS_WORLD);
-        sightHeight = Ogre::Vector3(0.0f, -revY, 0.0f);
+        pSceneNode->yaw(Ogre::Degree(-mRotate * relX), Ogre::Node::TS_WORLD);
+        sightHeight = Ogre::Vector3(0.0f, -relY, 0.0f);
         clientOrientationChange = true;
     }
 
@@ -340,4 +380,37 @@ bool Client::mouseMoved(Ogre::Real revX, Ogre::Real revY)
 Player* Client::getPlayer()
 {
     return clientPlayer;
+}
+//-------------------------------------------------------------------------------------
+void Client::createOverlays(PlayerCamera* playCam) // might move to Client and Server
+{
+    /********************    MENUS    ********************/
+    Ogre::OverlayManager *overlayManager = Ogre::OverlayManager::getSingletonPtr();
+    
+    Ogre::Overlay* crossHairVertOverlay = overlayManager->create("crossHairVert"); // Create an overlay for the vertical crosshair
+
+    // Create an overlay container for the vertical crosshair
+    Ogre::OverlayContainer* crossHairVertContainer = static_cast<Ogre::OverlayContainer*>( overlayManager->createOverlayElement("Panel", "VerticalPanel"));
+    crossHairVertContainer->setPosition(0.5f, 0.4f);
+    crossHairVertContainer->setDimensions(0.001f, 0.2f);
+    crossHairVertContainer->setMaterialName("BaseWhite");
+    crossHairVertContainer->getMaterial()->setReceiveShadows(false);
+
+    crossHairVertOverlay->add2D( crossHairVertContainer ); // Add crossHairVertContainer to the crossHairVertOverlay
+
+    Ogre::Overlay* crossHairHorizOverlay = overlayManager->create("crossHairHoriz"); // Create an overlay for the horizontal crosshair
+
+    // Create an overlay container for the horizontal crosshair
+    Ogre::OverlayContainer* crossHairHorizContainer = static_cast<Ogre::OverlayContainer*>(overlayManager->createOverlayElement("Panel", "HorizontalPanel"));
+    crossHairHorizContainer->setPosition(0.425, 0.5);
+    crossHairHorizContainer->setDimensions(0.15, 0.001);
+    crossHairHorizContainer->setMaterialName("BaseWhite");
+    crossHairHorizContainer->getMaterial()->setReceiveShadows(false);
+
+    crossHairHorizOverlay->add2D(crossHairHorizContainer);     // Add the crossHairHorizContainer to the crossHairHorizOverlay
+
+    crossHairVertOverlay->hide();    // Hide the Crosshair till 
+    crossHairHorizOverlay->hide();   // til Aim View is activated 
+
+    playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }

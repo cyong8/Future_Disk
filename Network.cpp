@@ -3,14 +3,16 @@
 Network::Network(int sc_identifier, char* hostIP)
 {
 	numberOfConnections = 0;
-	connectionEstablished = false;
 	init_serverSocket = NULL;
 	clientSocket = NULL;
-	clientSocketList = vector<TCPsocket>(MAX_NUMBER_OF_PLAYERS, NULL);
-	UDP_gameSocket = NULL;
-	TCP_gameSocket = NULL;
-	iSet = SDLNet_AllocSocketSet(1);
-	clientSet = SDLNet_AllocSocketSet(4);
+	connections = vector<Connection>(MAX_NUMBER_OF_PLAYERS);
+	clientSet = SDLNet_AllocSocketSet(MAX_NUMBER_OF_PLAYERS + 1);
+
+	if (clientSet == NULL)
+	{
+		printf("Error allocating socket set\n\n\n");
+		exit(1);
+	}
 
 	/*Initialize the network*/
 	if(SDLNet_Init() < 0)
@@ -35,11 +37,8 @@ Network::Network(int sc_identifier, char* hostIP)
 Network::~Network()
 {
 	SDLNet_TCP_Close(init_serverSocket);
-	SDLNet_TCP_Close(TCP_gameSocket);
 	SDLNet_TCP_Close(clientSocket);
-	SDLNet_UDP_Close(UDP_gameSocket);
 	SDLNet_FreeSocketSet(clientSet);
-	SDLNet_FreeSocketSet(iSet);
 }
 //-------------------------------------------------------------------------------------
 void Network::startListening()
@@ -47,7 +46,7 @@ void Network::startListening()
 	/* Initialize listening of the host for clients */
 	if (SDLNet_ResolveHost(&serverIP, NULL, TCP_portNum) < 0) // NULL indicates listening
 	{
-	    printf("\n\n\nSDLNet_ResolveHost: %s\n", SDLNet_GetError());
+	    printf("SDLNet_ResolveHost: %s\n", SDLNet_GetError());
 	    exit(1);
 	}
 	/* Open the TCP connection with the server IP found above */
@@ -60,11 +59,11 @@ void Network::startListening()
 	}
 
 	/* Add the socket to the socket clientSet so we can use CheckSockets() later */
-	int numused = SDLNet_TCP_AddSocket(iSet, init_serverSocket);
+	int numused = SDLNet_TCP_AddSocket(clientSet, init_serverSocket);
 
 	if (numused == -1 || numused == 0) 
 	{
-    	printf("\n\n\n\n\nSDLNet_AddSocket: %s\n", SDLNet_GetError());
+    	printf("SDLNet_AddSocket: %s\n", SDLNet_GetError());
     	exit(2);
 	}
 }
@@ -73,19 +72,13 @@ int Network::establishConnection()
 {
 	if (networkID == SERVER) 
 	{
-		// std::ostringstream portData_ss; // UDP_port num - not currently used
-		// portData_ss << UDP_portNum;
-		// char portData[portData_ss.str().length()];
-		// strcpy(portData, portData_ss.str().c_str());
-
 		if (SDLNet_SocketReady(init_serverSocket))
 		{
-			// printf("ACTIVITY!!!!\n\n\n\n");
 			acceptClient();
 			return 1;
 		}
 	}
-	if (networkID == CLIENT)
+	else if (networkID == CLIENT)
 	{	
 		char idBuff[2];
 
@@ -126,118 +119,126 @@ int Network::establishConnection()
 void Network::acceptClient()
 {
 	TCPsocket tmpAcceptSocket;
+	int socketIndex = numberOfConnections;
 
 	tmpAcceptSocket = SDLNet_TCP_Accept(init_serverSocket);
- 
-	numberOfConnections++;
-	char buff[2];
-	sprintf(buff, "%d\0", numberOfConnections);
-
-	// memcpy(buff, &val, 1);
-
-	printf("accepting client as %s\n", buff);
 
 	if (tmpAcceptSocket == NULL)
 	{
 		printf("CLIENT SOCKET NOT BEING ACCEPTED!\n\n\n");
-		return;
+		exit(1);
 	}
+ 
+ 	connections[socketIndex].sock = tmpAcceptSocket;
+	
+	numberOfConnections++;
+	char buff[2];
+	sprintf(buff, "%d\0", numberOfConnections);
 
-	SDLNet_TCP_Send(tmpAcceptSocket, buff, 2);
-	clientIP = SDLNet_TCP_GetPeerAddress(tmpAcceptSocket);
-	printf("Client connected - IP: %d\n\n", clientIP->host);
-
-	int numused = SDLNet_TCP_AddSocket(clientSet, tmpAcceptSocket);
-
+	clientIP = SDLNet_TCP_GetPeerAddress(connections[socketIndex].sock);
+	int numused = SDLNet_TCP_AddSocket(clientSet, connections[socketIndex].sock);
 	if (numused == -1 || numused == 0) 
 	{
     	printf("\n\n\nSDLNet_AddSocket: %s\n", SDLNet_GetError());
     	exit(2);
 	}
 
-	clientSocketList[numberOfConnections - 1] = tmpAcceptSocket;
+	SDLNet_TCP_Send(connections[socketIndex].sock, buff, 2);
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(char* pack, int socketID)
+void Network::sendPacket(char* pack, int socketIndex)
 {
 	int numSent;
 	int packSize = getPacketSize(pack[0]);
 
+	/********************************* CLIENT *********************************/
 	if (networkID == CLIENT)
 	{
+		printf("USING CLIENT SEND!\n");
 		numSent = SDLNet_TCP_Send(clientSocket, pack, packSize);
 	}
-	else if (networkID == SERVER)
+	/********************************* SERVER *********************************/
+	if (networkID == SERVER)
 	{
-		numSent = SDLNet_TCP_Send(clientSocketList[socketID], pack, packSize);
+		printf("USING SERVER SEND!\n");
+		numSent = SDLNet_TCP_Send(connections[socketIndex].sock, pack, packSize);
 	}
-	if (!numSent)
-	{
+	
+	if (!numSent) /* ERROR CHECK */
 		printf("*****Failed to send packets of size %d!\n\n", numSent);
-	}
 	else
 		printf("*****Sending packet of size %d....\n\n", numSent);
 }
 //-------------------------------------------------------------------------------------
-char* Network::receivePacket(int socketID)
+char* Network::receivePacket(int socketIndex)
 {
 	// we are going to recv packetList, no iterate thru buffer and return a packList
 	char* buff = (char*)malloc(sizeof(char) * MAX_SIZE_OF_BUFFER);
 	memset(buff, 0, MAX_SIZE_OF_BUFFER);
 
 	int numRead;
-
+	/********************************* CLIENT *********************************/
 	if (networkID == CLIENT)
 	{
-		if ((numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER)) <= 0) 
-		{
-			printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
-			return NULL;
-		}
-		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER); 
-
-		return buff;
+		printf("USING CLIENT RECEIVE!\n");
+		numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER);
 	}
-	else if (networkID == SERVER)
+	/********************************* SERVER *********************************/
+	if (networkID == SERVER)
 	{
-		if ((numRead = SDLNet_TCP_Recv(clientSocketList[socketID], buff, MAX_SIZE_OF_BUFFER)) <= 0) 
-		{
-			printf("Number of bytes read on misread: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
-			
-			return NULL;
-		}
-		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
+		printf("USING SERVER RECEIVE!\n");
+		numRead = SDLNet_TCP_Recv(connections[socketIndex].sock, buff, MAX_SIZE_OF_BUFFER);
 	}
+	
+	printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER); 
+
+	if (numRead <= 0) 
+		return NULL;
 
 	return buff;
 }
 //-------------------------------------------------------------------------------------
-bool Network::checkSockets(int socketID)
+bool Network::checkSockets(int socketIndex)
 {
 	if (networkID == CLIENT)
 	{
-		if (SDLNet_CheckSockets(clientSet, 0) <= 0)
-			return false;
-		else 
+		if (SDLNet_CheckSockets(clientSet, 0))
 		{
-			// printf("CHECKING SOCKET!\n\n");
-			return true;
+			if (SDLNet_SocketReady(clientSocket))
+				return true;
+			else
+				return false;
 		}
 	}
-	else if (socketID >= 0)
+	else if (networkID == SERVER)
 	{
-		if (SDLNet_SocketReady(clientSocketList[socketID]) <= 0)
-			return false;
-		else
-			return true;
+		if (socketIndex == -1)
+		{
+			if (SDLNet_CheckSockets(clientSet, 0))
+			{
+				if (SDLNet_SocketReady(init_serverSocket))
+				{
+					printf("*****ACTIVITY ON SERVER SOCKET\n\n");
+					return true;
+				}
+			}
+		}
+		else if (socketIndex >= 0)
+		{
+			if (connections[socketIndex].sock != NULL)
+			{
+				if (SDLNet_SocketReady(connections[socketIndex].sock))
+				{
+					printf("\t*******NETWORK RECEIVING PACKETS*******\n\n\n\n");
+					return true;
+				}
+			}
+			else 
+				return false;
+		}
 	}
-	else if (socketID == -1)
-	{
-		if (SDLNet_CheckSockets(iSet, 0) <= 0)
-			return false;
-		else 
-			return true;	
-	}
+	
+	return false;
 }
 //-------------------------------------------------------------------------------------
 int Network::getPacketSize(char type)
@@ -259,3 +260,4 @@ int Network::getPacketSize(char type)
 	if (type == (char)(((int)'0') + EXPANSION))
 		return sizeof(EXPANSION_packet);
 }
+//-------------------------------------------------------------------------------------

@@ -70,8 +70,10 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 2)
 	{	
-		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight", Ogre::Vector3(0.0f, 0.0f, 1350.0f));
-		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera", Ogre::Vector3(0.0f, 200.0f, -1350.0f));
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
+		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 4.0f, -15.00));
 	}
 	else if (playerID == 3)
 		;
@@ -208,7 +210,7 @@ void Player::decreaseJump()
 //-------------------------------------------------------------------------------------
 void Player::initializeStates()
 {
-	int i = LEFT;
+	int i = VIEWMODE;
 	while (i > 0)
 	{
 		states.push_back(false);
