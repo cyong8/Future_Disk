@@ -72,14 +72,13 @@ bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
     {
         updateScene();
     }
-
+    
     processUnbufferedInput(evt, mKeyboard, mMouse);
-
-    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
 
     if (timeSinceLastStateUpdate < 0.0f)
         timeSinceLastStateUpdate = 0.01f;
 
+    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
     updateCamera(evt.timeSinceLastFrame);
 }
 //-------------------------------------------------------------------------------------
@@ -102,86 +101,86 @@ void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
 
         gameNetwork->sendPacket(buff, playerID);
     }
-    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-    {
+    // if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    // {
 
-    }
-    /* MOVE FORWARD */
-    if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    // }
+    // /* MOVE FORWARD */
+    // if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(FORWARD, true);
-        pack.key = 'w';
-    }
-    else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(FORWARD, true);
+    //     pack.key = 'w';
+    // }
+    // else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(FORWARD, false);
-        pack.key = 'w';
-    }
-    /* MOVE LEFT */
-    if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(FORWARD, false);
+    //     pack.key = 'w';
+    // }
+    // /* MOVE LEFT */
+    // if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(LEFT, true);
-        pack.key = 'a';
-    }
-    else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(LEFT, true);
+    //     pack.key = 'a';
+    // }
+    // else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(LEFT, false);
-        pack.key = 'a';
-    }
-    /* MOVE BACK */
-    if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(LEFT, false);
+    //     pack.key = 'a';
+    // }
+    // /* MOVE BACK */
+    // if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(BACK, true);
-        pack.key = 's';
-    }
-    else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(BACK, true);
+    //     pack.key = 's';
+    // }
+    // else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(BACK, false);
-        pack.key = 's';
-    }
-    /* MOVE RIGHT */
-    if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(BACK, false);
+    //     pack.key = 's';
+    // }
+    // /* MOVE RIGHT */
+    // if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(RIGHT, true);
-        pack.key = 'd';
-    }
-    else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
-    {
-        INPUT_packet pack;
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+    //     clientPlayer->setState(RIGHT, true);
+    //     pack.key = 'd';
+    // }
+    // else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
+    // {
+    //     INPUT_packet pack;
+    //     pack.packetID =(char)(((int)'0') + INPUT);
+    //     pack.playID = (char)(((int)'0') + playerID);
 
-        clientPlayer->setState(RIGHT, false);
-        pack.key = 'd';
-    }
+    //     clientPlayer->setState(RIGHT, false);
+    //     pack.key = 'd';
+    // }
     // if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
     // {
     //     clientPlayer->setState(Jump, true);
@@ -234,7 +233,7 @@ void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
 void Client::updateScene() // Receive packets and interpret them
 {
 	char* packList = gameNetwork->receivePacket(playerID);
-    
+
     interpretServerPacket(packList);
 }
 //-------------------------------------------------------------------------------------
@@ -287,7 +286,7 @@ void Client::interpretServerPacket(char* packList)
         else if (packType == (char)(((int)'0') + S_PLAYER))
         {
             S_PLAYER_packet p;
-
+            printf("FOUND PLAYER PACKET!\n\n");
             memcpy(&p, packList, sizeof(S_PLAYER_packet));
 
             newPos = Ogre::Vector3(p.x, p.y, p.z);
@@ -349,6 +348,7 @@ void Client::interpretServerPacket(char* packList)
         //     gameStart = true;
         // }
     }
+    printf("ENDING INTERPRETING PACKETS\n\n\n");
 }
 //-------------------------------------------------------------------------------------
 bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)

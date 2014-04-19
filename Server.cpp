@@ -338,10 +338,11 @@ bool Server::interpretClientPacket(int playerID)
     if (buff == NULL)
         return false;
 
-   printf("\t\t*****Client sending sequence\n\n");
-    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != '0')
+   printf("*****Client sending sequence\n\n");
+    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 0x00)
     {
         int packetID = buff[indexIntoBuff] - '0';
+        printf("\tpacketID = %d\n", packetID);
 
         if (packetID == INPUT)
         {
@@ -366,8 +367,9 @@ bool Server::interpretClientPacket(int playerID)
             int pID = p.playID - '0';
             Ogre::Quaternion quat = p.orientation;
 
+            printf("\t\t%d\n", pID);
             // interpret p
-            Player* cp = playerList[pID];
+            Player* cp = playerList[pID-1];
 
             cp->getSceneNode()->_setDerivedOrientation(p.orientation);
 
@@ -381,16 +383,16 @@ bool Server::interpretClientPacket(int playerID)
 
             indexIntoBuff += sizeof(C_PLAYER_packet);
         }
-        else if (packetID == GAMESTATE)
-        {
-            GAMESTATE_packet g;
+        // else if (packetID == GAMESTATE)
+        // {
+        //     GAMESTATE_packet g;
 
-            memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
+        //     memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
 
-            // interpret g
+        //     // interpret g
 
-            indexIntoBuff += sizeof(GAMESTATE_packet);
-        }
+        //     indexIntoBuff += sizeof(GAMESTATE_packet);
+        // }
     }
 
     // if (typeInput == 'w')                                       // Forward
