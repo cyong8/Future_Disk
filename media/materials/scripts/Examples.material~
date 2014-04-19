@@ -1,3 +1,93 @@
+// For explosion particle system
+vertex_program explodeVertexProgramHLSL hlsl
+{
+	source explode.hlsl
+	entry_point main_vp
+	target vs_2_0
+}
+ 
+vertex_program explodeVertexProgramGLSL glsl
+{
+	source explode_vp.glsl
+}
+ 
+vertex_program explodeVertexProgram unified
+{
+	delegate explodeVertexProgramHLSL
+	delegate explodeVertexProgramGLSL
+}
+ 
+fragment_program explodeFragmentProgramHLSL hlsl
+{
+	source explode.hlsl
+	entry_point main_fp
+	target ps_2_0
+}
+ 
+fragment_program explodeFragmentProgramGLSL glsl
+{
+	source explode_fp.glsl
+	default_params
+	{
+		param_named tex int 0
+	}
+}
+ 
+fragment_program explodeFragmentProgram unified
+{
+	delegate explodeFragmentProgramHLSL
+	delegate explodeFragmentProgramGLSL
+}
+
+material Examples/TEST
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture test2.jpg
+			}
+		}
+	}
+}
+ 
+material explosionMaterial
+{
+	technique
+	{
+		pass
+		{
+			lighting off
+			scene_blend add
+			depth_write off
+ 
+			vertex_program_ref explodeVertexProgram
+			{
+				param_named_auto worldViewProj worldviewproj_matrix
+			}
+ 
+			fragment_program_ref explodeFragmentProgram
+			{
+			}
+ 
+			// texture unit 0 - our volume texture
+			texture_unit
+			{
+				texture explode.dds 3d
+				tex_address_mode clamp
+				filtering linear linear none
+			}
+		}
+	}
+}
+
+
+
 material Examples/SphereMappedRustySteel
 {
 	technique
@@ -418,6 +508,44 @@ material Examples/Chrome
 	}
 }
 
+material Examples/RedChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 0.0 0.0
+			diffuse 1.0 0.0 0.0 
+			specular 1.0 0.0 0.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/GreenChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 1.0 0.0
+			diffuse 0.0 1.0 0.0 
+			specular 0.0 1.0 0.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
 material Examples/BlueChrome
 {
 	technique
@@ -427,6 +555,101 @@ material Examples/BlueChrome
 			ambient 0.0 0.0 1.0
 			diffuse 0.0 0.0 1.0 
 			specular 0.0 0.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/YellowChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 1.0 0.0
+			diffuse 1.0 1.0 0.0 
+			specular 1.0 1.0 0.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/MagentaChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 0.0 1.0
+			diffuse 1.0 0.0 1.0 
+			specular 1.0 0.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/CyanChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 1.0 1.0
+			diffuse 0.0 1.0 1.0 
+			specular 0.0 1.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/WhiteChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 1.0 1.0 1.0
+			diffuse 1.0 1.0 1.0 
+			specular 1.0 1.0 1.0 10.0
+
+			texture_unit
+			{
+				texture Chrome.jpg
+				env_map spherical
+			}
+		}
+	}
+}
+
+material Examples/BlackChrome
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 0.0 0.0
+			diffuse 0.0 0.0 0.0 
+			specular 0.0 0.0 0.0 10.0
 
 			texture_unit
 			{
@@ -727,6 +950,7 @@ material "2 - Default"
 
 			texture_unit
 			{
+				scale .3 .3
 				texture MtlPlat2.jpg
 			}
 		}

@@ -51,9 +51,10 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     particleNode->attachObject(tailParticle);
     particleNode->setVisible(false);
 
-	Ogre::Entity* ent = mgr->createEntity(nym, "cube.mesh"); // Create entity;apply mesh
+	Ogre::Entity* ent = mgr->createEntity(nym, "Waddlelly.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
-	rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
+	rootNode->scale(dimensions.x/25.0, dimensions.y/25.0, dimensions.z/25.0);
+	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(position); // Set the position of the player
 	ent->setMaterialName("Examples/Chrome");
 	// Set collision shape for Bullet
@@ -228,18 +229,18 @@ void Player::setState(int index, bool value)
 	states[index] = value;
 }
 //-------------------------------------------------------------------------------------
-Ogre::Vector3 Player::fillClientVelocityVector(Ogre::Real m, float sprintFactor)
+Ogre::Vector3 Player::fillVelocityVector(Ogre::Real m, float sprintFactor)
 {
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 
 	if (states[LEFT])
-		velocityVector += Ogre::Vector3(m, 0.0f, 0.0f);
-	if (states[RIGHT])
 		velocityVector += Ogre::Vector3(-m, 0.0f, 0.0f);
+	if (states[RIGHT])
+		velocityVector += Ogre::Vector3(m, 0.0f, 0.0f);
 	if (states[BACK])
-		velocityVector += Ogre::Vector3(0.0f, 0.0f, -m);
-	if (states[FORWARD])
 		velocityVector += Ogre::Vector3(0.0f, 0.0f, m);
+	if (states[FORWARD])
+		velocityVector += Ogre::Vector3(0.0f, 0.0f, -m);
 	if (states[BOOST])
 		velocityVector *= sprintFactor;
 

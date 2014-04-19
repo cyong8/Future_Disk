@@ -74,7 +74,7 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
     if (!processUnbufferedInput(evt))
         exit(2);
 
-    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/120.0f);
     gameSimulator->parseCollisions(); // check collisions
 
 
@@ -104,7 +104,7 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
             interpretClientPacket(i);   
         }
 
-        // updateClientVelocity(playerList[i]);
+        updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
 
         if (timeSinceLastStateUpdate < 0.0f)
@@ -137,15 +137,15 @@ bool Server::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 void Server::updateClientVelocity(Player* p)
 {
-	if (gameSimulator->checkGameStart()) //&& !clientVKeyDown) // Need to establish new way of checking View Mode
-    {
+	// if (gameSimulator->checkGameStart()) //&& !clientVKeyDown) // Need to establish new way of checking View Mode
+    // {
         Ogre::Vector3 velocityVector;
-        velocityVector = p->fillClientVelocityVector(mMove, sprintFactor); // p1 was hostPlayer
-        velocityVector = p->getSceneNode()->getOrientation() * velocityVector;  // p2 was clientPlayer
+        velocityVector = p->fillVelocityVector(mMove, sprintFactor);
+        velocityVector = p->getSceneNode()->getOrientation() * velocityVector;
         btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
         // No longer named clientPlayer/hostPlayer - receive player id in packet
-        // clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
-    }
+        p->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
+    // }
 }
 //-------------------------------------------------------------------------------------
 bool Server::constructAndSendGameState(int clientIndex)
@@ -352,9 +352,9 @@ bool Server::interpretClientPacket(int playerID)
 
             // interpret i
             int pID = i.playID - '0';
-            keyID inputID = static_cast<keyID>(i.key - '0');
-
-            processClientInput(pID, inputID);
+            // keyID inputID = static_cast<keyID>(i.key - '0');
+            printf("PROCESSING CLIENT INPUT: %c\n", i.key);
+            processClientInput((pID - 1), i.key);
 
             indexIntoBuff += sizeof(INPUT_packet);
         }
@@ -467,49 +467,49 @@ void Server::keyPressed(const OIS::KeyEvent &evt)
 
 }
 //-------------------------------------------------------------------------------------
-void Server::processClientInput(int playerIndex, keyID keyPressed)
+void Server::processClientInput(int playerIndex, char keyPressed)
 {
     Player* p = playerList[playerIndex];
 
     switch(keyPressed)
     {
-        case W:
+        case 'w':
             if (p->checkState(FORWARD))
                 p->setState(FORWARD, false);
             else
                 p->setState(FORWARD, true);
             break;
-        case A:
+        case 'a':
             if (p->checkState(LEFT))
                 p->setState(LEFT, false);
             else
                 p->setState(LEFT, true);
             break;
-        case S:
+        case 's':
             if (p->checkState(BACK))
                 p->setState(BACK, false);
             else
                 p->setState(BACK, true);
             break;
-        case D:
+        case 'd':
             if (p->checkState(RIGHT))
                 p->setState(RIGHT, false);
             else
                 p->setState(RIGHT, true);
             break;
-        case SPACE: // ATTEMPT TO PERFORM JUMP
+        case 'j': // ATTEMPT TO PERFORM JUMP
             break;
-        case SHIFT: 
+        case 'b': 
             if (p->checkState(BOOST))
                 p->setState(BOOST, false);
             else
                 p->setState(BOOST, true);
             break;
-        case MOUSECLICK:  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
+        case 'm':  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
             break;
-        case ESC:  // GAME STATE CHANGE
+        case 'q':  // GAME STATE CHANGE
             break;
-        case ENTER: // GAME STATE CHANGE
+        case 'k':// ENTER: // GAME STATE CHANGE
             break;
     }
 }
