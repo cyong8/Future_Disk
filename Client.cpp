@@ -12,14 +12,14 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
-    for (int i = 0; i< MAX_NUMBER_OF_PLAYERS; i++)
-    {
-        if (playerList[i] != NULL)
-        {
-            printf("Player: %d is NULL\n", i);
-        }
-    }
-    exit(1);
+    // for (int i = 0; i< MAX_NUMBER_OF_PLAYERS; i++)
+    // {
+    //     if (playerList[i] == NULL)
+    //     {
+    //         printf("Player: %d is NULL\n", i);
+    //     }
+    // }
+    // exit(1);
 
 	gameNetwork = new Network(CLIENT, IP);
 	gameMusic = new Music();
@@ -333,6 +333,7 @@ void Client::interpretServerPacket(char* packList)
             newQuat = p.orientation;
 
             int newPlayerID = p.playID - '0';
+            /* NEW PLAYER NOT BEING ADDED TO SCENE */
             if (playerList[newPlayerID] == NULL)
             {
                 printf("*****ADDING NEW PLAYER\n\n");
