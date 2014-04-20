@@ -12,6 +12,15 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
+    for (int i = 0; i< MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        if (playerList[i] != NULL)
+        {
+            printf("Player: %d is NULL\n", i);
+        }
+    }
+    exit(1);
+
 	gameNetwork = new Network(CLIENT, IP);
 	gameMusic = new Music();
 
@@ -105,7 +114,7 @@ void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
     }
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
-
+        /* Close player socket and allow for another player to take its place */
     }
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
@@ -199,33 +208,17 @@ void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    // if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))
-    // {
-    //     clientPlayer->setState(Jump, true);
-    //     pack.id = 'j';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
-    // {
-    //     pCam->toggleThirdPersonView();
-    //     pack.id = 'v';
-    //     packList.push_back(pack);
-    //     vKeydown = true;
-    //     result = true;
-    //     gameDisk->getSceneNode()->setVisible(false);
-    //     pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    // }
-    // if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
-    // {
-    //     pCam->toggleThirdPersonView();
-    //     pack.id = 'v';
-    //     packList.push_back(pack);
-    //     vKeydown = false;
-    //     result = true;
-    //     gameDisk->getSceneNode()->setVisible(true);
-    //     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    // }    
+    if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
+    {
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        //clientPlayer->setState(JUMP, true);
+        pack.key = 'j';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+    }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
         pack.packetID = (char)(((int)'0') + INPUT);
@@ -248,13 +241,35 @@ void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    // if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
-    // {
-    //     pack.id = 't';
-    //     packList.push_back(pack);
-    //     result = true;
-    //     clientPlayer->setHolding(false);
-    // }
+    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    {
+        pCam->toggleThirdPersonView();
+        pack.key = 'v';
+
+        vKeydown = true;
+        gameDisk->getSceneNode()->setVisible(false);
+        pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
+    {
+        pCam->toggleThirdPersonView();
+        pack.key = 'v';
+
+        vKeydown = false;
+        gameDisk->getSceneNode()->setVisible(true);
+        pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
+    {
+        pack.packetID = (char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        pack.key = 't';
+        clientPlayer->setHolding(false);
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+    }
 }
 //-------------------------------------------------------------------------------------
 void Client::updateScene() // Receive packets and interpret them
@@ -309,11 +324,9 @@ void Client::interpretServerPacket(char* packList)
             indexIntoBuff += sizeof(DISK_packet);
         }
         /* UPDATE PLAYERS */
-        // else if (packType == (char)(((int)'0') + S_PLAYER))
         else if (packType == (char)(((int)'0') + S_PLAYER))
         {
             S_PLAYER_packet p;
-            printf("FOUND PLAYER PACKET!\n\n");
             memcpy(&p, packList, sizeof(S_PLAYER_packet));
 
             newPos = Ogre::Vector3(p.x, p.y, p.z);
@@ -328,6 +341,7 @@ void Client::interpretServerPacket(char* packList)
 
                 playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
                 numPlayers++;
+                exit(1);
             }
             // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);

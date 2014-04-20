@@ -151,42 +151,32 @@ void Server::updateClientVelocity(Player* p)
 bool Server::constructAndSendGameState(int clientIndex)
 {
     char* buff;
-    /* Sending each player's position to clients */
-    // for (int i = 0; i < numberOfClients; i++)
-    // {
-    //     S_PLAYER_packet pack;
-     
-    //     memset(&pack, 0, sizeof(S_PLAYER_packet));
-
-    //     pack.packetID = (char)(((int)'0') + S_PLAYER);
-    //     pack.playID = (char)(((int)'0') + i);
-    //     printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
-    //     pack.x = playerList[i]->getSceneNode()->getPosition().x;
-    //     pack.y = playerList[i]->getSceneNode()->getPosition().y;
-    //     pack.z = playerList[i]->getSceneNode()->getPosition().z;
-    //     pack.orientation = playerList[i]->getSceneNode()->getOrientation();
-
-    //     memcpy(buff + indexIntoBuff, &pack, sizeof(S_PLAYER_packet));
-    //     indexIntoBuff += sizeof(S_PLAYER_packet);
-    // }
-    S_PLAYER_packet pack;
-     
-    memset(&pack, 0, sizeof(S_PLAYER_packet));
-
-    pack.packetID = (char)(((int)'0') + S_PLAYER);
-    pack.playID = (char)(((int)'0') + clientIndex);
-    // printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
-    pack.x = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().x;
-    pack.y = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().y;
-    pack.z = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().z;
-    // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
-    pack.orientation = playerList[clientIndex]->getSceneNode()->_getDerivedOrientation();
-
     buff = (char*)malloc(sizeof(S_PLAYER_packet));
-    memcpy(buff, &pack, sizeof(S_PLAYER_packet));
 
-    gameNetwork->sendPacket(buff, clientIndex);
-    
+    /* Sending each player's position to clients */
+    for (int i = 0; i < numberOfClients; i++)
+    {
+        S_PLAYER_packet pack;
+     
+        memset(&pack, 0, sizeof(S_PLAYER_packet));
+
+        pack.packetID = (char)(((int)'0') + S_PLAYER);
+        pack.playID = (char)(((int)'0') + i);
+
+        printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
+        pack.x = playerList[i]->getSceneNode()->_getDerivedPosition().x;
+        pack.y = playerList[i]->getSceneNode()->_getDerivedPosition().y;
+        pack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
+        // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
+        pack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
+
+        memcpy(buff, &pack, sizeof(S_PLAYER_packet));
+
+        gameNetwork->sendPacket(buff, i);
+    }
+
+    /* UPDATE ACTIVE POWER UPS */
+
     // if ()
     // pack.id = 'P';
     // pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;

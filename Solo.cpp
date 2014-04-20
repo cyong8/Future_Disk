@@ -113,7 +113,7 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
         }
     }
 
-    //restrictPlayerMovement(player);
+    restrictPlayerMovement();
 
     if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
     {
@@ -309,4 +309,44 @@ void Solo::createOverlays(PlayerCamera* playCam) // might move to Client and Ser
     crossHairHorizOverlay->hide();   // til Aim View is activated 
 
     playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
+}
+void Solo::restrictPlayerMovement()
+{
+    Ogre::Vector3 pos = player->getSceneNode()->getPosition();
+    Ogre::Vector3 dim = player->getPlayerDimensions();
+    btVector3 velocityVector = player->getBody()->getLinearVelocity();
+    Ogre::SceneNode* restrictNode;
+    Ogre::AxisAlignedBox gapBox;
+    Ogre::AxisAlignedBox playerBox = player->getSceneNode()->_getWorldAABB();
+
+    if (player->getPlayerSide() == "Negative Side")
+        restrictNode = gameRoom->getClientGapSceneNode();
+    else
+        restrictNode = gameRoom->getHostGapSceneNode();
+
+    gapBox = restrictNode->_getWorldAABB();
+
+    if (gapBox.intersects(playerBox))
+    {
+        time(&gapStartTime);
+        time(&gapEndTime);
+        // gapStartClock = clock();
+
+        player->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+        player->getBody()->setLinearVelocity(btVector3(velocityVector.getX(), velocityVector.getY(), 5.0f));
+        restrictNode->setVisible(true);
+        player->setMovementRestriction(true);
+    }
+    else
+    {
+        time(&gapEndTime);
+        // gapEndClock = clock();
+
+        if (difftime(gapEndTime, gapStartTime) > 1.0f)
+        {
+            restrictNode->setVisible(false);
+        }
+
+        player->setMovementRestriction(false);
+    }
 }
