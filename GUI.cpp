@@ -152,31 +152,30 @@ void GUI::gameOverScreen()
 {
     CEGUI::MouseCursor::getSingleton().show();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/GameOver1/Sheet");
     
     CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/QuitButton");
     quit->setText("Quit Game");
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
-    /*CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/RestartGameButton");
+    CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/RestartGameButton");
     restart->setText("Restart Game");
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
-    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
+    /*CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
     back->setText("Back to Main Menu");
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
     back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));*/
     
     sheet->addChildWindow(quit);
-    //sheet->addChildWindow(restart);
+    sheet->addChildWindow(restart);
     //sheet->addChildWindow(back);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
-    //restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, this));
+    restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, mcp));
     //back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
 }
 //-------------------------------------------------------------------------------------

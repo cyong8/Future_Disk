@@ -23,6 +23,13 @@ public:
 
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement();
+	
+	bool updateTimer(time_t currTime);
+    void updatePauseTime(time_t currTime);
+    
+    void restartGame();
+    
+    void togglePause();
 
 private:
 	Ogre::SceneManager* sceneMgr;
@@ -31,14 +38,17 @@ private:
 	MCP* MasterControl;
 	Music* gameMusic;
 	
+	int score;
 	
 	bool gameStart;
 	bool gameOver;
 	bool gamePause;
+	bool diskAdded;
 
 	bool clientOrientationChange;
 
 	/* Game Functionality Constants */
+	Ogre::Vector3 startingPosition;
 	Ogre::Real mMove; 			// Move Constant
 	Ogre::Real mRotate;
 	float sprintFactor;			// Sprint Constant
@@ -68,6 +78,11 @@ private:
 		/* Gap Check Time */ //Most likely needs to be in respective Player's class
 	time_t gapStartTime;
 	time_t gapEndTime;
+	
+	int initMinutes;
+	time_t initTime;
+    double pTimePassed;
+    time_t pauseTime;
 
 	Ogre::Light* pointLight;
 

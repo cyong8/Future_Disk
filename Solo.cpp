@@ -8,6 +8,8 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
 
 	gameSimulator = new Simulator(sceneMgr, gameMusic);
 
+    score = 0;
+
     srand(time(0));
     time(&gapStartTime);
     time(&gapEndTime);
@@ -20,12 +22,18 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     gameStart = false;
     gameOver = false;
     gamePause = false;
+    diskAdded = false;
+    
+    time(&initTime);
+    initMinutes = 1;
+    pTimePassed = 0;
 
     createScene();
 }
 //-------------------------------------------------------------------------------------
 Solo::~Solo(void)
 {
+    
 }
 //-------------------------------------------------------------------------------------
 void Solo::createScene()
@@ -34,6 +42,7 @@ void Solo::createScene()
 
     player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1);
     player->addToSimulator();
+    startingPosition = player->getSceneNode()->getPosition();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
@@ -75,10 +84,6 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     //bool ret = BaseApplication::frameRenderingQueued(evt);
     processUnbufferedInput(evt, mKeyboard, mMouse);
 
-    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
-    gameSimulator->parseCollisions(); // check collisions
-
-
     if(!gameStart && !gameOver) // Game not started
     {
         MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));
@@ -87,10 +92,13 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     }
     else if(gameOver)
     {
-        //gui->addPanel(gameOverPanel, OgreBites::TL_CENTER);
-        //gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
-        printf("gameOver");
-        gameStart = false;
+        if (gameStart) {
+            MasterControl->gui->addPanel(MasterControl->getPanel(GAMEOVER), OgreBites::TL_CENTER);
+            MasterControl->getPanel(GAMEOVER)->setParamValue(1, Ogre::StringConverter::toString(score));
+            printf("gameOver");
+            MasterControl->gui->gameOverScreen();
+            gameStart = false;
+        }
 
         // Add option to restart game
     }
@@ -98,9 +106,11 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     {
         if(!gamePause)
         {
+            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+            gameSimulator->parseCollisions(); // check collisions
             time_t currTime;
             time(&currTime);
-            //gameOver = updateTimer(currTime);
+            gameOver = updateTimer(currTime);
             if (gameOver)
                 gameMusic->playMusic("Pause");
             //modifyScore(gameSimulator->tallyScore());
@@ -109,16 +119,19 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
         {
             time_t pcurrTime;
             time(&pcurrTime);
-            //updatePauseTime(pcurrTime);
+            updatePauseTime(pcurrTime);
         }
     }
 
     restrictPlayerMovement();
 
-    if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
+    if (gameSimulator->setDisk && !diskAdded)
     {
-        gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
+        if (gameDisk == NULL) 
+            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
+            
         gameDisk->addToSimulator();
+        diskAdded = true;
     }
 
     updateCamera(evt.timeSinceLastFrame);
@@ -136,6 +149,9 @@ void Solo::updateCamera(Ogre::Real elapseTime)
 //-------------------------------------------------------------------------------------
 bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
+
+    if (gamePause || !gameStart)
+        return true;
 
     Ogre::SceneNode* pSceneNode = player->getSceneNode();
     Ogre::SceneNode* pSightNode = player->getPlayerSightNode();
@@ -278,6 +294,30 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
     }
 }
 
+void Solo::togglePause()
+{
+    MasterControl->gui->pauseMenu(gamePause);
+    
+    if (gamePause == true)  //leaving pause
+    {        
+        gameMusic->playMusic("Play");
+        gamePause = false;
+        MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));
+        MasterControl->gui->removePanel(MasterControl->getPanel(OBJECTIVE));
+        MasterControl->gui->removePanel(MasterControl->getPanel(INSTRUCT));
+    }
+    else //entering Pause
+    {        
+        gameMusic->playMusic("Start");
+        MasterControl->getLabel(PAUSE)->setCaption("GAME PAUSED!");
+        MasterControl->gui->addLabel(MasterControl->getLabel(PAUSE), OgreBites::TL_CENTER);
+        MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_TOP);
+        MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
+        gamePause = true;
+        time(&pauseTime);
+    }
+} 
+
 void Solo::createOverlays(PlayerCamera* playCam) // might move to Client and Server
 {
     /********************    MENUS    ********************/
@@ -310,6 +350,7 @@ void Solo::createOverlays(PlayerCamera* playCam) // might move to Client and Ser
 
     playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }
+
 void Solo::restrictPlayerMovement()
 {
     Ogre::Vector3 pos = player->getSceneNode()->getPosition();
@@ -350,3 +391,57 @@ void Solo::restrictPlayerMovement()
         player->setMovementRestriction(false);
     }
 }
+
+bool Solo::updateTimer(time_t currTime)
+{
+    double secondsElapsed = difftime(currTime, initTime);
+    int secondsLeft = (initMinutes*60) - secondsElapsed + pTimePassed;
+
+    int minutes = secondsLeft / 60;
+    int seconds = secondsLeft % 60;
+
+    Ogre::String mins = Ogre::StringConverter::toString(minutes);
+    Ogre::String sec = Ogre::StringConverter::toString(seconds);
+
+    if(minutes < 10)
+        mins = "0"+mins;
+
+    if(minutes <= 0)
+        mins = "00";
+
+    if(seconds < 10)
+        sec = "0"+sec;
+
+    if(seconds <= 0)
+        sec = "00";
+    
+    MasterControl->getPanel(SCORE)->setParamValue(1, mins + ":" + sec);
+    if(minutes <= 0 && seconds <= 0)
+        return true;
+    return false;
+}
+
+void Solo::updatePauseTime(time_t currTime)
+{
+    pTimePassed = difftime(currTime, pauseTime);
+}
+
+void Solo::restartGame()
+{	
+    gameSimulator->removeObject(gameDisk->getGameObjectName()); 
+    gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0, 0, 0));   
+    gameSimulator->setDisk = false;
+    diskAdded = false;
+    
+    //gameSimulator->removeObject(player->getGameObjectName());
+    player->getSceneNode()->_setDerivedPosition(startingPosition);
+
+	Ogre::Vector3 ppos_derived = player->getSceneNode()->_getDerivedPosition();
+	btQuaternion playerOrientation = btQuaternion(0, 0, 0);
+	btTransform transform = btTransform(playerOrientation, btVector3(ppos_derived.x, ppos_derived.y, ppos_derived.z));
+	player->getBody()->setCenterOfMassTransform(transform);
+	
+	gameStart = true;
+    
+    //player->addToSimulator();
+}    
