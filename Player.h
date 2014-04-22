@@ -37,7 +37,7 @@ public:
 	void initializeStates(void);
 	bool checkState(int index);
 	void setState(int index, bool value);
-	Ogre::Vector3 fillClientVelocityVector(Ogre::Real m, float sprintFactor);
+	Ogre::Vector3 fillVelocityVector(Ogre::Real m, float sprintFactor);
 
 	bool checkPlayerCanCatch(void);
 	bool togglePlayerCanCatch(void);

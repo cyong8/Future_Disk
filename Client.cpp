@@ -12,6 +12,15 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
+    // for (int i = 0; i< MAX_NUMBER_OF_PLAYERS; i++)
+    // {
+    //     if (playerList[i] == NULL)
+    //     {
+    //         printf("Player: %d is NULL\n", i);
+    //     }
+    // }
+    // exit(1);
+
 	gameNetwork = new Network(CLIENT, IP);
 	gameMusic = new Music();
 
@@ -75,18 +84,19 @@ bool Client::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
 
     processUnbufferedInput(evt, mKeyboard, mMouse);
 
-    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-
     if (timeSinceLastStateUpdate < 0.0f)
         timeSinceLastStateUpdate = 0.01f;
 
+    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
     updateCamera(evt.timeSinceLastFrame);
 }
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    char* buff;
+    char* cpBuff;
     static bool vKeydown = false;
+    INPUT_packet pack;
+    char* iBuff = (char*)malloc(sizeof(INPUT_packet));
 
     if (clientOrientationChange && timeSinceLastStateUpdate < 0.0f)
     {
@@ -97,144 +107,175 @@ void Client::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* 
         pack.playID = (char)(((int)'0') + playerID);
         pack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
        
-        buff = (char*)malloc(sizeof(C_PLAYER_packet));
-        memcpy(buff, &pack, sizeof(C_PLAYER_packet));
+        cpBuff = (char*)malloc(sizeof(C_PLAYER_packet));
+        memcpy(cpBuff, &pack, sizeof(C_PLAYER_packet));
 
-        gameNetwork->sendPacket(buff, playerID);
+        gameNetwork->sendPacket(cpBuff, playerID);
     }
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
-
+        /* Close player socket and allow for another player to take its place */
     }
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(FORWARD, true);
         pack.key = 'w';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(FORWARD, false);
         pack.key = 'w';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     /* MOVE LEFT */
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(LEFT, true);
         pack.key = 'a';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(LEFT, false);
         pack.key = 'a';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     /* MOVE BACK */
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(BACK, true);
         pack.key = 's';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(BACK, false);
         pack.key = 's';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     /* MOVE RIGHT */
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(RIGHT, true);
         pack.key = 'd';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
     {
-        INPUT_packet pack;
         pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
 
         clientPlayer->setState(RIGHT, false);
         pack.key = 'd';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
     }
-    // if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !clientPlayer->checkState(Jump))   // Jump - implemented
-    // {
-    //     clientPlayer->setState(Jump, true);
-    //     pack.id = 'j';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
-    // {
-    //     pCam->toggleThirdPersonView();
-    //     pack.id = 'v';
-    //     packList.push_back(pack);
-    //     vKeydown = true;
-    //     result = true;
-    //     gameDisk->getSceneNode()->setVisible(false);
-    //     pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    // }
-    // if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
-    // {
-    //     pCam->toggleThirdPersonView();
-    //     pack.id = 'v';
-    //     packList.push_back(pack);
-    //     vKeydown = false;
-    //     result = true;
-    //     gameDisk->getSceneNode()->setVisible(true);
-    //     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    // }    
-    // if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(Boost))                          // Speed Boost
-    // {
-    //     clientPlayer->setState(Boost, true); 
-    //     pack.id = 'b';
-    //     packList.push_back(pack);
-    //     result = true;
-    // }
-    // if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
-    // {
-    //     pack.id = 't';
-    //     packList.push_back(pack);
-    //     result = true;
-    //     clientPlayer->setHolding(false);
-    // }
-    // if (resetMovementState(evt, mKeyboard, packList) || result)
-    // {
-    //     pack.id = 'n';
-    //     packList.push_back(pack);
-    //     gameNetwork->sendPacket(packList, 0);
-    // }
+    if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
+    {
+        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        //clientPlayer->setState(JUMP, true);
+        pack.key = 'j';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
+    {
+        pack.packetID = (char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(BOOST, true);
+        pack.key = 'b';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
+    {
+        pack.packetID = (char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        clientPlayer->setState(BOOST, false);
+        pack.key = 'b';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+    }
+    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    {
+        pCam->toggleThirdPersonView();
+        pack.key = 'v';
+
+        vKeydown = true;
+        gameDisk->getSceneNode()->setVisible(false);
+        pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    else if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
+    {
+        pCam->toggleThirdPersonView();
+        pack.key = 'v';
+
+        vKeydown = false;
+        gameDisk->getSceneNode()->setVisible(true);
+        pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    }
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
+    {
+        pack.packetID = (char)(((int)'0') + INPUT);
+        pack.playID = (char)(((int)'0') + playerID);
+
+        pack.key = 't';
+        clientPlayer->setHolding(false);
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+    }
 }
 //-------------------------------------------------------------------------------------
 void Client::updateScene() // Receive packets and interpret them
 {
 	char* packList = gameNetwork->receivePacket(playerID);
-    
+
     interpretServerPacket(packList);
 }
 //-------------------------------------------------------------------------------------
@@ -283,17 +324,16 @@ void Client::interpretServerPacket(char* packList)
             indexIntoBuff += sizeof(DISK_packet);
         }
         /* UPDATE PLAYERS */
-        // else if (packType == (char)(((int)'0') + S_PLAYER))
         else if (packType == (char)(((int)'0') + S_PLAYER))
         {
             S_PLAYER_packet p;
-
             memcpy(&p, packList, sizeof(S_PLAYER_packet));
 
             newPos = Ogre::Vector3(p.x, p.y, p.z);
             newQuat = p.orientation;
 
             int newPlayerID = p.playID - '0';
+            /* NEW PLAYER NOT BEING ADDED TO SCENE */
             if (playerList[newPlayerID] == NULL)
             {
                 printf("*****ADDING NEW PLAYER\n\n");
@@ -302,6 +342,7 @@ void Client::interpretServerPacket(char* packList)
 
                 playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
                 numPlayers++;
+                exit(1);
             }
             // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
@@ -349,6 +390,7 @@ void Client::interpretServerPacket(char* packList)
         //     gameStart = true;
         // }
     }
+    printf("ENDING INTERPRETING PACKETS\n\n\n");
 }
 //-------------------------------------------------------------------------------------
 bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)

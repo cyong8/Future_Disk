@@ -181,7 +181,24 @@ material Examples/TrippySkyBox
 		}
 	}
 }
+material brown_1Material
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0 0 1
 
+			texture_unit
+			{
+				texture brown.png
+			}
+		}
+
+	}
+
+}
 material Examples/SpaceSkyBox
 {
 	technique

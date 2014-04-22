@@ -3,7 +3,7 @@
 Network::Network(int sc_identifier, char* hostIP)
 {
 	numberOfConnections = 0;
-	init_serverSocket = NULL;
+	initServerSocket = NULL;
 	clientSocket = NULL;
 	connections = vector<Connection>(MAX_NUMBER_OF_PLAYERS);
 	clientSet = SDLNet_AllocSocketSet(MAX_NUMBER_OF_PLAYERS + 1);
@@ -36,7 +36,7 @@ Network::Network(int sc_identifier, char* hostIP)
 //-------------------------------------------------------------------------------------
 Network::~Network()
 {
-	SDLNet_TCP_Close(init_serverSocket);
+	SDLNet_TCP_Close(initServerSocket);
 	SDLNet_TCP_Close(clientSocket);
 	SDLNet_FreeSocketSet(clientSet);
 }
@@ -50,16 +50,16 @@ void Network::startListening()
 	    exit(1);
 	}
 	/* Open the TCP connection with the server IP found above */
-	init_serverSocket = SDLNet_TCP_Open(&serverIP);	
+	initServerSocket = SDLNet_TCP_Open(&serverIP);	
 
-	if(!init_serverSocket) 
+	if(!initServerSocket) 
 	{
 	    printf("SDLNet_TCP_Open: %s\n", SDLNet_GetError());
 	    exit(2);
 	}
 
 	/* Add the socket to the socket clientSet so we can use CheckSockets() later */
-	int numused = SDLNet_TCP_AddSocket(clientSet, init_serverSocket);
+	int numused = SDLNet_TCP_AddSocket(clientSet, initServerSocket);
 
 	if (numused == -1 || numused == 0) 
 	{
@@ -72,7 +72,7 @@ int Network::establishConnection()
 {
 	if (networkID == SERVER) 
 	{
-		if (SDLNet_SocketReady(init_serverSocket))
+		if (SDLNet_SocketReady(initServerSocket))
 		{
 			acceptClient();
 			return 1;
@@ -121,7 +121,7 @@ void Network::acceptClient()
 	TCPsocket tmpAcceptSocket;
 	int socketIndex = numberOfConnections;
 
-	tmpAcceptSocket = SDLNet_TCP_Accept(init_serverSocket);
+	tmpAcceptSocket = SDLNet_TCP_Accept(initServerSocket);
 
 	if (tmpAcceptSocket == NULL)
 	{
@@ -148,13 +148,18 @@ void Network::acceptClient()
 //-------------------------------------------------------------------------------------
 void Network::sendPacket(char* pack, int socketIndex)
 {
-	int numSent;
+	int numSent = 0;
 	int packSize = getPacketSize(pack[0]);
 
 	/********************************* CLIENT *********************************/
 	if (networkID == CLIENT)
 	{
+		C_PLAYER_packet p;
+		memcpy(&p, pack, sizeof(C_PLAYER_packet));
 		printf("USING CLIENT SEND!\n");
+
+		printf("\tPacket ID: %c\n", p.packetID);
+		printf("\tPlayer ID: %c\n", p.playID);
 		numSent = SDLNet_TCP_Send(clientSocket, pack, packSize);
 	}
 	/********************************* SERVER *********************************/
@@ -216,7 +221,7 @@ bool Network::checkSockets(int socketIndex)
 		{
 			if (SDLNet_CheckSockets(clientSet, 0))
 			{
-				if (SDLNet_SocketReady(init_serverSocket))
+				if (SDLNet_SocketReady(initServerSocket))
 				{
 					printf("*****ACTIVITY ON SERVER SOCKET\n\n");
 					return true;

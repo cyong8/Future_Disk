@@ -74,7 +74,7 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
     if (!processUnbufferedInput(evt))
         exit(2);
 
-    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/120.0f);
     gameSimulator->parseCollisions(); // check collisions
 
 
@@ -104,7 +104,7 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
             interpretClientPacket(i);   
         }
 
-        // updateClientVelocity(playerList[i]);
+        updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
 
         if (timeSinceLastStateUpdate < 0.0f)
@@ -137,56 +137,46 @@ bool Server::processUnbufferedInput(const Ogre::FrameEvent& evt)
 //-------------------------------------------------------------------------------------
 void Server::updateClientVelocity(Player* p)
 {
-	if (gameSimulator->checkGameStart()) //&& !clientVKeyDown) // Need to establish new way of checking View Mode
-    {
+	// if (gameSimulator->checkGameStart()) //&& !clientVKeyDown) // Need to establish new way of checking View Mode
+    // {
         Ogre::Vector3 velocityVector;
-        velocityVector = p->fillClientVelocityVector(mMove, sprintFactor); // p1 was hostPlayer
-        velocityVector = p->getSceneNode()->getOrientation() * velocityVector;  // p2 was clientPlayer
+        velocityVector = p->fillVelocityVector(mMove, sprintFactor);
+        velocityVector = p->getSceneNode()->getOrientation() * velocityVector;
         btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);
         // No longer named clientPlayer/hostPlayer - receive player id in packet
-        // clientPlayer->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, clientPlayer->getBody()->getLinearVelocity().getY(), 0.0f)));
-    }
+        p->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f)));
+    // }
 }
 //-------------------------------------------------------------------------------------
 bool Server::constructAndSendGameState(int clientIndex)
 {
     char* buff;
-    /* Sending each player's position to clients */
-    // for (int i = 0; i < numberOfClients; i++)
-    // {
-    //     S_PLAYER_packet pack;
-     
-    //     memset(&pack, 0, sizeof(S_PLAYER_packet));
-
-    //     pack.packetID = (char)(((int)'0') + S_PLAYER);
-    //     pack.playID = (char)(((int)'0') + i);
-    //     printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
-    //     pack.x = playerList[i]->getSceneNode()->getPosition().x;
-    //     pack.y = playerList[i]->getSceneNode()->getPosition().y;
-    //     pack.z = playerList[i]->getSceneNode()->getPosition().z;
-    //     pack.orientation = playerList[i]->getSceneNode()->getOrientation();
-
-    //     memcpy(buff + indexIntoBuff, &pack, sizeof(S_PLAYER_packet));
-    //     indexIntoBuff += sizeof(S_PLAYER_packet);
-    // }
-    S_PLAYER_packet pack;
-     
-    memset(&pack, 0, sizeof(S_PLAYER_packet));
-
-    pack.packetID = (char)(((int)'0') + S_PLAYER);
-    pack.playID = (char)(((int)'0') + clientIndex);
-    // printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
-    pack.x = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().x;
-    pack.y = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().y;
-    pack.z = playerList[clientIndex]->getSceneNode()->_getDerivedPosition().z;
-    // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
-    pack.orientation = playerList[clientIndex]->getSceneNode()->_getDerivedOrientation();
-
     buff = (char*)malloc(sizeof(S_PLAYER_packet));
-    memcpy(buff, &pack, sizeof(S_PLAYER_packet));
 
-    gameNetwork->sendPacket(buff, clientIndex);
-    
+    /* Sending each player's position to clients */
+    for (int i = 0; i < numberOfClients; i++)
+    {
+        S_PLAYER_packet pack;
+     
+        memset(&pack, 0, sizeof(S_PLAYER_packet));
+
+        pack.packetID = (char)(((int)'0') + S_PLAYER);
+        pack.playID = (char)(((int)'0') + i);
+
+        printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
+        pack.x = playerList[i]->getSceneNode()->_getDerivedPosition().x;
+        pack.y = playerList[i]->getSceneNode()->_getDerivedPosition().y;
+        pack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
+        // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
+        pack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
+
+        memcpy(buff, &pack, sizeof(S_PLAYER_packet));
+
+        gameNetwork->sendPacket(buff, i);
+    }
+
+    /* UPDATE ACTIVE POWER UPS */
+
     // if ()
     // pack.id = 'P';
     // pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
@@ -338,10 +328,11 @@ bool Server::interpretClientPacket(int playerID)
     if (buff == NULL)
         return false;
 
-   printf("\t\t*****Client sending sequence\n\n");
-    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != '0')
+   printf("*****Client sending sequence\n\n");
+    while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 0x00)
     {
         int packetID = buff[indexIntoBuff] - '0';
+        printf("\tpacketID = %d\n", packetID);
 
         if (packetID == INPUT)
         {
@@ -351,9 +342,9 @@ bool Server::interpretClientPacket(int playerID)
 
             // interpret i
             int pID = i.playID - '0';
-            keyID inputID = static_cast<keyID>(i.key - '0');
-
-            processClientInput(pID, inputID);
+            // keyID inputID = static_cast<keyID>(i.key - '0');
+            printf("PROCESSING CLIENT INPUT: %c\n", i.key);
+            processClientInput((pID - 1), i.key);
 
             indexIntoBuff += sizeof(INPUT_packet);
         }
@@ -366,8 +357,9 @@ bool Server::interpretClientPacket(int playerID)
             int pID = p.playID - '0';
             Ogre::Quaternion quat = p.orientation;
 
+            printf("\t\t%d\n", pID);
             // interpret p
-            Player* cp = playerList[pID];
+            Player* cp = playerList[pID-1];
 
             cp->getSceneNode()->_setDerivedOrientation(p.orientation);
 
@@ -381,16 +373,16 @@ bool Server::interpretClientPacket(int playerID)
 
             indexIntoBuff += sizeof(C_PLAYER_packet);
         }
-        else if (packetID == GAMESTATE)
-        {
-            GAMESTATE_packet g;
+        // else if (packetID == GAMESTATE)
+        // {
+        //     GAMESTATE_packet g;
 
-            memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
+        //     memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
 
-            // interpret g
+        //     // interpret g
 
-            indexIntoBuff += sizeof(GAMESTATE_packet);
-        }
+        //     indexIntoBuff += sizeof(GAMESTATE_packet);
+        // }
     }
 
     // if (typeInput == 'w')                                       // Forward
@@ -465,49 +457,49 @@ void Server::keyPressed(const OIS::KeyEvent &evt)
 
 }
 //-------------------------------------------------------------------------------------
-void Server::processClientInput(int playerIndex, keyID keyPressed)
+void Server::processClientInput(int playerIndex, char keyPressed)
 {
     Player* p = playerList[playerIndex];
 
     switch(keyPressed)
     {
-        case W:
+        case 'w':
             if (p->checkState(FORWARD))
                 p->setState(FORWARD, false);
             else
                 p->setState(FORWARD, true);
             break;
-        case A:
+        case 'a':
             if (p->checkState(LEFT))
                 p->setState(LEFT, false);
             else
                 p->setState(LEFT, true);
             break;
-        case S:
+        case 's':
             if (p->checkState(BACK))
                 p->setState(BACK, false);
             else
                 p->setState(BACK, true);
             break;
-        case D:
+        case 'd':
             if (p->checkState(RIGHT))
                 p->setState(RIGHT, false);
             else
                 p->setState(RIGHT, true);
             break;
-        case SPACE: // ATTEMPT TO PERFORM JUMP
+        case 'j': // ATTEMPT TO PERFORM JUMP
             break;
-        case SHIFT: 
+        case 'b': 
             if (p->checkState(BOOST))
                 p->setState(BOOST, false);
             else
                 p->setState(BOOST, true);
             break;
-        case MOUSECLICK:  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
+        case 'm':  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
             break;
-        case ESC:  // GAME STATE CHANGE
+        case 'q':  // GAME STATE CHANGE
             break;
-        case ENTER: // GAME STATE CHANGE
+        case 'k':// ENTER: // GAME STATE CHANGE
             break;
     }
 }

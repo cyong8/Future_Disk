@@ -61,7 +61,7 @@ private:
 	void restrictPlayerMovement(Player* p);
 	bool interpretClientPacket(int playerID);
 	void keyPressed(const OIS::KeyEvent &evt);
-	void processClientInput(int playerIndex, keyID inputType);
+	void processClientInput(int playerIndex, char inputType);
 };
 
 #endif // #ifndef __Server_h_

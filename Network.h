@@ -150,7 +150,7 @@ public:
 
 private:
 	SDLNet_SocketSet clientSet;
-	TCPsocket init_serverSocket;
+	TCPsocket initServerSocket;
 
 	IPaddress serverIP;
 	IPaddress* clientIP;
