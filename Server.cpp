@@ -172,7 +172,7 @@ bool Server::constructAndSendGameState(int clientIndex)
 
         memcpy(buff, &pack, sizeof(S_PLAYER_packet));
 
-        gameNetwork->sendPacket(buff, i);
+        gameNetwork->sendPacket(buff, clientIndex);
     }
 
     /* UPDATE ACTIVE POWER UPS */
