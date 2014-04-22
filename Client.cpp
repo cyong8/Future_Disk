@@ -333,16 +333,16 @@ void Client::interpretServerPacket(char* packList)
             newQuat = p.orientation;
 
             int newPlayerID = p.playID - '0';
+            printf("*******New player ID: %d\n\n", newPlayerID);
             /* NEW PLAYER NOT BEING ADDED TO SCENE */
             if (playerList[newPlayerID] == NULL)
             {
                 printf("*****ADDING NEW PLAYER\n\n");
                 char playerBuffer[25];
-                sprintf(playerBuffer, "Player%d", newPlayerID);
+                sprintf(playerBuffer, "Player%d", newPlayerID + 1);
 
                 playerList[newPlayerID] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
                 numPlayers++;
-                exit(1);
             }
             // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[newPlayerID]->getSceneNode()->_setDerivedPosition(newPos);
