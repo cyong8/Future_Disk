@@ -57,13 +57,10 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)   // Need to make a soloMode class
     gui->removePanel(objectivePanel);
     gui->removePanel(instructPanel);
 
-    // time(&initTime);     
-
     gui->addPanel(scorePanel, OgreBites::TL_BOTTOMRIGHT);
 
     gameMusic->playMusic("Play");
     
-    // createSoloModeScene();
     solo = new Solo(this);    
     
     return true;
@@ -123,221 +120,23 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         return false;
 
     if (gameServer != NULL)
-        gameServer->frameRenderingQueued(evt);
+        gameServer->frameRenderingQueued(evt.timeSinceLastFrame);
 
     if (mainClient != NULL)
-        mainClient->frameRenderingQueued(evt, mKeyboard, mMouse);
+        mainClient->frameRenderingQueued(evt.timeSinceLastFrame, mKeyboard, mMouse);
 
     if(solo != NULL)
         solo->frameRenderingQueued(evt, mKeyboard, mMouse);
 
-    /* Call Client and Server frameRenderingQueued */
-    
-    // static int count = 0;
-    
-    // if (hostPlayer != NULL && checkGameLoss(hostPlayer)) {
-    //     player1Loss = true;
-    //     gameOver = true;
-    // }
-        
-    // if (clientPlayer != NULL && checkGameLoss(clientPlayer)) {
-    //     player2Loss = true;
-    //     gameOver = true;
-    // }
 
-    // if (gameMode == 1) // attempt to establish the connection
-    // {
-    //     if (!gameNetwork->checkConnection())
-    //     {
-    //         if (!gameNetwork->establishConnection())
-    //             return true;
-    //         else 
-    //             gameStart = true;
-    //     }
-    //     else if (!gameStart)
-    //         gameStart = true;
-    // }
-    // if(!gameStart && !gameOver) // Game not started
-    // {
-    //     gui->removeLabel(pauseLabel);
-    //     gui->removePanel(gameOverPanel);
-    //     gui->removePanel(gameOverWinPanel);
-    //     gui->removePanel(gameOverLossPanel); 
-    // }
-    // else if(gameOver)
-    // {
-    //     if (gameMode == 1) {
-    //         if (player1Loss) {
-    //             if (clientServerIdentifier == 0) {
-    //                 gui->addPanel(gameOverLossPanel, OgreBites::TL_CENTER);
-    //             }
-    //             else {
-    //                 gui->addPanel(gameOverWinPanel, OgreBites::TL_CENTER);
-    //             }
-    //         }
-    //         else if (player2Loss) {
-    //             if (clientServerIdentifier == 0) {
-    //                 gui->addPanel(gameOverWinPanel, OgreBites::TL_CENTER);
-    //             }
-    //             else {
-    //                 gui->addPanel(gameOverLossPanel, OgreBites::TL_CENTER);
-    //             }
-    //         }
-    //     }
-    //     else {
-    //         gui->addPanel(gameOverPanel, OgreBites::TL_CENTER);
-    //         gameOverPanel->setParamValue(1, Ogre::StringConverter::toString(score));
-    //     }
-    //     if (gameStart && clientServerIdentifier == 0)
-    //         gui->gameOverScreen();
-    //     else if (gameStart && clientServerIdentifier == 1)
-    //         gui->otherGameOverScreen();
-    //     gameStart = false;
-    // }
-    // else // Game started
-    // {
-    //     if(!gamePause)
-    //     {
-    //         if(gameMode == 0)    // Limit Solo mode to option of pausing
-    //         {
-    //             time_t currTime;
-    //             time(&currTime);
-    //             gameOver = updateTimer(currTime);
-    //             if (gameOver)
-    //                 gameMusic->playMusic("Pause");
-    //             modifyScore(gameSimulator->tallyScore());
-    //         }
-    //         if (clientServerIdentifier == 0)     // Host render loop - Specific processing of inputs
-    //         {
-    //             renderLoop_Host(evt);
-    //         }
-    //         else if (clientServerIdentifier == 1)    // Client render loop - Specific processing of inputs
-    //         {
-    //             renderLoop_Client(evt);
-    //         }     
-    //     }
-    //     else
-    //     {
-    //                 time_t pcurrTime;
-    //                 time(&pcurrTime);
-    //                 updatePauseTime(pcurrTime);
-    //     }
-    // }
     return ret;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
-
     if(solo != NULL)
         solo->processUnbufferedInput(evt, mKeyboard, mMouse);
-    /********************  KEY VARIABLES ********************/    
-    // static bool mMouseDown = false;                                    // If a mouse button is depressed
-    // static bool pausePressedLast = false;                              // Was pause pressed last frame
-    // static bool spacePressedLast = false;
-    // static Ogre::Real timeSinceLastJump = 0.0f;
-    // bool turboMode = false;
-    // bool keyWasPressed = false;                                        // Was a key pressed in current frame
-    // bool currMouse = mMouse->getMouseState().buttonDown(OIS::MB_Left); // Current state of the mouse
 
-    // Player *p = (Player *)gameSimulator->getGameObject("Player1");     // Get the player object from the simulator
-
-    // float fx = 0.0f;                                                   // Force x-component
-    // float fz = 0.0f;                                                   // Force z-component
-    // btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
-
-    // timeSinceLastJump += evt.timeSinceLastFrame;
-
-    // /********************     MOVEMENT   ********************/
-    // // Allow movement if the player is on the floor and the game is not paused
-    // if(!gamePause && gameSimulator->checkGameStart())
-    // {
-    //     // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
-    //     if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
-    //     {
-    //         gameMusic->playMusic("Throw");
-    //         gameSimulator->setThrowFlag();
-    //         p->getPlayerDisk()->getSceneNode()->setVisible(true, true);
-    //     }
-    //     mMouseDown = currMouse; // Set that the mouse WAS pressed
-        
-    //     if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeyDown) // if 'v' is pressed and was not pressed last frame - go to aim mode
-    //     {
-    //         PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
-    //         gameSimulator->toggleViewChange("Player1");
-    //         pc->toggleThirdPersonView();
-    //         vKeyDown = true;
-    //         //showTrajectory(pc);
-    //     }
-    //     if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeyDown) // if 'v' is not pressed and was pressed last frame - exit aim mode
-    //     {
-    //         PlayerCamera* pc = gameSimulator->getPlayerCamera("P1Cam");
-    //         gameSimulator->toggleViewChange("Player1");
-    //         pc->toggleThirdPersonView();
-    //         vKeyDown = false;
-    //         //mSceneMgr->getRootSceneNode()->detachObject(trajectory);
-    //         //trajectory->clear();
-    //     }
-    //     if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Move into Boost mode
-    //     {
-    //         turboMode = true;
-    //     }
-    //     // If the 'V' key is down you shouldn't be able to move
-    //     if (!vKeyDown)  
-    //     {
-    //          // Move the player
-    //         if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
-    //         {
-    //             fz -= mMove;
-    //             velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-    //             keyWasPressed = true;
-    //         }
-    //         if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
-    //         {
-    //             fz += mMove;
-    //             velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-    //             keyWasPressed = true;
-    //         }
-
-    //         if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
-    //         {
-    //             fx -= mMove; // Strafe left
-    //             velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-    //             keyWasPressed = true;
-    //         }
-    //         if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
-    //         {
-    //             fx += mMove; // Strafe right
-    //             velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-    //             keyWasPressed = true;
-    //         }
-    //         if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !p->groundConstantSet && !spacePressedLast) 
-    //         {
-    //             if(p->performJump())
-    //             {
-    //                 if (p->jumpPowerActive)
-    //                     gameMusic->playMusic("SuperJump");
-    //                 else
-    //                     gameMusic->playMusic("Jump");
-    //                 spacePressedLast = true;
-    //                 gameSimulator->soundedJump = true;
-    //             }
-    //         }
-    //         if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
-    //             spacePressedLast = false;
-    //         if(keyWasPressed && !p->checkMovementRestriction())
-    //         {   // Rotate the velocity vector by the orientation of the player
-    //             Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
-    //             trueVelocity = p->getSceneNode()->getOrientation() * trueVelocity; 
-    //             btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
-
-    //             if (turboMode)
-    //                     p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-    //             else
-    //                     p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-    //         }
-    //     }
-    // }
     return true;
 }
 

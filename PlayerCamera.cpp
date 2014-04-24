@@ -51,12 +51,13 @@ void PlayerCamera::initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector
     mTargetNode->setPosition(sightPosition);
 }
 //-------------------------------------------------------------------------------------
-void PlayerCamera::update (Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition) 
+void PlayerCamera::update (Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition) 
 {
     // Handle movement
     Ogre::Vector3 displacement;
  
     displacement = (cameraPosition - mCameraNode->getPosition());
+    // printf("Camera displacement = %f, %f, %f\n", displacement.x, displacement.y, displacement.z);
     mCameraNode->translate(displacement);
  
     displacement = (targetPosition - mTargetNode->getPosition());

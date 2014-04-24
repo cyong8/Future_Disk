@@ -14,8 +14,8 @@ public:
 	~Client();
 
 	void createScene(void);
-	bool frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
-	void processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
+	bool frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
+	void processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 	bool mouseMoved(Ogre::Real relX, Ogre::Real relY);
 	Player* getPlayer(void);
 	void createOverlays(PlayerCamera* playCam);
@@ -26,6 +26,7 @@ private:
 	/* Client's controlled player */
 	Player* clientPlayer;
 	int playerID;
+	Ogre::Vector3 previousPosition;
 
 	/* Client's Player Camera */
 	PlayerCamera* pCam;
@@ -45,7 +46,6 @@ private:
 		/* Disk */
 	Disk* gameDisk;
 
-
 	Network* gameNetwork;
 	Music* gameMusic;
 
@@ -53,12 +53,13 @@ private:
 	bool clientOrientationChange;
 	Ogre::Real mRotate;
 	bool gameStart;
-	float timeSinceLastStateUpdate;
+	clock_t updateClock;
 
-	Ogre::Light* pointLight;
+	Ogre::Light* directLight;
 	void updateScene(void);
-	void updateCamera(Ogre::Real elapseTime);
+	void updateCamera(void);
 	void interpretServerPacket(char* packList);
+	bool clientChangePosition(void);
 };
 
 #endif // #ifndef __Client_h_

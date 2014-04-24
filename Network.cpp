@@ -156,23 +156,21 @@ void Network::sendPacket(char* pack, int socketIndex)
 	{
 		C_PLAYER_packet p;
 		memcpy(&p, pack, sizeof(C_PLAYER_packet));
-		printf("USING CLIENT SEND!\n");
 
-		printf("\tPacket ID: %c\n", p.packetID);
-		printf("\tPlayer ID: %c\n", p.playID);
+		// printf("\tPacket ID: %c\n", p.packetID);
+		// printf("\tPlayer ID: %c\n", p.playID);
 		numSent = SDLNet_TCP_Send(clientSocket, pack, packSize);
 	}
 	/********************************* SERVER *********************************/
 	if (networkID == SERVER)
 	{
-		printf("USING SERVER SEND!\n");
 		numSent = SDLNet_TCP_Send(connections[socketIndex].sock, pack, packSize);
 	}
 	
-	if (!numSent) /* ERROR CHECK */
-		printf("*****Failed to send packets of size %d!\n\n", numSent);
-	else
-		printf("*****Sending packet of size %d....\n\n", numSent);
+	// if (!numSent) /* ERROR CHECK */
+	// 	printf("*****Failed to send packets of size %d!\n\n", numSent);
+	// else
+	// 	printf("*****Sending packet of size %d....\n\n", numSent);
 }
 //-------------------------------------------------------------------------------------
 char* Network::receivePacket(int socketIndex)
@@ -185,17 +183,14 @@ char* Network::receivePacket(int socketIndex)
 	/********************************* CLIENT *********************************/
 	if (networkID == CLIENT)
 	{
-		printf("USING CLIENT RECEIVE!\n");
 		numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER);
 	}
 	/********************************* SERVER *********************************/
 	if (networkID == SERVER)
 	{
-		printf("USING SERVER RECEIVE!\n");
 		numRead = SDLNet_TCP_Recv(connections[socketIndex].sock, buff, MAX_SIZE_OF_BUFFER);
 	}
-	
-	printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER); 
+	// printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 
 	if (numRead <= 0) 
 		return NULL;
@@ -223,7 +218,7 @@ bool Network::checkSockets(int socketIndex)
 			{
 				if (SDLNet_SocketReady(initServerSocket))
 				{
-					printf("*****ACTIVITY ON SERVER SOCKET\n\n");
+					// printf("*****ACTIVITY ON SERVER SOCKET\n\n");
 					return true;
 				}
 			}
@@ -234,7 +229,7 @@ bool Network::checkSockets(int socketIndex)
 			{
 				if (SDLNet_SocketReady(connections[socketIndex].sock))
 				{
-					printf("\t*******NETWORK RECEIVING PACKETS*******\n\n\n\n");
+					// printf("\t*******NETWORK RECEIVING PACKETS*******\n\n\n\n");
 					return true;
 				}
 			}

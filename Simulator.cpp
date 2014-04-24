@@ -63,6 +63,7 @@ void Simulator::addObject (GameObject* o)
 	objList.push_back(o); // Add the object to the list of object
 
 	dynamicsWorld->addRigidBody(o->getBody());
+	
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
@@ -81,7 +82,6 @@ void Simulator::addObject (GameObject* o)
 		gameDisk->getBody()->setRestitution(1.0f);
 		//gameDisk->getSceneNode()->roll(90);
 		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
-
 
 		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
