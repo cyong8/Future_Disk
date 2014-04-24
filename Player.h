@@ -41,6 +41,8 @@ public:
 
 	bool checkPlayerCanCatch(void);
 	bool togglePlayerCanCatch(void);
+	
+	Ogre::Vector3 getStartingPosition() { return startingPosition; }
 
 	int jumpTimer;
 	bool jumpPowerActive;
@@ -61,6 +63,7 @@ protected:
 	bool movementRestricted;	
 	int playerID;	
 	bool playerCanCatch;
+	Ogre::Vector3 startingPosition;
 };
 
 #endif // #ifndef __Player_h_

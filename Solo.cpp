@@ -42,7 +42,6 @@ void Solo::createScene()
 
     player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1);
     player->addToSimulator();
-    startingPosition = player->getSceneNode()->getPosition();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
@@ -93,6 +92,9 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     else if(gameOver)
     {
         if (gameStart) {
+            gameSimulator->resetSimulator();
+            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+            
             MasterControl->gui->addPanel(MasterControl->getPanel(GAMEOVER), OgreBites::TL_CENTER);
             MasterControl->getPanel(GAMEOVER)->setParamValue(1, Ogre::StringConverter::toString(score));
             printf("gameOver");
@@ -428,20 +430,16 @@ void Solo::updatePauseTime(time_t currTime)
 
 void Solo::restartGame()
 {	
-    gameSimulator->removeObject(gameDisk->getGameObjectName()); 
-    gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0, 0, 0));   
-    gameSimulator->setDisk = false;
     diskAdded = false;
+    player->addToSimulator();
     
     //gameSimulator->removeObject(player->getGameObjectName());
-    player->getSceneNode()->_setDerivedPosition(startingPosition);
-
-	Ogre::Vector3 ppos_derived = player->getSceneNode()->_getDerivedPosition();
-	btQuaternion playerOrientation = btQuaternion(0, 0, 0);
-	btTransform transform = btTransform(playerOrientation, btVector3(ppos_derived.x, ppos_derived.y, ppos_derived.z));
-	player->getBody()->setCenterOfMassTransform(transform);
 	
 	gameStart = true;
+	gameOver = false;
+	time(&initTime);
+	
+	MasterControl->gui->removePanel(MasterControl->getPanel(GAMEOVER));
     
     //player->addToSimulator();
 }    

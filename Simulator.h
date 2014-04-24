@@ -39,6 +39,7 @@ class Simulator
 		bool viewChangeP1;
 		bool viewChangeP2;
 		bool throwFlag;
+		bool wallHitAfterThrow;
 		
 		bool gameStart;
 		enum gameState gameState;
@@ -46,7 +47,7 @@ class Simulator
 		bool player1CanCatch;
 	    bool player2CanCatch;
 		bool giveDisk;
-	   	bool wallHitAfterThrow;
+		
 		Ogre::String previousWallHit;
 		Ogre::Real diskSpeedFactor;
 		
@@ -72,6 +73,7 @@ class Simulator
 		bool checkGameStart(void);
 		void restoreTile(void);
 		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);
+		void resetSimulator();
 		GameObject* objListCheck(int index);
 		bool soundedJump;
 		Disk* gameDisk;

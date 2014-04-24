@@ -37,6 +37,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	{
 		playerSide == "Right Side";
 	}
+	startingPosition = position;
 
 	tailParticle = mgr->createParticleSystem("CyanSun_" + nym, "Examples/CyanSun");
     particleNode = rootNode->createChildSceneNode("PlayerParticle_" + nym);

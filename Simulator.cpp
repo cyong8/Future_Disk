@@ -147,13 +147,11 @@ void Simulator::removeObject(Ogre::String name)
 	for (int i = 0; i < objList.size(); i++)
 	{
 		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
-		{
-		    if (Ogre::StringUtil::match(gameDisk->getGameObjectName(), name, true))
-		        gameDisk = NULL;
-		
+		{		
 			dynamicsWorld->removeRigidBody(getGameObject(name)->getBody());
 			getGameObject(name)->removeFromSimulator();
 			objList.erase(objList.begin() + i);
+
 		}
 	}
 }
@@ -257,8 +255,10 @@ void Simulator::parseCollisions(void)
 		if (playerList[1] != NULL) 
 			playerList[1]->groundConstantSet = false;
 
-	if ((groundCheck1 || groundCheck2) && gameDisk == NULL)
+	if ((groundCheck1 || groundCheck2) && gameDisk == NULL) {
+	    cout << "setDisk = true\n";
     	setDisk = true;
+	}
 	if (soundedJump && groundCheck1)	// played jumping sound, now check if he has hit the ground(landed)
 	{
 		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
@@ -531,4 +531,47 @@ void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeI
 GameObject* Simulator::objListCheck(int index)
 {
 	return objList[index];
+}
+
+void Simulator::resetSimulator()
+{
+    for (int i = 0; i < playerList.size(); i++) 
+    {
+        if (playerList[i] != NULL)
+        {
+            /*playerList[i]->getSceneNode()->_setDerivedPosition(playerList[i]->getStartingPosition());
+
+    	    Ogre::Vector3 ppos_derived = playerList[i]->getSceneNode()->_getDerivedPosition();
+	        btQuaternion playerOrientation = btQuaternion(0, 0, 0);
+    	    btTransform transform = btTransform(playerOrientation, btVector3(ppos_derived.x, ppos_derived.y, ppos_derived.z));
+    	    playerList[i]->getBody()->setCenterOfMassTransform(transform);
+    	    playerList[i]->getBody()->setLinearVelocity(btVector3(0, 0, 0));*/
+	    
+            if (playerList[i]->checkHolding()) {
+                setThrowFlag();
+                performThrow(playerList[i]);
+            }
+            
+            removeObject(playerList[i]->getGameObjectName());
+            playerList[i]->getSceneNode()->_setDerivedPosition(playerList[i]->getStartingPosition());
+            
+        }
+    }
+    
+    removeObject(gameDisk->getGameObjectName()); 
+    gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0, 0, 0));   
+
+    soundedJump = false;
+	viewChangeP1 = false;
+	viewChangeP2 = false;
+	throwFlag = false;
+
+	gameState = NOTSTARTED;
+	gameStart = false;
+	
+    wallHitAfterThrow = true;
+    playerLastThrew = "";
+	previousWallHit = "NULL";
+	gameDisk = NULL;
+	setDisk = false;
 }

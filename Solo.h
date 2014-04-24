@@ -48,7 +48,6 @@ private:
 	bool clientOrientationChange;
 
 	/* Game Functionality Constants */
-	Ogre::Vector3 startingPosition;
 	Ogre::Real mMove; 			// Move Constant
 	Ogre::Real mRotate;
 	float sprintFactor;			// Sprint Constant
