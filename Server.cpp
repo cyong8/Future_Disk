@@ -13,7 +13,6 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     time(&gapStartTime);
     time(&gapEndTime);
     
-	timeSinceLastStateUpdate = 0.01f;
     mMove = 5.0f;
     mRotate = 0.1f;
     sprintFactor = 2.0f;
@@ -33,19 +32,14 @@ Server::~Server(void)
 //-------------------------------------------------------------------------------------
 void Server::createScene()
 {
-    gameRoom = new Room(sSceneMgr, gameSimulator, 0);
+    gameRoom = new Room(sSceneMgr, gameSimulator, 0, 2);
     sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
     /********************  OBJECT CREATION  ********************/
-/*	Add Players when people connect
-
-    (new Player("Player1", sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, 15.0f), "Positive Side"))->addToSimulator(); // Create Player 1
-    (new Player("Player2", sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), Ogre::Vector3(0.0f, 0.0f, -15.0f), "Negative Side"))->addToSimulator(); // Create Player 2
-*/
-    Power = new Target("Power", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-    Speed = new Target("Speed", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-    JumpPower = new Target("Jump", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-    Restore = new Target("Restore", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
+    // Power = new Target("Power", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
+    // Speed = new Target("Speed", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
+    // JumpPower = new Target("Jump", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
+    // Restore = new Target("Restore", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
 
     Power->addToSimulator();
     Speed->addToSimulator();
@@ -55,28 +49,21 @@ void Server::createScene()
     sSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     sSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
     
-    pointLight = sSceneMgr->createLight("pointLight");  // Point light
-    pointLight->setType(Ogre::Light::LT_POINT); // change to directional light
-    pointLight->setDiffuseColour(Ogre::ColourValue::White);
-    pointLight->setSpecularColour(Ogre::ColourValue::White);
-    pointLight->setVisible(true);
-    pointLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getWall(Ceiling)->getSceneNode()->getPosition().y, 0.0f));
-
-    printf("about to add power ups!\n\n");
-    // createOverlays(pCam); // in MCP
+    directLight = sSceneMgr->createLight("directionalLight");  // Point light
+    directLight->setType(Ogre::Light::LT_POINT); // change to directional light
+    directLight->setDiffuseColour(Ogre::ColourValue::White);
+    directLight->setSpecularColour(Ogre::ColourValue::White);
+    directLight->setVisible(true);
+    directLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getWall(Ceiling)->getSceneNode()->getPosition().y, 0.0f));
+    // directLight->setDirection(Ogre::Vector3( 0, -1, 0));
+    
+    updateClock = clock();
 }
 //-------------------------------------------------------------------------------------
-bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on socketSet index 0
+bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on socketSet index 0
 {
-    // else if (!gameStart) // may need
-    //     gameStart = true;
-
-    if (!processUnbufferedInput(evt))
-        exit(2);
-
-    gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/120.0f);
+    gameSimulator->stepSimulation(tSinceLastFrame, 1, 1.0f/120.0f);
     gameSimulator->parseCollisions(); // check collisions
-
 
     if (gameNetwork->checkSockets(-1)) // CHECK FOR NEW PLAYERS
     {
@@ -93,46 +80,29 @@ bool Server::frameRenderingQueued(const Ogre::FrameEvent& evt) // listen only on
             playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
-    }        
+    }
     updateRemovedTiles();
-    // if (mShutDown)
-           // exit(2);                  
+
     for (int i = 0; i < numberOfClients; i++)  // CHECK FOR ACTIVITY FROM CURRENT PLAYERS
     {
         if (gameNetwork->checkSockets(i))
-        {
-            interpretClientPacket(i);   
-        }
+            interpretClientPacket(i);
 
         updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
 
-        if (timeSinceLastStateUpdate < 0.0f)
-            constructAndSendGameState(i);
-
-         /* DEBUGGING */
-        // printf("\t\t Client States: W - %d\n", p1->checkState(Forward));
-        // printf("\t\t Client States: A - %d\n", p1->checkState(Left));
-        // printf("\t\t Client States: S - %d\n", p1->checkState(Back));
-        // printf("\t\t Client States: D - %d\n", p1->checkState(Right));
-        // printf("\t\t Client States: Shift - %d\n", p1->checkState(Boost));
+        if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f)
+        {
+            constructAndSendGameState(i);          
+            updateClock = clock();
+        }
     }
-
+    
     // if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
     // {
     //     gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
     //     gameDisk->addToSimulator();
-    // }
-
-    if (timeSinceLastStateUpdate < 0.0f)
-        timeSinceLastStateUpdate = 0.01f;
-
-    timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
-}
-//-------------------------------------------------------------------------------------
-bool Server::processUnbufferedInput(const Ogre::FrameEvent& evt)
-{
-	return true;
+    // }    
 }
 //-------------------------------------------------------------------------------------
 void Server::updateClientVelocity(Player* p)
@@ -161,9 +131,9 @@ bool Server::constructAndSendGameState(int clientIndex)
         memset(&pack, 0, sizeof(S_PLAYER_packet));
 
         pack.packetID = (char)(((int)'0') + S_PLAYER);
-        pack.playID = (char)(((int)'0') + i);
+        pack.playID = (char)(((int)'0') + (i + 1));
 
-        printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
+        // printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
         pack.x = playerList[i]->getSceneNode()->_getDerivedPosition().x;
         pack.y = playerList[i]->getSceneNode()->_getDerivedPosition().y;
         pack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
@@ -323,12 +293,11 @@ bool Server::interpretClientPacket(int playerID)
 {
     int indexIntoBuff = 0;
     char* buff = gameNetwork->receivePacket(playerID);
-    // Update the player rigid body and scenenode - Note: The states[] of the host tracks the client state; not the host state
     
     if (buff == NULL)
         return false;
 
-   printf("*****Client sending sequence\n\n");
+    printf("*****Client sending sequence\n\n");
     while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 0x00)
     {
         int packetID = buff[indexIntoBuff] - '0';
@@ -384,35 +353,6 @@ bool Server::interpretClientPacket(int playerID)
         //     indexIntoBuff += sizeof(GAMESTATE_packet);
         // }
     }
-
-    // if (typeInput == 'w')                                       // Forward
-    // {
-    //     // if (hostPlayer->checkState(Forward))
-    //     //     hostPlayer->toggleState(Forward, false);
-    //     // else
-    //     //     hostPlayer->toggleState(Forward, true);
-    // }
-    // if (typeInput == 'a')                                       // Left
-    // {
-    //     // if (hostPlayer->checkState(Left))
-    //     //     hostPlayer->toggleState(Left, false);
-    //     // else
-    //     //     hostPlayer->toggleState(Left, true);
-    // }
-    // if (typeInput == 's')                                       // Backwards
-    // {
-    //     // if (hostPlayer->checkState(Back))
-    //     //     hostPlayer->toggleState(Back, false);
-    //     // else
-    //     //     hostPlayer->toggleState(Back, true);
-    // }
-    // if (typeInput == 'd')                                       // Right
-    // {
-    //     // if (hostPlayer->checkState(Right))
-    //     //     hostPlayer->toggleState(Right, false);
-    //     // else
-    //     //     hostPlayer->toggleState(Right, true);
-    // }
     // if (typeInput == 'j') //&& !clientPlayer->groundConstantSet)   // Jump
     // {
     //     // clientPlayer->performJump();
@@ -450,11 +390,6 @@ bool Server::interpretClientPacket(int playerID)
     // }
 
     return false;
-}
-//-------------------------------------------------------------------------------------
-void Server::keyPressed(const OIS::KeyEvent &evt)
-{
-
 }
 //-------------------------------------------------------------------------------------
 void Server::processClientInput(int playerIndex, char keyPressed)

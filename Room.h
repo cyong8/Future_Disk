@@ -24,8 +24,7 @@ class Tile;
 class Room
 {
 public:
-	Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident);
-	Ogre::Vector3 getBounds(void);
+	Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident, int numberOfPlayers);
 	Ogre::Real getWidth(void);
 	Ogre::Real getHeight(void);
 	Ogre::Real getGapSize(void);
@@ -50,9 +49,8 @@ protected:
 	Ogre::Real tilesPerCol;
 	Ogre::Real tilesPerPlayer;
 	
-	Ogre::Real floorLength;
-	Ogre::Real floorPosition;
-
+	Ogre::Real floorPositionY;
+	int numberOfPlayers;
 };
 
 #endif // #ifndef __Room_h_

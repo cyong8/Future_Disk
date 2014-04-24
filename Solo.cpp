@@ -38,9 +38,10 @@ Solo::~Solo(void)
 //-------------------------------------------------------------------------------------
 void Solo::createScene()
 {
-    gameRoom = new Room(sceneMgr, gameSimulator, 0);
+    gameRoom = new Room(sceneMgr, gameSimulator, 0, 3);
 
     player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1);
+    player->getSceneNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -40.0f));
     player->addToSimulator();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
@@ -137,16 +138,14 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     }
 
     updateCamera(evt.timeSinceLastFrame);
-
-    //timeSinceLastStateUpdate -= evt.timeSinceLastFrame;
 }
 //-------------------------------------------------------------------------------------
 void Solo::updateCamera(Ogre::Real elapseTime)
 {
     if (pCam->isInAimMode())
-        pCam->update(elapseTime, player->getSceneNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
+        pCam->update(player->getSceneNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
     else
-        pCam->update(elapseTime, player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());      
+        pCam->update(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());      
 }
 //-------------------------------------------------------------------------------------
 bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
@@ -165,6 +164,8 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 
     pBody = player->getBody();
     transform = pBody->getCenterOfMassTransform();
+
+    printf("state relative X = %f, state relative y = %f\n\n\n", relX, relY);
 
     if (pCam->isInAimMode())
     {   

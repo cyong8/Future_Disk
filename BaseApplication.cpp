@@ -184,6 +184,8 @@ void BaseApplication::createFrameListener(void)
     gameOverLossPanel->setParamValue(0, "YOU LOSE...");
     gameOverLossPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverLossPanel);
+
+    mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
     
     Ogre::StringVector powerUps;
     powerUps.push_back("MULTIPLAYER POWER-UPS");

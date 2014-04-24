@@ -20,7 +20,7 @@ public:
 	PlayerCamera(Ogre::String nym, Ogre::SceneManager *mgr, Ogre::Camera *camera);
 	virtual ~PlayerCamera(void);
 	void initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition);
-    void update(Ogre::Real elapsedTime, Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition);
+    void update(Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition);
     void toggleThirdPersonView(void);
     void setPlayer(Player* player);
     Player* getPlayer(void);

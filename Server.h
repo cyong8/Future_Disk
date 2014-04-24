@@ -14,8 +14,7 @@ public:
 	~Server(void);
 	
 	void createScene(void);
-	bool frameRenderingQueued(const Ogre::FrameEvent& evt);
-	bool processUnbufferedInput(const Ogre::FrameEvent& evt);
+	bool frameRenderingQueued(Ogre::Real tSinceLastFrame);
 
 private:
 	Ogre::SceneManager* sSceneMgr;
@@ -49,18 +48,17 @@ private:
 	vector<int> removedHTileList;
 	vector<int> removedCTileList;
 		/* Update Time Tracker */
-	float timeSinceLastStateUpdate;
+	clock_t updateClock;
 		/* Gap Check Time */ //Most likely needs to be in respective Player's class
 	time_t gapStartTime;
 	time_t gapEndTime;
 
-	Ogre::Light* pointLight;
+	Ogre::Light* directLight;
 	void updateClientVelocity(Player* p);
 	bool constructAndSendGameState(int socketID);
 	void updateRemovedTiles(void);
 	void restrictPlayerMovement(Player* p);
 	bool interpretClientPacket(int playerID);
-	void keyPressed(const OIS::KeyEvent &evt);
 	void processClientInput(int playerIndex, char inputType);
 };
 
