@@ -76,11 +76,25 @@ void GUI::pauseMenu(bool pause)
         quit->setText("Quit Game");
         quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
+        CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/RestartGameButton");
+        restart->setText("Restart Game");
+        restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+        
+        CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/BackButton");
+        back->setText("Back to Main Menu");
+        back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
+        back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+        
         sheet->addChildWindow(quit);
+        sheet->addChildWindow(restart);
+        sheet->addChildWindow(back);
         
         CEGUI::System::getSingleton().setGUISheet(sheet);
     
         quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
+        restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, mcp));
+        back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, mcp));
     }
 }
 //-------------------------------------------------------------------------------------

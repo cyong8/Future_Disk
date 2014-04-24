@@ -92,10 +92,7 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     }
     else if(gameOver)
     {
-        if (gameStart) {
-            gameSimulator->resetSimulator();
-            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
-            
+        if (gameStart) {            
             MasterControl->gui->addPanel(MasterControl->getPanel(GAMEOVER), OgreBites::TL_CENTER);
             MasterControl->getPanel(GAMEOVER)->setParamValue(1, Ogre::StringConverter::toString(score));
             printf("gameOver");
@@ -431,6 +428,9 @@ void Solo::updatePauseTime(time_t currTime)
 
 void Solo::restartGame()
 {	
+    gameSimulator->resetSimulator();
+    //gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+
     diskAdded = false;
     player->addToSimulator();
     
@@ -438,6 +438,8 @@ void Solo::restartGame()
 	
 	gameStart = true;
 	gameOver = false;
+	if (gamePause)
+	    togglePause();
 	time(&initTime);
 	
 	MasterControl->gui->removePanel(MasterControl->getPanel(GAMEOVER));
