@@ -238,8 +238,7 @@ bool MCP::checkGameLoss(Player* p) {
 bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e) 
 {   
     gui->removePanel(scorePanel);
-    //gui->removePanel(gameOverPanel);
-    gameOver = false;
+    gui->removePanel(gameOverPanel);
     
     gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
     gui->addPanel(objectivePanel, OgreBites::TL_TOP);

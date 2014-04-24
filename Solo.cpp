@@ -25,7 +25,7 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     diskAdded = false;
     
     time(&initTime);
-    initMinutes = 1;
+    initMinutes = 2;
     pTimePassed = 0;
 
     createScene();
