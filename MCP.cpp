@@ -48,7 +48,7 @@ void MCP::createSoloModeScene()
     
 }
 //-------------------------------------------------------------------------------------
-bool MCP::soloMode(const CEGUI::EventArgs &e)   // Need to make a soloMode class possibly
+bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
     CEGUI::MouseCursor::getSingleton().hide();
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
@@ -60,8 +60,11 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)   // Need to make a soloMode class
     gui->addPanel(scorePanel, OgreBites::TL_BOTTOMRIGHT);
 
     gameMusic->playMusic("Play");
-    
-    solo = new Solo(this);    
+
+    if (solo != NULL)
+        solo->restartGame();
+    else
+        solo = new Solo(this);    
     
     return true;
 }
@@ -187,8 +190,8 @@ bool MCP::keyPressed(const OIS::KeyEvent &evt)
             gameMusic->toggleMute();
             break;
         case OIS::KC_P:
-            // if (gameMode == 0)
-                togglePause();
+            if (solo != NULL)
+                solo->togglePause();
             break;
     }
     return true;

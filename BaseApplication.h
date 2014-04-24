@@ -105,9 +105,6 @@ protected:
     //Unattach OIS before window shutdown (very important under Linux)
     virtual void windowClosed(Ogre::RenderWindow* rw);
     
-
-    bool updateTimer(time_t currTime);
-    void updatePauseTime(time_t currTime);
     void modifyScore(int num);
     Ogre::Real mRotate; // rotation coefficient for camera movement
 
@@ -128,10 +125,7 @@ protected:
     OgreBites::ParamsPanel* gameOverPanel;
     OgreBites::ParamsPanel* gameOverWinPanel;
     OgreBites::ParamsPanel* gameOverLossPanel;
-    int initMinutes;
-    time_t initTime;
-    double pTimePassed;
-    time_t pauseTime;
+
     int score;
     bool gameOver;
     

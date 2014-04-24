@@ -117,8 +117,7 @@ void BaseApplication::createFrameListener(void)
     scorePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOMRIGHT, "ScorePanel", 200, scores);
     score = 0;
     scorePanel->setParamValue(0, Ogre::StringConverter::toString(score));
-    initMinutes = 2;
-    scorePanel->setParamValue(1, Ogre::StringConverter::toString(initMinutes) + ":00");
+    scorePanel->setParamValue(1, Ogre::StringConverter::toString(2) + ":00");
     scorePanel->hide();
     mTrayMgr->removeWidgetFromTray(scorePanel);
 
@@ -162,8 +161,6 @@ void BaseApplication::createFrameListener(void)
     pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 155);
     pauseLabel->hide();
     mTrayMgr->removeWidgetFromTray(pauseLabel);
-
-    pTimePassed = 0;
 
     Ogre::StringVector gOverText;
     gOverText.push_back("GAME OVER!");
@@ -460,40 +457,6 @@ void BaseApplication::windowClosed(Ogre::RenderWindow* rw)
             mInputManager = 0;
         }
     }
-}
-
-bool BaseApplication::updateTimer(time_t currTime)
-{
-    double secondsElapsed = difftime(currTime, initTime);
-    int secondsLeft = (initMinutes*60) - secondsElapsed + pTimePassed;
-
-    int minutes = secondsLeft / 60;
-    int seconds = secondsLeft % 60;
-
-    Ogre::String mins = Ogre::StringConverter::toString(minutes);
-    Ogre::String sec = Ogre::StringConverter::toString(seconds);
-
-    if(minutes < 10)
-        mins = "0"+mins;
-
-    if(minutes <= 0)
-        mins = "00";
-
-    if(seconds < 10)
-        sec = "0"+sec;
-
-    if(seconds <= 0)
-        sec = "00";
-    
-    scorePanel->setParamValue(1, mins + ":" + sec);
-    if(minutes <= 0 && seconds <= 0)
-        return true;
-    return false;
-}
-
-void BaseApplication::updatePauseTime(time_t currTime)
-{
-    pTimePassed = difftime(currTime, pauseTime);
 }
 
 void BaseApplication::modifyScore(int num)

@@ -148,6 +148,9 @@ void Simulator::removeObject(Ogre::String name)
 	{
 		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
 		{
+		    if (Ogre::StringUtil::match(gameDisk->getGameObjectName(), name, true))
+		        gameDisk = NULL;
+		
 			dynamicsWorld->removeRigidBody(getGameObject(name)->getBody());
 			getGameObject(name)->removeFromSimulator();
 			objList.erase(objList.begin() + i);
