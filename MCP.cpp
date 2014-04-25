@@ -55,7 +55,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     wmgr.destroyAllWindows();
 
     gui->removePanel(objectivePanel);
-    gui->removePanel(instructPanel);
+    //gui->removePanel(instructPanel);
 
     gui->addPanel(scorePanel, OgreBites::TL_BOTTOMRIGHT);
 
@@ -78,7 +78,7 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
     // gameMusic->playMusic("Play");
 
     gui->removePanel(objectivePanel);
-    gui->removePanel(instructPanel);
+    //gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
     
     // Create Server Object
@@ -103,7 +103,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     // gameMusic->playMusic("Play");
 
     gui->removePanel(objectivePanel);
-    gui->removePanel(instructPanel);
+    //gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
 
     // Create Client Object
@@ -240,8 +240,8 @@ bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e)
     gui->removePanel(scorePanel);
     gui->removePanel(gameOverPanel);
     
-    gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
-    gui->addPanel(objectivePanel, OgreBites::TL_TOP);
+    //gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
+    gui->addPanel(objectivePanel, OgreBites::TL_BOTTOM);
     gui->createMainMenu();
     return true;
 }

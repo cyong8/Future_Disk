@@ -304,15 +304,15 @@ void Solo::togglePause()
         gamePause = false;
         MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));
         MasterControl->gui->removePanel(MasterControl->getPanel(OBJECTIVE));
-        MasterControl->gui->removePanel(MasterControl->getPanel(INSTRUCT));
+        //MasterControl->gui->removePanel(MasterControl->getPanel(INSTRUCT));
     }
     else //entering Pause
     {        
         gameMusic->playMusic("Start");
         MasterControl->getLabel(PAUSE)->setCaption("GAME PAUSED!");
         MasterControl->gui->addLabel(MasterControl->getLabel(PAUSE), OgreBites::TL_CENTER);
-        MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_TOP);
-        MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
+        MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_BOTTOM);
+        //MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
         gamePause = true;
         time(&pauseTime);
     }

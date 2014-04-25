@@ -118,7 +118,6 @@ protected:
     // OgreBites
     OgreBites::ParamsPanel* scorePanel;       // scoring panel for TronGame
     OgreBites::ParamsPanel* objectivePanel;
-    OgreBites::ParamsPanel* instructPanel;
     OgreBites::ParamsPanel* powerUpPanel;
     OgreBites::Label* startLabel;
     OgreBites::Label* pauseLabel;

@@ -124,16 +124,16 @@ void BaseApplication::createFrameListener(void)
     //startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
 
     Ogre::StringVector objectiveDetails;
-    objectiveDetails.push_back("Literal Air Hockey");
+    objectiveDetails.push_back("Modes of Play");
     objectiveDetails.push_back("Single Player");
     objectiveDetails.push_back("Multiplayer");
-    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_TOP, "objectivePanel", 650, objectiveDetails); 
+    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOM, "objectivePanel", 650, objectiveDetails); 
     objectivePanel->setParamValue(0, "");   
     objectivePanel->setParamValue(1, "Time Attack! Break the targets!");
     objectivePanel->setParamValue(2, "Knock your opponent down into the abyss by ricocheting disks off walls!");
                                     /* "Indirectly hit tiles in order to remove them and force your opponent into the void" */
 
-    Ogre::StringVector instructions;
+    /*Ogre::StringVector instructions;
     instructions.push_back("GAME CONTROLS");
     instructions.push_back("Move Forward ");
     instructions.push_back("Move Backward ");
@@ -156,7 +156,7 @@ void BaseApplication::createFrameListener(void)
     instructPanel->setParamValue(7, "Hold V");
     instructPanel->setParamValue(8, "Left Mouse Button");
     instructPanel->setParamValue(9, "P");
-    instructPanel->setParamValue(10, "M");
+    instructPanel->setParamValue(10, "M");*/
 
     pauseLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Pause", "", 155);
     pauseLabel->hide();
@@ -185,7 +185,7 @@ void BaseApplication::createFrameListener(void)
     gameOverLossPanel->hide();
     mTrayMgr->removeWidgetFromTray(gameOverLossPanel);
 
-    mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
+    //mTrayMgr->showFrameStats(OgreBites::TL_BOTTOMLEFT);
     
     Ogre::StringVector powerUps;
     powerUps.push_back("MULTIPLAYER POWER-UPS");
@@ -481,7 +481,7 @@ OgreBites::ParamsPanel* BaseApplication::getPanel(Panel p)
 {
     switch (p) {
         case SCORE: return scorePanel;
-        case INSTRUCT: return instructPanel;
+        //case INSTRUCT: return instructPanel;
         case OBJECTIVE: return objectivePanel;
         case POWER: return powerUpPanel;
         case GAMEOVER: return gameOverPanel;

@@ -42,15 +42,29 @@ void GUI::createMainMenu()
     host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
 
-    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/JoinButton");
+    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/JoinButton");
     join->setText("Join a game");
     join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.67, 0)));
+    
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("TitleImageset", "title.png");
+    CEGUI::Window *title = wmgr.createWindow("OgreTray/StaticImage", "TronGame/MainMenu/TitleImage");
+    title->setProperty("Image", "set:TitleImageset image:full_image");
+    title->setSize(CEGUI::UVector2(CEGUI::UDim(0.5, 0), CEGUI::UDim(0.3, 0)));
+    title->setPosition(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.05, 0)));
+    
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("InstructionsImageset", "controlmenu.png");
+    CEGUI::Window *instructions = wmgr.createWindow("OgreTray/StaticImage", "TronGame/MainMenu/InstructionsImage");
+    instructions->setProperty("Image", "set:InstructionsImageset image:full_image");
+    instructions->setSize(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.5, 0)));
+    instructions->setPosition(CEGUI::UVector2(CEGUI::UDim(0.6, 0), CEGUI::UDim(0.35, 0)));
     
     sheet->addChildWindow(quit);
     sheet->addChildWindow(singlePlayerStart);
     sheet->addChildWindow(host);
     sheet->addChildWindow(join);
+    sheet->addChildWindow(title);
+    sheet->addChildWindow(instructions);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
