@@ -16,6 +16,11 @@ enum wallIndex
 	NearLeftWall, 
 	NearRightWall
 };
+struct Gap
+{
+	Ogre::SceneNode* hGap;
+	Ogre::SceneNode* vGap;
+};
 
 class Wall;
 
@@ -29,16 +34,16 @@ public:
 	Ogre::Real getHeight(void);
 	Ogre::Real getGapSize(void);
 	Ogre::Real getFloorPositionY(void);
-	Ogre::SceneNode* getClientGapSceneNode(void);
-	Ogre::SceneNode* getHostGapSceneNode(void);
+	Gap* getPlayerGapSceneNode(int playerID);
+	int getNumberOfPlayers(void);
 	Wall* getWall(int index);
+
 
 	vector<Tile*> cTileList;
 	vector<Tile*> hTileList;
 	vector<Wall*> wallList;
 protected:
-	Ogre::SceneNode* clientGapNode;
-	Ogre::SceneNode* hostGapNode;
+	vector<Gap*> gapNodes;
 	Ogre::Real width;
 	Ogre::Real height;
 	Ogre::Real heightScalingFactor;

@@ -31,6 +31,7 @@ class Simulator
 		vector<GameObject*> objList;
 		vector<Target*> targetList;
 		vector<Player*> playerList;
+		Ogre::Real floorY;
 		
 		PlayerCamera* player1Cam;
 		PlayerCamera* player2Cam;
@@ -72,7 +73,6 @@ class Simulator
 		bool checkGameStart(void);
 		void restoreTile(void);
 		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);
-		GameObject* objListCheck(int index);
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;
@@ -80,6 +80,7 @@ class Simulator
 		vector<GameObject*> clientTileList;
 		vector<int> hostRemoveIndexes;
 		vector<int> clientRemoveIndexes;
+		void setFloorY(Ogre::Real);
 		bool newRemovedTile;
 };
 

@@ -38,10 +38,10 @@ Solo::~Solo(void)
 //-------------------------------------------------------------------------------------
 void Solo::createScene()
 {
-    gameRoom = new Room(sceneMgr, gameSimulator, 0, 3);
+    gameRoom = new Room(sceneMgr, gameSimulator, 0, 2);
+    gameSimulator->setFloorY(gameRoom->getFloorPositionY());
 
-    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1);
-    player->getSceneNode()->setPosition(Ogre::Vector3(0.0f, 0.0f, -40.0f));
+    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
     player->addToSimulator();
     startingPosition = player->getSceneNode()->getPosition();
     
@@ -93,7 +93,8 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     }
     else if(gameOver)
     {
-        if (gameStart) {
+        if (gameStart) 
+        {
             MasterControl->gui->addPanel(MasterControl->getPanel(GAMEOVER), OgreBites::TL_CENTER);
             MasterControl->getPanel(GAMEOVER)->setParamValue(1, Ogre::StringConverter::toString(score));
             printf("gameOver");
@@ -355,26 +356,46 @@ void Solo::restrictPlayerMovement()
     Ogre::Vector3 pos = player->getSceneNode()->getPosition();
     Ogre::Vector3 dim = player->getPlayerDimensions();
     btVector3 velocityVector = player->getBody()->getLinearVelocity();
-    Ogre::SceneNode* restrictNode;
-    Ogre::AxisAlignedBox gapBox;
+    Ogre::SceneNode* restrictHNode;
+    Ogre::SceneNode* restrictVNode;
+    Ogre::AxisAlignedBox gapHBox;
+    Ogre::AxisAlignedBox gapVBox;
     Ogre::AxisAlignedBox playerBox = player->getSceneNode()->_getWorldAABB();
+    Ogre::Real pushBackVelocity = 5.0f;
 
-    if (player->getPlayerSide() == "Negative Side")
-        restrictNode = gameRoom->getClientGapSceneNode();
-    else
-        restrictNode = gameRoom->getHostGapSceneNode();
+    Gap* gp = gameRoom->getPlayerGapSceneNode(player->getPlayerID());
 
-    gapBox = restrictNode->_getWorldAABB();
+    restrictHNode = gp->hGap;
+    restrictVNode = gp->vGap;
 
-    if (gapBox.intersects(playerBox))
+    gapHBox = restrictHNode->_getWorldAABB();
+    gapVBox = restrictVNode->_getWorldAABB();
+
+
+    if (gapHBox.intersects(playerBox))
     {
         time(&gapStartTime);
         time(&gapEndTime);
-        // gapStartClock = clock();
+
+        if (player->getPlayerID() > 2)
+            pushBackVelocity = -pushBackVelocity;
 
         player->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-        player->getBody()->setLinearVelocity(btVector3(velocityVector.getX(), velocityVector.getY(), 5.0f));
-        restrictNode->setVisible(true);
+        player->getBody()->setLinearVelocity(btVector3(velocityVector.getX(), velocityVector.getY(), pushBackVelocity));
+        restrictHNode->setVisible(true);
+        player->setMovementRestriction(true);
+    }
+    else if (gapVBox.intersects(playerBox))
+    {
+        time(&gapStartTime);
+        time(&gapEndTime);
+
+        if (player->getPlayerID() == 1 || player->getPlayerID() == 3)
+            pushBackVelocity = -pushBackVelocity;
+
+        player->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+        player->getBody()->setLinearVelocity(btVector3(pushBackVelocity, velocityVector.getY(), velocityVector.getZ()));
+        restrictVNode->setVisible(true);
         player->setMovementRestriction(true);
     }
     else
@@ -384,7 +405,8 @@ void Solo::restrictPlayerMovement()
 
         if (difftime(gapEndTime, gapStartTime) > 1.0f)
         {
-            restrictNode->setVisible(false);
+            restrictHNode->setVisible(false);
+            restrictVNode->setVisible(false);
         }
 
         player->setMovementRestriction(false);

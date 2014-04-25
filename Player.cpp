@@ -1,11 +1,12 @@
 #include "Player.h"
 #include "Disk.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Ogre::Vector3 roomDims) 
 	: GameObject(nym, mgr, sim)
 {
 	initializeStates();
 	this->dimensions = dimensions;
+	roomDimensions = roomDims;		// Ogre::Vector3(room->width, room->height, numberOfPlayers)
 	typeName = "Player";
 	groundY = -99999.0f;
 	prevGroundY = -99999.0f;
@@ -15,32 +16,34 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	movementRestricted = false;
 	isHolding = false; // Is the player holding the disk?
 	groundConstantSet = false;
-	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
 	playerID = playID;
 	playerCanCatch = true;
 
+	Ogre::Vector3 position;
 	if (playerID == 1)
 	{
-		playerSide == "Positive Side";
-		position = Ogre::Vector3(0.0f, 0.0f, 15.0f);	
+		playerSide = "Positive Side";
+		position = Ogre::Vector3(-(roomDimensions.x/4.0f), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 2)
 	{
-		playerSide == "Negative Side";
-		position = Ogre::Vector3(0.0f, 0.0f, -15.0f);
+		playerSide = "Negative Side";
+		position = Ogre::Vector3(roomDimensions.x/4.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 3)
 	{
-		playerSide == "Left Side";
+		playerSide = "Left Side";
+		position = Ogre::Vector3(-(roomDimensions.x/4.0f), 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 4)
 	{
-		playerSide == "Right Side";
+		playerSide = "Right Side";
+		position = Ogre::Vector3(roomDimensions.x/4.0f, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 
+	printf("Player Positioned to: Vector3(%f, %f, %f)\n\n", position.x, position.y, position.z);
 	tailParticle = mgr->createParticleSystem("CyanSun_" + nym, "Examples/CyanSun");
     particleNode = rootNode->createChildSceneNode("PlayerParticle_" + nym);
-    
     
     particleNode->attachObject(tailParticle);
     particleNode->setVisible(false);
@@ -71,9 +74,13 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 4.0f, -15.00));
 	}
 	else if (playerID == 3)
-		;
-	else if (playerID == 4)
-		;
+	{
+		
+	}
+	else if (playerID == 4)		
+	{
+
+	}
 
  	// DEBUGGING 
 	// Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");

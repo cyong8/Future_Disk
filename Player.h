@@ -10,8 +10,8 @@ class Disk;
 class Player : public GameObject
 {
 public:
-	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID);
-
+	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID, Ogre::Vector3 roomDims);
+	// NOTE: roomDims is Ogre::Vector3(room->width, room->height), numberOfPlayers)
 	void setHolding(bool x); // Set whether the player is holding the disk
 	bool checkHolding(void); // Check if the player is holding the disk
 	void throwDisk(void); // Throw the disk in a particular direction
@@ -61,6 +61,7 @@ protected:
 	bool movementRestricted;	
 	int playerID;	
 	bool playerCanCatch;
+	Ogre::Vector3 roomDimensions;
 };
 
 #endif // #ifndef __Player_h_

@@ -8,7 +8,7 @@
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
-	diskSpeedFactor = 15.0f;
+	diskSpeedFactor = 22.0f;
 	score = 0;
 	soundedJump = false;
 	viewChangeP1 = false;
@@ -204,7 +204,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 
-			if(gameDisk->getSceneNode()->getPosition().y < -30.0f)
+			if(gameDisk->getSceneNode()->getPosition().y < floorY)
 			{
 				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
 			}
@@ -528,7 +528,7 @@ void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeI
     else
         gameMusic->playMusic("Blast");
 }
-GameObject* Simulator::objListCheck(int index)
+void Simulator::setFloorY(Ogre::Real y)
 {
-	return objList[index];
+	floorY = y;
 }

@@ -34,7 +34,7 @@ void Client::createScene()
 
     /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
-    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID);
+    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
     playerList[playerID-1] = clientPlayer;
     numPlayers++;
 
@@ -327,12 +327,12 @@ void Client::interpretServerPacket(char* packList)
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
-                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID);
+                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers() + 1));
                 numPlayers++;
             }
             // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[playerIndex]->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
-
+            /* Randy: "lookAt Matrix, transpose, 4th column should change, not the others" */
             // if (newPlayerID == playerID)
             // {
             //     if (clientChangePosition())

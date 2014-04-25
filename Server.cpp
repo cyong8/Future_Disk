@@ -33,6 +33,8 @@ Server::~Server(void)
 void Server::createScene()
 {
     gameRoom = new Room(sSceneMgr, gameSimulator, 0, 2);
+    gameSimulator->setFloorY(gameRoom->getFloorPositionY());
+
     sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
     /********************  OBJECT CREATION  ********************/
@@ -41,10 +43,10 @@ void Server::createScene()
     // JumpPower = new Target("Jump", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
     // Restore = new Target("Restore", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
 
-    Power->addToSimulator();
-    Speed->addToSimulator();
-    JumpPower->addToSimulator();
-    Restore->addToSimulator();
+    // Power->addToSimulator();
+    // Speed->addToSimulator();
+    // JumpPower->addToSimulator();
+    // Restore->addToSimulator();
 
     sSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     sSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -76,7 +78,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             char playerBuffer[25];
             sprintf(playerBuffer, "Player%d", numberOfClients);
 
-            Player * newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients);
+            Player * newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
             playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
@@ -253,26 +255,46 @@ void Server::restrictPlayerMovement(Player* p)
     Ogre::Vector3 pos = p->getSceneNode()->getPosition();
     Ogre::Vector3 dim = p->getPlayerDimensions();
     btVector3 velocityVector = p->getBody()->getLinearVelocity();
-    Ogre::SceneNode* restrictNode;
-    Ogre::AxisAlignedBox gapBox;
+    Ogre::SceneNode* restrictHNode;
+    Ogre::SceneNode* restrictVNode;
+    Ogre::AxisAlignedBox gapHBox;
+    Ogre::AxisAlignedBox gapVBox;
     Ogre::AxisAlignedBox playerBox = p->getSceneNode()->_getWorldAABB();
+    Ogre::Real pushBackVelocity = 5.0f;
 
-    if (p->getPlayerSide() == "Negative Side")
-        restrictNode = gameRoom->getClientGapSceneNode();
-    else
-        restrictNode = gameRoom->getHostGapSceneNode();
+    Gap* gp = gameRoom->getPlayerGapSceneNode(p->getPlayerID());
 
-    gapBox = restrictNode->_getWorldAABB();
+    restrictHNode = gp->hGap;
+    restrictVNode = gp->vGap;
 
-    if (gapBox.intersects(playerBox))
+    gapHBox = restrictHNode->_getWorldAABB();
+    gapVBox = restrictVNode->_getWorldAABB();
+
+
+    if (gapHBox.intersects(playerBox))
     {
         time(&gapStartTime);
         time(&gapEndTime);
-        // gapStartClock = clock();
+
+        if (p->getPlayerID() > 2)
+            pushBackVelocity = -pushBackVelocity;
 
         p->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-        p->getBody()->setLinearVelocity(btVector3(velocityVector.getX(), velocityVector.getY(), 5.0f));
-        restrictNode->setVisible(true);
+        p->getBody()->setLinearVelocity(btVector3(velocityVector.getX(), velocityVector.getY(), pushBackVelocity));
+        restrictHNode->setVisible(true);
+        p->setMovementRestriction(true);
+    }
+    else if (gapVBox.intersects(playerBox))
+    {
+        time(&gapStartTime);
+        time(&gapEndTime);
+
+        if (p->getPlayerID() == 1 || p->getPlayerID() == 3)
+            pushBackVelocity = -pushBackVelocity;
+
+        p->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+        p->getBody()->setLinearVelocity(btVector3(pushBackVelocity, velocityVector.getY(), velocityVector.getZ()));
+        restrictVNode->setVisible(true);
         p->setMovementRestriction(true);
     }
     else
@@ -282,7 +304,8 @@ void Server::restrictPlayerMovement(Player* p)
 
         if (difftime(gapEndTime, gapStartTime) > 1.0f)
         {
-            restrictNode->setVisible(false);
+            restrictHNode->setVisible(false);
+            restrictVNode->setVisible(false);
         }
 
         p->setMovementRestriction(false);
