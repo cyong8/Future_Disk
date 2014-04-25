@@ -42,15 +42,29 @@ void GUI::createMainMenu()
     host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.56, 0)));
 
-    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MultiplayerMenu/JoinButton");
+    CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/JoinButton");
     join->setText("Join a game");
     join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.67, 0)));
+    
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("TitleImageset", "title.png");
+    CEGUI::Window *title = wmgr.createWindow("OgreTray/StaticImage", "TronGame/MainMenu/TitleImage");
+    title->setProperty("Image", "set:TitleImageset image:full_image");
+    title->setSize(CEGUI::UVector2(CEGUI::UDim(0.5, 0), CEGUI::UDim(0.3, 0)));
+    title->setPosition(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.05, 0)));
+    
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("InstructionsImageset", "controlmenu.png");
+    CEGUI::Window *instructions = wmgr.createWindow("OgreTray/StaticImage", "TronGame/MainMenu/InstructionsImage");
+    instructions->setProperty("Image", "set:InstructionsImageset image:full_image");
+    instructions->setSize(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.5, 0)));
+    instructions->setPosition(CEGUI::UVector2(CEGUI::UDim(0.6, 0), CEGUI::UDim(0.35, 0)));
     
     sheet->addChildWindow(quit);
     sheet->addChildWindow(singlePlayerStart);
     sheet->addChildWindow(host);
     sheet->addChildWindow(join);
+    sheet->addChildWindow(title);
+    sheet->addChildWindow(instructions);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
@@ -76,11 +90,25 @@ void GUI::pauseMenu(bool pause)
         quit->setText("Quit Game");
         quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
         
+        CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/RestartGameButton");
+        restart->setText("Restart Game");
+        restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+        
+        CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/BackButton");
+        back->setText("Back to Main Menu");
+        back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
+        back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+        
         sheet->addChildWindow(quit);
+        sheet->addChildWindow(restart);
+        sheet->addChildWindow(back);
         
         CEGUI::System::getSingleton().setGUISheet(sheet);
     
         quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
+        restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, mcp));
+        back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, mcp));
     }
 }
 //-------------------------------------------------------------------------------------
@@ -163,20 +191,20 @@ void GUI::gameOverScreen()
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
-    /*CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
+    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
     back->setText("Back to Main Menu");
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));*/
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
     
     sheet->addChildWindow(quit);
     sheet->addChildWindow(restart);
-    //sheet->addChildWindow(back);
+    sheet->addChildWindow(back);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
     restart->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::soloMode, mcp));
-    //back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, this));
+    back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenuSolo, mcp));
 }
 //-------------------------------------------------------------------------------------
 void GUI::otherGameOverScreen() 

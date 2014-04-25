@@ -40,6 +40,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 		playerSide = "Right Side";
 		position = Ogre::Vector3(roomDimensions.x/4.0f, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
+	startingPosition = position;
 
 	printf("Player Positioned to: Vector3(%f, %f, %f)\n\n", position.x, position.y, position.z);
 	tailParticle = mgr->createParticleSystem("CyanSun_" + nym, "Examples/CyanSun");

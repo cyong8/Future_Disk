@@ -25,7 +25,7 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     diskAdded = false;
     
     time(&initTime);
-    initMinutes = 1;
+    initMinutes = 2;
     pTimePassed = 0;
 
     createScene();
@@ -43,7 +43,6 @@ void Solo::createScene()
 
     player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
     player->addToSimulator();
-    startingPosition = player->getSceneNode()->getPosition();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
@@ -163,6 +162,8 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 
     pBody = player->getBody();
     transform = pBody->getCenterOfMassTransform();
+
+    printf("state relative X = %f, state relative y = %f\n\n\n", relX, relY);
 
     if (pCam->isInAimMode())
     {   
@@ -304,15 +305,15 @@ void Solo::togglePause()
         gamePause = false;
         MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));
         MasterControl->gui->removePanel(MasterControl->getPanel(OBJECTIVE));
-        MasterControl->gui->removePanel(MasterControl->getPanel(INSTRUCT));
+        //MasterControl->gui->removePanel(MasterControl->getPanel(INSTRUCT));
     }
     else //entering Pause
     {        
         gameMusic->playMusic("Start");
         MasterControl->getLabel(PAUSE)->setCaption("GAME PAUSED!");
         MasterControl->gui->addLabel(MasterControl->getLabel(PAUSE), OgreBites::TL_CENTER);
-        MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_TOP);
-        MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
+        MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_BOTTOM);
+        //MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
         gamePause = true;
         time(&pauseTime);
     }
@@ -449,20 +450,21 @@ void Solo::updatePauseTime(time_t currTime)
 
 void Solo::restartGame()
 {	
-    gameSimulator->removeObject(gameDisk->getGameObjectName()); 
-    gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0, 0, 0));   
-    gameSimulator->setDisk = false;
+    gameSimulator->resetSimulator();
+    //gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+
     diskAdded = false;
+    player->addToSimulator();
     
     //gameSimulator->removeObject(player->getGameObjectName());
-    player->getSceneNode()->_setDerivedPosition(startingPosition);
-
-	Ogre::Vector3 ppos_derived = player->getSceneNode()->_getDerivedPosition();
-	btQuaternion playerOrientation = btQuaternion(0, 0, 0);
-	btTransform transform = btTransform(playerOrientation, btVector3(ppos_derived.x, ppos_derived.y, ppos_derived.z));
-	player->getBody()->setCenterOfMassTransform(transform);
 	
 	gameStart = true;
+	gameOver = false;
+	if (gamePause)
+	    togglePause();
+	time(&initTime);
+	
+	MasterControl->gui->removePanel(MasterControl->getPanel(GAMEOVER));
     
     //player->addToSimulator();
 }    
