@@ -123,14 +123,14 @@ void BaseApplication::createFrameListener(void)
 
     //startLabel = mTrayMgr->createLabel(OgreBites::TL_CENTER, "Start", "", 350);
 
-    Ogre::StringVector objectiveDetails;
-    objectiveDetails.push_back("Modes of Play");
-    objectiveDetails.push_back("Single Player");
-    objectiveDetails.push_back("Multiplayer");
-    objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOM, "objectivePanel", 650, objectiveDetails); 
-    objectivePanel->setParamValue(0, "");   
-    objectivePanel->setParamValue(1, "Time Attack! Break the targets!");
-    objectivePanel->setParamValue(2, "Knock your opponent down into the abyss by ricocheting disks off walls!");
+    // Ogre::StringVector objectiveDetails;
+    // objectiveDetails.push_back("Modes of Play");
+    // objectiveDetails.push_back("Single Player");
+    // objectiveDetails.push_back("Multiplayer");
+    // objectivePanel = mTrayMgr->createParamsPanel(OgreBites::TL_BOTTOM, "objectivePanel", 650, objectiveDetails); 
+    // objectivePanel->setParamValue(0, "");   
+    // objectivePanel->setParamValue(1, "Time Attack! Break the targets!");
+    // objectivePanel->setParamValue(2, "Knock your opponent down into the abyss by ricocheting disks off walls!");
                                     /* "Indirectly hit tiles in order to remove them and force your opponent into the void" */
 
     /*Ogre::StringVector instructions;
@@ -482,7 +482,7 @@ OgreBites::ParamsPanel* BaseApplication::getPanel(Panel p)
     switch (p) {
         case SCORE: return scorePanel;
         //case INSTRUCT: return instructPanel;
-        case OBJECTIVE: return objectivePanel;
+        // case OBJECTIVE: return objectivePanel;
         case POWER: return powerUpPanel;
         case GAMEOVER: return gameOverPanel;
         case GAMEOVERWIN: return gameOverWinPanel;
