@@ -57,15 +57,26 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident, 
 	/* Create Gap Planes for each Player */
 	Ogre::SceneNode* clientGapNode;
 	
-	Ogre::Real hGapX = (width/2.0f + gapSize/2.0f)/2.0f;
+	Ogre::Real hGapX = 0.0f;
 	Ogre::Real hGapZ = gapSize/2.0f;
 
 	Ogre::Real vGapX = gapSize/2.0f;
-	Ogre::Real vGapZ = (height/2.0f + width/3.0f + gapSize/2.0f)/2.0f;
+	Ogre::Real vGapZ = height/2.0f + width/3.0f + gapSize/2.0f;
 
 	Ogre::Vector3 hGapPosition;
 	Ogre::Vector3 vGapPosition;
 	Ogre::Entity* gapEnt;
+
+	Ogre::Real hPlaneWidth = width;
+	Ogre::Real vPlaneWidth;
+
+	if (numberOfPlayers > 2)
+	{
+		Ogre::Real vPlaneWidth = (height/2.0f + width/3.0f - gapSize/2.0f);
+		
+		hGapX = (width/2.0f + gapSize/2.0f)/2.0f;
+		hPlaneWidth = (width/2.0f - gapSize/2.0f);
+	}
 
 	printf("******* Initial Horizontal Gap Positioned to: Vector3(%f, %f, %f)\n", hGapPosition.x, hGapPosition.y, hGapPosition.z);
 	printf("******* Initial Vertical Gap Positioned to: Vector3(%f, %f, %f)\n", vGapPosition.x, vGapPosition.y, vGapPosition.z);
@@ -102,9 +113,9 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident, 
 			plane.normal = Ogre::Vector3::NEGATIVE_UNIT_Z;
 		else
 			plane.normal = Ogre::Vector3::UNIT_Z;
-
+		
 		Ogre::MeshManager::getSingleton().createPlane(gapBufferPlane, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
-		(width/2.0f - gapSize/2.0f), width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
+		hPlaneWidth, width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
 		
 		clientGapNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(gapBufferNode);
 		gapEnt = mSceneMgr->createEntity(gapBufferEntity, gapBufferPlane);
@@ -115,27 +126,30 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *game_simulator, int ident, 
 		clientGapNode->setVisible(false);
 		gp->hGap = clientGapNode;
 
-			/************** Vertical Gap **************/
-		sprintf(gapBufferNode, "VGap_%d", player);
-		sprintf(gapBufferPlane, "%s%s", gapBufferNode, "_Plane");
-		sprintf(gapBufferEntity, "%s%s", gapBufferNode, "_Entity");
+		if (numberOfPlayers > 2)
+		{
+				/************** Vertical Gap **************/
+			sprintf(gapBufferNode, "VGap_%d", player);
+			sprintf(gapBufferPlane, "%s%s", gapBufferNode, "_Plane");
+			sprintf(gapBufferEntity, "%s%s", gapBufferNode, "_Entity");
 
-		if (player == 1 || player == 3)
-			plane.normal = Ogre::Vector3::NEGATIVE_UNIT_X;
-		else
-			plane.normal = Ogre::Vector3::UNIT_X;
+			if (player == 1 || player == 3)
+				plane.normal = Ogre::Vector3::NEGATIVE_UNIT_X;
+			else
+				plane.normal = Ogre::Vector3::UNIT_X;
 
-		Ogre::MeshManager::getSingleton().createPlane(gapBufferPlane, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
-		(height/2.0f + width/3.0f - gapSize/2.0f), width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
-		
-		clientGapNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(gapBufferNode);
-		gapEnt = mSceneMgr->createEntity(gapBufferEntity, gapBufferPlane);
-		clientGapNode->attachObject(gapEnt);
-		gapEnt->setMaterialName("Examples/SpaceSkyPlane");
-		gapEnt->setCastShadows(false);
-		clientGapNode->setPosition(vGapPosition);
-		clientGapNode->setVisible(false);
-		gp->vGap = clientGapNode;
+			Ogre::MeshManager::getSingleton().createPlane(gapBufferPlane, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, plane, 
+			vPlaneWidth, width*heightScalingFactor, 20, 20, true, 1, width/4, height/4, Ogre::Vector3::UNIT_Y);
+			
+			clientGapNode = mSceneMgr->getRootSceneNode()->createChildSceneNode(gapBufferNode);
+			gapEnt = mSceneMgr->createEntity(gapBufferEntity, gapBufferPlane);
+			clientGapNode->attachObject(gapEnt);
+			gapEnt->setMaterialName("Examples/SpaceSkyPlane");
+			gapEnt->setCastShadows(false);
+			clientGapNode->setPosition(vGapPosition);
+			clientGapNode->setVisible(false);
+			gp->vGap = clientGapNode;
+		}
 
 		gapNodes[player - 1] = gp;
 	}

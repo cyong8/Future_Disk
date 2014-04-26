@@ -356,21 +356,25 @@ void Solo::restrictPlayerMovement()
 {
     Ogre::Vector3 pos = player->getSceneNode()->getPosition();
     Ogre::Vector3 dim = player->getPlayerDimensions();
+
     btVector3 velocityVector = player->getBody()->getLinearVelocity();
+    Ogre::Real pushBackVelocity = 5.0f;
+
     Ogre::SceneNode* restrictHNode;
     Ogre::SceneNode* restrictVNode;
+
     Ogre::AxisAlignedBox gapHBox;
     Ogre::AxisAlignedBox gapVBox;
     Ogre::AxisAlignedBox playerBox = player->getSceneNode()->_getWorldAABB();
-    Ogre::Real pushBackVelocity = 5.0f;
+
 
     Gap* gp = gameRoom->getPlayerGapSceneNode(player->getPlayerID());
 
     restrictHNode = gp->hGap;
-    restrictVNode = gp->vGap;
-
     gapHBox = restrictHNode->_getWorldAABB();
-    gapVBox = restrictVNode->_getWorldAABB();
+
+    // restrictVNode = gp->vGap;
+    // gapVBox = restrictVNode->_getWorldAABB();
 
 
     if (gapHBox.intersects(playerBox))
@@ -386,19 +390,19 @@ void Solo::restrictPlayerMovement()
         restrictHNode->setVisible(true);
         player->setMovementRestriction(true);
     }
-    else if (gapVBox.intersects(playerBox))
-    {
-        time(&gapStartTime);
-        time(&gapEndTime);
+    // else if (gapVBox.intersects(playerBox))
+    // {
+    //     time(&gapStartTime);
+    //     time(&gapEndTime);
 
-        if (player->getPlayerID() == 1 || player->getPlayerID() == 3)
-            pushBackVelocity = -pushBackVelocity;
+    //     if (player->getPlayerID() == 1 || player->getPlayerID() == 3)
+    //         pushBackVelocity = -pushBackVelocity;
 
-        player->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
-        player->getBody()->setLinearVelocity(btVector3(pushBackVelocity, velocityVector.getY(), velocityVector.getZ()));
-        restrictVNode->setVisible(true);
-        player->setMovementRestriction(true);
-    }
+    //     player->getBody()->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    //     player->getBody()->setLinearVelocity(btVector3(pushBackVelocity, velocityVector.getY(), velocityVector.getZ()));
+    //     restrictVNode->setVisible(true);
+    //     player->setMovementRestriction(true);
+    // }
     else
     {
         time(&gapEndTime);
@@ -407,7 +411,7 @@ void Solo::restrictPlayerMovement()
         if (difftime(gapEndTime, gapStartTime) > 1.0f)
         {
             restrictHNode->setVisible(false);
-            restrictVNode->setVisible(false);
+            // restrictVNode->setVisible(false);
         }
 
         player->setMovementRestriction(false);

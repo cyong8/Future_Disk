@@ -23,22 +23,22 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	if (playerID == 1)
 	{
 		playerSide = "Positive Side";
-		position = Ogre::Vector3(-(roomDimensions.x/4.0f), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 2)
 	{
 		playerSide = "Negative Side";
-		position = Ogre::Vector3(roomDimensions.x/4.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 3)
 	{
 		playerSide = "Left Side";
-		position = Ogre::Vector3(-(roomDimensions.x/4.0f), 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 4)
 	{
 		playerSide = "Right Side";
-		position = Ogre::Vector3(roomDimensions.x/4.0f, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	startingPosition = position;
 
