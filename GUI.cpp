@@ -38,14 +38,14 @@ void GUI::createMainMenu()
     singlePlayerStartIMG->setProperty("Image", "set:SoloModeImageset image:full_image");
     singlePlayerStartIMG->setProperty("BackgroundEnabled", "false");
     singlePlayerStartIMG->setProperty("FrameEnabled", "false");
-    singlePlayerStartIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    singlePlayerStartIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.45, 0)));
+    singlePlayerStartIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    singlePlayerStartIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1, 0), CEGUI::UDim(0.47, 0)));
 
     CEGUI::Window *singlePlayerStart = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/SinglePlayerStartButton");
     // singlePlayerStart->setText("Solo Mode");
     singlePlayerStart->setAlpha(0.1f);
-    singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.45, 0)));
+    singlePlayerStart->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    singlePlayerStart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1, 0), CEGUI::UDim(0.47, 0)));
     
     /* HOST GAME */
     CEGUI::ImagesetManager::getSingleton().createFromImageFile("HostGameImageset", "hostgamebutton.png");
@@ -53,14 +53,14 @@ void GUI::createMainMenu()
     hostIMG->setProperty("Image", "set:HostGameImageset image:full_image");
     hostIMG->setProperty("BackgroundEnabled", "false");
     hostIMG->setProperty("FrameEnabled", "false");
-    hostIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    hostIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.56, 0)));
+    hostIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    hostIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1, 0), CEGUI::UDim(0.59, 0)));
     
     CEGUI::Window *host = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/HostButton");
     // host->setText("Host Game");
     host->setAlpha(0.1f);
-    host->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.56, 0)));
+    host->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    host->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1, 0), CEGUI::UDim(0.59, 0)));
 
     /* JOIN GAME */
     CEGUI::ImagesetManager::getSingleton().createFromImageFile("JoinGameImageset", "joingamebutton.png");
@@ -68,14 +68,14 @@ void GUI::createMainMenu()
     joinIMG->setProperty("Image", "set:JoinGameImageset image:full_image");
     joinIMG->setProperty("BackgroundEnabled", "false");
     joinIMG->setProperty("FrameEnabled", "false");
-    joinIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    joinIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.67, 0)));
+    joinIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    joinIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1, 0), CEGUI::UDim(0.71, 0)));
     
     CEGUI::Window *join = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/JoinButton");
     // join->setText("Join a game");
     join->setAlpha(0.1f);
-    join->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.67, 0)));
+    join->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    join->setPosition(CEGUI::UVector2(CEGUI::UDim(0.1, 0), CEGUI::UDim(0.71, 0)));
     
     CEGUI::ImagesetManager::getSingleton().createFromImageFile("TitleImageset", "title.png");
     CEGUI::Window *title = wmgr.createWindow("OgreTray/StaticImage", "TronGame/MainMenu/TitleImage");
@@ -90,8 +90,8 @@ void GUI::createMainMenu()
     instructions->setProperty("Image", "set:InstructionsImageset image:full_image");
     instructions->setProperty("BackgroundEnabled", "false");
     instructions->setProperty("FrameEnabled", "false");
-    instructions->setSize(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.5, 0)));
-    instructions->setPosition(CEGUI::UVector2(CEGUI::UDim(0.6, 0), CEGUI::UDim(0.35, 0)));
+    instructions->setSize(CEGUI::UVector2(CEGUI::UDim(0.6, 0), CEGUI::UDim(0.6, 0)));
+    instructions->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.38, 0)));
     
     sheet->addChildWindow(quit);
     sheet->addChildWindow(singlePlayerStartIMG);
