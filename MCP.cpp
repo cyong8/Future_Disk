@@ -54,7 +54,7 @@ bool MCP::soloMode(const CEGUI::EventArgs &e)
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     wmgr.destroyAllWindows();
 
-    gui->removePanel(objectivePanel);
+    // gui->removePanel(objectivePanel);
     //gui->removePanel(instructPanel);
 
     gui->addPanel(scorePanel, OgreBites::TL_BOTTOMRIGHT);
@@ -77,7 +77,7 @@ bool MCP::hostGame(const CEGUI::EventArgs &e)
 
     // gameMusic->playMusic("Play");
 
-    gui->removePanel(objectivePanel);
+    // gui->removePanel(objectivePanel);
     //gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
     
@@ -102,7 +102,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
 
     // gameMusic->playMusic("Play");
 
-    gui->removePanel(objectivePanel);
+    // gui->removePanel(objectivePanel);
     //gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
 

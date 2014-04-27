@@ -69,14 +69,15 @@ void Client::createScene()
 //-------------------------------------------------------------------------------------
 bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    
     if (gameNetwork->checkSockets(0))
+    {
         updateScene();
-    
-    // if (clientChangePosition())
-    //     updateCamera();
+        printf("*************updated Scene!*************\n");
+    }
 
-    updateCamera();
+    printf("Quaternion of Client Update: %f, %f, %f\n", clientPlayer->getSceneNode()->getOrientation().getYaw().valueRadians(), clientPlayer->getSceneNode()->getOrientation().getRoll().valueRadians(), clientPlayer->getSceneNode()->getOrientation().getPitch().valueRadians());
+    
+    updateCamera(); 
 
     processUnbufferedInput(mKeyboard, mMouse);
 }
@@ -238,7 +239,9 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         pack.key = 'v';
 
         vKeydown = true;
-        gameDisk->getSceneNode()->setVisible(false);
+        
+        if (gameDisk != NULL)
+            gameDisk->getSceneNode()->setVisible(false);
         pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
@@ -247,7 +250,9 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         pack.key = 'v';
 
         vKeydown = false;
-        gameDisk->getSceneNode()->setVisible(true);
+
+        if (gameDisk != NULL)
+            gameDisk->getSceneNode()->setVisible(true);
         pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
     if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
@@ -332,13 +337,14 @@ void Client::interpretServerPacket(char* packList)
             }
             // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
             playerList[playerIndex]->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
-            /* Randy: "lookAt Matrix, transpose, 4th column should change, not the others" */
+            /* Randy: "lookAt Matrix, transpose, 4th changeolumn should change, not the others" */
             // if (newPlayerID == playerID)
             // {
             //     if (clientChangePosition())
             //         updateCamera();
             // }
             // else 
+            if (newPlayerID != playerID)
                 playerList[playerIndex]->getSceneNode()->_setDerivedOrientation(p.orientation);
 
             indexIntoBuff += sizeof(S_PLAYER_packet);
@@ -407,6 +413,7 @@ bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
     pCamNode->setPosition(Ogre::Vector3(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z));
+    updateCamera();
 
     return true;
 }

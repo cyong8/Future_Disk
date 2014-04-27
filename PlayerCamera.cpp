@@ -61,7 +61,9 @@ void PlayerCamera::update (Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPos
     mCameraNode->translate(displacement);
  
     displacement = (targetPosition - mTargetNode->getPosition());
+    // printf("Sight displacement = %f, %f, %f\n", displacement.x, displacement.y, displacement.z);
     mTargetNode->translate(displacement);
+    // printf("\tSight Position = %f, %f, %f\n", mTargetNode->getPosition().x, mTargetNode->getPosition().y, mTargetNode->getPosition().z);
 }
 //-------------------------------------------------------------------------------------
 void PlayerCamera::setPlayer(Player* player)

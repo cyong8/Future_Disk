@@ -255,8 +255,8 @@ void Simulator::parseCollisions(void)
 		if (playerList[1] != NULL) 
 			playerList[1]->groundConstantSet = false;
 
-	if ((groundCheck1 || groundCheck2) && gameDisk == NULL) {
-	    cout << "setDisk = true\n";
+	if ((groundCheck1 || groundCheck2) && gameDisk == NULL) 
+	{
     	setDisk = true;
 	}
 	if (soundedJump && groundCheck1)	// played jumping sound, now check if he has hit the ground(landed)
@@ -410,7 +410,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 
 		int index = ((Tile *)o)->indexIntoTileArray;
 		
-		printf("COLLIDED WITH TILE!\n\n\n");
 		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName())
 		    destroyTiles(hostTileList, hostRemoveIndexes, index);
 		else
