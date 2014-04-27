@@ -204,7 +204,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if(gameDisk->getSceneNode()->getPosition().y < floorY)
 			{
-				((Player*)getGameObject(playerLastThrew))->attachDisk(gameDisk);
+				((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk(gameDisk);
 			}
 		}
 	}
@@ -303,7 +303,7 @@ void Simulator::performThrow(Player* p)
 
 		p->togglePlayerCanCatch();
 
-		playerLastThrew = p->getGameObjectName();
+		gameDisk->setPlayerLastThrew(p);
     	p->setHolding(false);
     }
     else // Update position relative to the Player
@@ -384,7 +384,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
-			    if (gameDisk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(playerLastThrew)))
+			    if (gameDisk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName())))
 			        restoreTile();
                 gameMusic->playCollisionSound("Disk", "Target");
                 if (gameDisk->powerUp == "Speed")
@@ -416,8 +416,8 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		    destroyTiles(clientTileList, clientRemoveIndexes, index);
 		newRemovedTile = true;
 		gameDisk->resetPowerUp();
-		playerLastThrew = "Player1";
-		((Player*)getGameObject(playerLastThrew))->attachDisk((Disk*)disk);
+		gameDisk->setPlayerLastThrew(playerList[0]);
+		((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk((Disk*)disk);
 
 	}
 }
@@ -478,12 +478,12 @@ bool Simulator::checkGameStart()
 }
 //---------------------------------------------------------------------------------------
 void Simulator::restoreTile() { // HARD CODE PLAYER FLAG
-    if (playerList[0] != NULL && playerList[0]->getGameObjectName() == playerLastThrew && hostRemoveIndexes.size() > 0) {
+    if (playerList[0] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && hostRemoveIndexes.size() > 0) {
         hostTileList[hostRemoveIndexes.back()]->addToSimulator();
         hostRemoveIndexes.pop_back();
         gameMusic->playMusic("Restore");
     }
-    else if (playerList[1] != NULL && playerList[0]->getGameObjectName() == playerLastThrew && clientRemoveIndexes.size() > 0) {
+    else if (playerList[1] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && clientRemoveIndexes.size() > 0) {
         clientTileList[clientRemoveIndexes.back()]->addToSimulator();
         clientRemoveIndexes.pop_back();
         gameMusic->playMusic("Restore");
