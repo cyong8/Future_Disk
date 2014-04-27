@@ -77,12 +77,14 @@ void Solo::createScene()
     createOverlays(pCam);
 }
 //-------------------------------------------------------------------------------------
-bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
+bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     // else if (!gameStart) // may need
     //     gameStart = true;
     //bool ret = BaseApplication::frameRenderingQueued(evt);
-    processUnbufferedInput(evt, mKeyboard, mMouse);
+    processUnbufferedInput(tSinceLastFrame, mKeyboard, mMouse);
+    if(player->animationState != NULL)
+        player->animationState->addTime(tSinceLastFrame);
 
     if(!gameStart && !gameOver) // Game not started
     {
@@ -107,7 +109,7 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
     {
         if(!gamePause)
         {
-            gameSimulator->stepSimulation(evt.timeSinceLastFrame, 1, 1.0f/60.0f);
+            gameSimulator->stepSimulation(tSinceLastFrame, 1, 1.0f/60.0f);
             gameSimulator->parseCollisions(); // check collisions
             time_t currTime;
             time(&currTime);
@@ -135,7 +137,7 @@ bool Solo::frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKey
         diskAdded = true;
     }
 
-    updateCamera(evt.timeSinceLastFrame);
+    updateCamera(tSinceLastFrame);
 }
 //-------------------------------------------------------------------------------------
 void Solo::updateCamera(Ogre::Real elapseTime)
@@ -185,7 +187,7 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 
     return true;
 }
-bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
+bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     /********************  KEY VARIABLES ********************/    
     static bool mMouseDown = false;                                    // If a mouse button is depressed
@@ -204,7 +206,7 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
     float fz = 0.0f;                                                   // Force z-component
     btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
 
-    timeSinceLastJump += evt.timeSinceLastFrame;
+    timeSinceLastJump += tSinceLastFrame;
 
     /********************     MOVEMENT   ********************/
     // Allow movement if the player is on the floor and the game is not paused
@@ -278,7 +280,12 @@ bool Solo::processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mK
                 }
             }
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
+            {
                 spacePressedLast = false;
+                player->animationState = player->ent->getAnimationState("jump");
+                player->animationState->setEnabled(true);
+                player->animationState->setLoop(false);
+            }
             if(keyWasPressed && !p->checkMovementRestriction())
             {   // Rotate the velocity vector by the orientation of the player
                 
