@@ -14,8 +14,8 @@ public:
 	~Solo(void);
 	
 	void createScene(void);
-	bool frameRenderingQueued(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
-	bool processUnbufferedInput(const Ogre::FrameEvent& evt, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
+	bool frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
+	bool processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse);
 
 	void updatePlayerVelocity(Player* p);
 	void updateCamera(Ogre::Real elapseTime);
