@@ -93,7 +93,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
 
-        if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f)
+        if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f)
         {
             constructAndSendGameState(i);          
             updateClock = clock();
@@ -349,7 +349,6 @@ bool Server::interpretClientPacket(int playerID)
             int pID = p.playID - '0';
             Ogre::Quaternion quat = p.orientation;
 
-            printf("\t\t%d\n", pID);
             // interpret p
             Player* cp = playerList[pID-1];
 
@@ -357,8 +356,8 @@ bool Server::interpretClientPacket(int playerID)
 
             btQuaternion rotationQ;
             btTransform transform = cp->getBody()->getCenterOfMassTransform();
-
-            rotationQ = btQuaternion(cp->getSceneNode()->getOrientation().getYaw().valueRadians(), 0, 0);
+            printf("Quaternion of Client Update: %f, %f, %f\n", p.orientation.getYaw().valueRadians(), p.orientation.getRoll().valueRadians(), p.orientation.getPitch().valueRadians());
+            rotationQ = btQuaternion(p.orientation.getYaw().valueRadians(), 0, 0);
             transform.setRotation(rotationQ);
 
             cp->getBody()->setCenterOfMassTransform(transform);
