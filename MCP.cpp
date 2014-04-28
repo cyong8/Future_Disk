@@ -129,7 +129,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mainClient->frameRenderingQueued(evt.timeSinceLastFrame, mKeyboard, mMouse);
 
     if(solo != NULL)
-        solo->frameRenderingQueued(evt, mKeyboard, mMouse);
+        solo->frameRenderingQueued(evt.timeSinceLastFrame, mKeyboard, mMouse);
 
 
     return ret;
@@ -138,7 +138,7 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
     if(solo != NULL)
-        solo->processUnbufferedInput(evt, mKeyboard, mMouse);
+        solo->processUnbufferedInput(evt.timeSinceLastFrame, mKeyboard, mMouse);
 
     return true;
 }

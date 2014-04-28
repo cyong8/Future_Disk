@@ -49,6 +49,8 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	shape = new btSphereShape(disk_dimensions.x/2.0f); // Sphere shape similar to project1
 	mass = 0.1f;
 	offWallRotation = false;
+	
+	playerLastThrew = NULL;
 }
 //-------------------------------------------------------------------------------------
 void Disk::setThrownVelocity(btVector3 v)
@@ -123,3 +125,12 @@ int Disk::checkIDOfHolder()
 	return playerIDOfHolder;
 }
 //-------------------------------------------------------------------------------------
+void setPlayerLastThrew(Player* p)
+{
+    playerLastThrew = p;
+}
+//-------------------------------------------------------------------------------------
+Player* getPlayerLastThrew()
+{
+    return playerLastThrew;
+}

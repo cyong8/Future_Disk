@@ -48,6 +48,8 @@ public:
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
+	Ogre::Entity* ent;
+	Ogre::AnimationState *animationState;
 
 
 protected:

@@ -13,6 +13,7 @@ protected:
 	btVector3 thrownVelocity;
 	Ogre::String initialPlayer;
 	int playerIDOfHolder;
+	Player* playerLastThrew;
 
 public:
 	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
@@ -26,6 +27,8 @@ public:
 	void resetPowerUp(void);
 	void setHolder(int pID);
 	int checkIDOfHolder(void);
+	void setPlayerLastThrew(Player* p);
+	Player* getPlayerLastThrew(void);
 	
 	int previousParticleSystem;
 	bool needsOrientationUpdate;

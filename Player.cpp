@@ -18,6 +18,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	groundConstantSet = false;
 	playerID = playID;
 	playerCanCatch = true;
+	animationState = NULL;
 
 	Ogre::Vector3 position;
 
@@ -55,12 +56,12 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     particleNode->attachObject(tailParticle);
     particleNode->setVisible(false);
 
-	Ogre::Entity* ent = mgr->createEntity(nym, "Waddlelly.mesh"); // Create entity;apply mesh
+	ent = mgr->createEntity(nym, "Waddlelly.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(ent); 	// Attach player to a scene node
 	rootNode->scale(dimensions.x/25.0, dimensions.y/25.0, dimensions.z/25.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(position); // Set the position of the player
-	ent->setMaterialName("Examples/Chrome");
+	ent->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
 	mass = 0.5f; // Set mass of player
