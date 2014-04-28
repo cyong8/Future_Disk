@@ -59,7 +59,7 @@ private:
 	void updateScene(void);
 	void updateCamera(void);
 	void interpretServerPacket(char* packList);
-	bool clientChangePosition(void);
+	Ogre::Vector3 clientChangePosition(void);
 };
 
 #endif // #ifndef __Client_h_

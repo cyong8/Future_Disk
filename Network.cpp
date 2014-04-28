@@ -146,7 +146,7 @@ void Network::acceptClient()
 	SDLNet_TCP_Send(connections[socketIndex].sock, buff, 2);
 }
 //-------------------------------------------------------------------------------------
-void Network::sendPacket(char* pack, int socketIndex)
+int Network::sendPacket(char* pack, int socketIndex)
 {
 	int numSent = 0;
 	int packSize = getPacketSize(pack[0]);
@@ -164,8 +164,12 @@ void Network::sendPacket(char* pack, int socketIndex)
 	/********************************* SERVER *********************************/
 	if (networkID == SERVER)
 	{
+		S_PLAYER_packet p;
+        memcpy(&p, pack, sizeof(S_PLAYER_packet));
+        printf("\tUpdate of Player%c\n", p.playID);
 		numSent = SDLNet_TCP_Send(connections[socketIndex].sock, pack, packSize);
 	}
+	return numSent;
 	
 	// if (!numSent) /* ERROR CHECK */
 	// 	printf("*****Failed to send packets of size %d!\n\n", numSent);
@@ -184,6 +188,7 @@ char* Network::receivePacket(int socketIndex)
 	if (networkID == CLIENT)
 	{
 		numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER);
+		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 	}
 	/********************************* SERVER *********************************/
 	if (networkID == SERVER)

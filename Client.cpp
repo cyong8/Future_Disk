@@ -70,15 +70,10 @@ void Client::createScene()
 bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     if (gameNetwork->checkSockets(0))
-    {
         updateScene();
-        printf("*************updated Scene!*************\n");
-    }
 
-    printf("Quaternion of Client Update: %f, %f, %f\n", clientPlayer->getSceneNode()->getOrientation().getYaw().valueRadians(), clientPlayer->getSceneNode()->getOrientation().getRoll().valueRadians(), clientPlayer->getSceneNode()->getOrientation().getPitch().valueRadians());
-    
     updateCamera(); 
-
+   
     processUnbufferedInput(mKeyboard, mMouse);
 }
 //-------------------------------------------------------------------------------------
@@ -97,6 +92,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         pack.packetID =(char)(((int)'0') + C_PLAYER);
         pack.playID = (char)(((int)'0') + playerID);
         pack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
+        // printf("Client Sending Quaternion: %f, %f, %f\n", pack.orientation.getYaw().valueRadians(), pack.orientation.getRoll().valueRadians(), pack.orientation.getPitch().valueRadians());
        
         cpBuff = (char*)malloc(sizeof(C_PLAYER_packet));
         memcpy(cpBuff, &pack, sizeof(C_PLAYER_packet));
@@ -277,30 +273,39 @@ void Client::updateScene() // Receive packets and interpret them
 //-------------------------------------------------------------------------------------
 void Client::updateCamera()
 {
+    Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
+    Ogre::SceneNode* pCamNode = clientPlayer->getPlayerCameraNode();
+
+    Ogre::Vector3 positionDiffVector = clientChangePosition();
+
+    if (positionDiffVector != Ogre::Vector3::ZERO)
+    {
+        pSightNode->_setDerivedPosition(pSightNode->_getDerivedPosition() + positionDiffVector);
+        pCamNode->_setDerivedPosition(pCamNode->_getDerivedPosition() + positionDiffVector);
+    }
+
     if (pCam->isInAimMode())
-        pCam->update(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        pCam->update(clientPlayer->getSceneNode()->_getDerivedPosition(), pSightNode->_getDerivedPosition());
     else
-        pCam->update(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+        pCam->update(pCamNode->_getDerivedPosition(), pSightNode->_getDerivedPosition());
 }
 //-------------------------------------------------------------------------------------
 void Client::interpretServerPacket(char* packList)
 {
     int indexIntoBuff = 0;
     int packetsFound = 0;
+    int newPlayerID, playerIndex;
     
     while (indexIntoBuff < MAX_SIZE_OF_BUFFER && packList[indexIntoBuff] != 0x00)
     {
         packetsFound++;
-        // printf("**************************************\n");
-        // printf("client x = %f\n", clientPlayer->getSceneNode()->getPosition().x);
-        // printf("client y = %f\n", clientPlayer->getSceneNode()->getPosition().y);
-        // printf("PACKET FOUND %d!\n", packetsFound);
-        printf("INTERPRETTING A PACKET!\n\n");
         char packType = packList[indexIntoBuff];
+        // printf("PACKET FOUND %d!\n", packetsFound);
+
         /* UPDATE DISK */
         if (packType == (char)(((int)'0') + DISK))
         {
-            printf("updating disk\n");
+            // printf("updating disk\n");
             DISK_packet d;
             memcpy(&d, packList + indexIntoBuff, sizeof(DISK_packet));
 
@@ -312,7 +317,6 @@ void Client::interpretServerPacket(char* packList)
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
             gameDisk->getSceneNode()->_setDerivedOrientation(d.orientation);
-            // gameDisk->getSceneNode()->needUpdate();
 
             indexIntoBuff += sizeof(DISK_packet);
         }
@@ -320,32 +324,29 @@ void Client::interpretServerPacket(char* packList)
         else if (packType == (char)(((int)'0') + S_PLAYER))
         {
             S_PLAYER_packet p;
-            memcpy(&p, packList, sizeof(S_PLAYER_packet));
+            memcpy(&p, packList+indexIntoBuff, sizeof(S_PLAYER_packet));
 
-            int newPlayerID = p.playID - '0';
-            int playerIndex = newPlayerID - 1;
+            newPlayerID = p.playID - '0';
+            playerIndex = newPlayerID - 1;
             printf("*******New player ID: %d\n\n", newPlayerID);
             /* NEW PLAYER NOT BEING ADDED TO SCENE */
             if (playerList[playerIndex] == NULL)
             {
-                printf("*****ADDING NEW PLAYER\n\n");
+                // printf("*****ADDING NEW PLAYER\n\n");
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
                 playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers() + 1));
                 numPlayers++;
             }
-            // printf("UPDATING PLAYER %d POSITION to Vector(%f, %f, %f)\n\n", newPlayerID, newPos.x, newPos.y, newPos.z);
-            playerList[playerIndex]->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
-            /* Randy: "lookAt Matrix, transpose, 4th changeolumn should change, not the others" */
-            // if (newPlayerID == playerID)
-            // {
-            //     if (clientChangePosition())
-            //         updateCamera();
-            // }
-            // else 
             if (newPlayerID != playerID)
+            {
+                // printf("\n\n\n\n\n\nCHANGING PLAYER ORIENTATION\n\n\n\n\n");
+                playerList[playerIndex]->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
                 playerList[playerIndex]->getSceneNode()->_setDerivedOrientation(p.orientation);
+            }
+            else
+                clientPlayer->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
 
             indexIntoBuff += sizeof(S_PLAYER_packet);
         }
@@ -397,7 +398,7 @@ bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
     Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = clientPlayer->getPlayerCameraNode();
     Ogre::Vector3 sightHeight;
-
+    /* NEED TO UPDATE SIGHT AND CAMERA NODES HERE INSTEAD OF RELYING ON RENDER LOOP TO DO SO - TOO LATE THEN */
     if (pCam->isInAimMode())
     {   
         pSceneNode->yaw(Ogre::Degree((-mRotate /2) * relX), Ogre::Node::TS_WORLD);
@@ -455,14 +456,16 @@ void Client::createOverlays(PlayerCamera* playCam) // might move to Client and S
 
     playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }
-bool Client::clientChangePosition()
+Ogre::Vector3 Client::clientChangePosition()
 {
     Ogre::Vector3 currentPosition = clientPlayer->getSceneNode()->getPosition();
+    Ogre::Vector3 diffVector = currentPosition - previousPosition;
+
     if (previousPosition !=  currentPosition)
     {
         previousPosition = currentPosition;
-        return true;
+        return diffVector;
     }
     else 
-        return false;
+        return diffVector;
 }

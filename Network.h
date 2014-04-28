@@ -94,6 +94,7 @@ struct POWERUP_packet
 {
 	char packetID;
 	powerUpID powerID;
+	char playID;
 	// positions of each power-up
 	float x;
 	float y;
@@ -143,7 +144,7 @@ public:
 	void startListening(void);
 	int establishConnection(void);
 	void acceptClient(void);
-	void sendPacket(char* pack, int socketID);
+	int sendPacket(char* pack, int socketID);
 	char* receivePacket(int socketID);
 	bool checkSockets(int socketID);
 	int getPacketSize(char type);

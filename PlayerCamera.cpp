@@ -47,15 +47,17 @@ void PlayerCamera::toggleThirdPersonView()
 //-------------------------------------------------------------------------------------
 void PlayerCamera::initializePosition(Ogre::Vector3 cameraPosition, Ogre::Vector3 sightPosition)
 {
-    mCameraNode->setPosition(cameraPosition);
+    mCameraNode->setPosition(cameraPosition);/* + Ogre::Vector3(0.0f, 0.0f, 5.0f));*/
     mTargetNode->setPosition(sightPosition);
 }
 //-------------------------------------------------------------------------------------
 void PlayerCamera::update (Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPosition) 
-{
-    // Handle movement
+{   // pCam->update(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     Ogre::Vector3 displacement;
- 
+
+    mCameraNode->_setDerivedPosition(cameraPosition);/* + Ogre::Vector3(0.0f, 0.0f, 5.0f));*/
+    mTargetNode->_setDerivedPosition(targetPosition);
+ /*
     displacement = (cameraPosition - mCameraNode->getPosition());
     // printf("Camera displacement = %f, %f, %f\n", displacement.x, displacement.y, displacement.z);
     mCameraNode->translate(displacement);
@@ -63,7 +65,7 @@ void PlayerCamera::update (Ogre::Vector3 cameraPosition, Ogre::Vector3 targetPos
     displacement = (targetPosition - mTargetNode->getPosition());
     // printf("Sight displacement = %f, %f, %f\n", displacement.x, displacement.y, displacement.z);
     mTargetNode->translate(displacement);
-    // printf("\tSight Position = %f, %f, %f\n", mTargetNode->getPosition().x, mTargetNode->getPosition().y, mTargetNode->getPosition().z);
+ */   // printf("\tSight Position = %f, %f, %f\n", mTargetNode->getPosition().x, mTargetNode->getPosition().y, mTargetNode->getPosition().z);
 }
 //-------------------------------------------------------------------------------------
 void PlayerCamera::setPlayer(Player* player)

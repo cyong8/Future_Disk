@@ -55,7 +55,7 @@ private:
 
 	Ogre::Light* directLight;
 	void updateClientVelocity(Player* p);
-	bool constructAndSendGameState(int socketID);
+	bool constructAndSendGameState(void);
 	void updateRemovedTiles(void);
 	void restrictPlayerMovement(Player* p);
 	bool interpretClientPacket(int playerID);

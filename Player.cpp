@@ -20,15 +20,22 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	playerCanCatch = true;
 
 	Ogre::Vector3 position;
+
 	if (playerID == 1)
 	{
 		playerSide = "Positive Side";
-		position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		if (roomDimensions.z > 2)
+			position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		else 
+			position = Ogre::Vector3(0.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 2)
 	{
 		playerSide = "Negative Side";
-		position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		if (roomDimensions.z > 2)
+			position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		else 
+			position = Ogre::Vector3(0.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 3)
 	{
@@ -42,7 +49,6 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	startingPosition = position;
 
-	printf("Player Positioned to: Vector3(%f, %f, %f)\n\n", position.x, position.y, position.z);
 	tailParticle = mgr->createParticleSystem("CyanSun_" + nym, "Examples/CyanSun");
     particleNode = rootNode->createChildSceneNode("PlayerParticle_" + nym);
     
@@ -100,7 +106,6 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	
 	// rootNode->setVisible(false, false);
 	// this->rootNode->showBoundingBox(true);
-
 }
 //-------------------------------------------------------------------------------------
 void Player::setHolding(bool x)

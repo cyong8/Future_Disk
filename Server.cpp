@@ -78,7 +78,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             char playerBuffer[25];
             sprintf(playerBuffer, "Player%d", numberOfClients);
 
-            Player * newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
+            Player *newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
             playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
@@ -93,11 +93,12 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
 
-        if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f)
-        {
-            constructAndSendGameState(i);          
-            updateClock = clock();
-        }
+    }
+    
+    if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f)
+    {
+        constructAndSendGameState();
+        updateClock = clock();
     }
     
     // if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
@@ -120,10 +121,12 @@ void Server::updateClientVelocity(Player* p)
     // }
 }
 //-------------------------------------------------------------------------------------
-bool Server::constructAndSendGameState(int clientIndex)
+bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO THIS FUNCTION; CONSTRUCT PACKETS ONCE INSTEAD OF N */
 {
     char* buff;
+    int totalBytesSent = 0;
     buff = (char*)malloc(sizeof(S_PLAYER_packet));
+    vector<S_PLAYER_packet> packList; 
 
     /* Sending each player's position to clients */
     for (int i = 0; i < numberOfClients; i++)
@@ -141,10 +144,7 @@ bool Server::constructAndSendGameState(int clientIndex)
         pack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
         // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
         pack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
-
-        memcpy(buff, &pack, sizeof(S_PLAYER_packet));
-
-        gameNetwork->sendPacket(buff, clientIndex);
+        packList.push_back(pack);
     }
 
     /* UPDATE ACTIVE POWER UPS */
@@ -210,7 +210,7 @@ bool Server::constructAndSendGameState(int clientIndex)
         pack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
 
         memcpy(buff, &pack, sizeof(DISK_packet));
-        gameNetwork->sendPacket(buff, clientIndex);
+        // gameNetwork->sendPacket(buff, clientIndex);
     }
     // if (gameSimulator->checkGameStart()) // Don't want to do every frame
     // {
@@ -221,6 +221,18 @@ bool Server::constructAndSendGameState(int clientIndex)
     //     memcpy(buff + indexIntoBuff, &pack, sizeof(GAMESTATE_packet));
     //     indexIntoBuff += sizeof(GAMESTATE_packet);
     // }
+    for (int i = 0; i < numberOfClients; i++)
+    {
+        memcpy(buff, &packList[i], sizeof(S_PLAYER_packet));
+
+        for (int j = 0; j < numberOfClients; j++)
+        {
+            if (playerList[j] != NULL)
+                gameNetwork->sendPacket(buff, j);
+        }
+    }
+
+    // printf("*****Sending packets to Client%d of size %d....\n\n", 1, totalBytesSent);
 }
 //-------------------------------------------------------------------------------------
 void Server::updateRemovedTiles() // HACKED
@@ -356,7 +368,6 @@ bool Server::interpretClientPacket(int playerID)
 
             btQuaternion rotationQ;
             btTransform transform = cp->getBody()->getCenterOfMassTransform();
-            printf("Quaternion of Client Update: %f, %f, %f\n", p.orientation.getYaw().valueRadians(), p.orientation.getRoll().valueRadians(), p.orientation.getPitch().valueRadians());
             rotationQ = btQuaternion(p.orientation.getYaw().valueRadians(), 0, 0);
             transform.setRotation(rotationQ);
 
@@ -445,6 +456,7 @@ void Server::processClientInput(int playerIndex, char keyPressed)
                 p->setState(RIGHT, true);
             break;
         case 'j': // ATTEMPT TO PERFORM JUMP
+            p->performJump();
             break;
         case 'b': 
             if (p->checkState(BOOST))
