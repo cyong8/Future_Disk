@@ -125,12 +125,12 @@ int Disk::checkIDOfHolder()
 	return playerIDOfHolder;
 }
 //-------------------------------------------------------------------------------------
-void setPlayerLastThrew(Player* p)
+void Disk::setPlayerLastThrew(Player* p)
 {
     playerLastThrew = p;
 }
 //-------------------------------------------------------------------------------------
-Player* getPlayerLastThrew()
+Player* Disk::getPlayerLastThrew()
 {
     return playerLastThrew;
 }
