@@ -303,3 +303,7 @@ int Room::getNumberOfPlayers()
 	else 
 		return numberOfPlayers;
 }
+Ogre::Vector3 Room::getBounds()
+{
+	return Ogre::Vector3(width, height, gapSize);
+}

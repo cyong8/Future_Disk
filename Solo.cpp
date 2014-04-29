@@ -9,6 +9,7 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
 	gameSimulator = new Simulator(sceneMgr, gameMusic);
 
     score = 0;
+    NUM_OF_TARGETS = 7;
 
     srand(time(0));
     time(&gapStartTime);
@@ -23,7 +24,8 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     gameOver = false;
     gamePause = false;
     diskAdded = false;
-    
+    target_list = vector<Target*>(NUM_OF_TARGETS, NULL);
+
     time(&initTime);
     initMinutes = 2;
     pTimePassed = 0;
@@ -48,6 +50,12 @@ void Solo::createScene()
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(player);
 
+    for (int i=0; i < NUM_OF_TARGETS; i++)
+    {
+        Target *target = new Target("Target_" + i, sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());
+        target->addToSimulator();
+        target_list.push_back(target);
+    }
     // These actually don't belong - initialize target list instead
     /*
     Power = new Target("Power", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());

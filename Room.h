@@ -37,7 +37,7 @@ public:
 	Gap* getPlayerGapSceneNode(int playerID);
 	int getNumberOfPlayers(void);
 	Wall* getWall(int index);
-
+	Ogre::Vector3 getBounds(void);
 
 	vector<Tile*> cTileList;
 	vector<Tile*> hTileList;
