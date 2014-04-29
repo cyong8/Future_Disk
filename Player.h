@@ -3,7 +3,7 @@
 
 #include "GameObject.h"
 
-enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, VIEWMODE};
+enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, VIEWMODE};
 
 class Disk;
 
