@@ -82,7 +82,6 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     // else if (!gameStart) // may need
     //     gameStart = true;
     //bool ret = BaseApplication::frameRenderingQueued(evt);
-    processUnbufferedInput(tSinceLastFrame, mKeyboard, mMouse);
     if(player->animationState != NULL)
         player->animationState->addTime(tSinceLastFrame);
 
@@ -125,7 +124,8 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
             updatePauseTime(pcurrTime);
         }
     }
-
+    printf("Y velocity: %f\n\n", player->getBody()->getLinearVelocity().getY());
+    processUnbufferedInput(tSinceLastFrame, mKeyboard, mMouse);
     restrictPlayerMovement();
 
     if (gameSimulator->setDisk && !diskAdded)
@@ -164,8 +164,6 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 
     pBody = player->getBody();
     transform = pBody->getCenterOfMassTransform();
-
-    printf("state relative X = %f, state relative y = %f\n\n\n", relX, relY);
 
     if (pCam->isInAimMode())
     {   
@@ -244,30 +242,30 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
              // Move the player
             if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
             {
-                fz -= mMove;
+                fz += mMove;
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
             {
-                fz += mMove;
+                fz -= mMove;
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
             }
 
             if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
             {
-                fx -= mMove; // Strafe left
+                fx += mMove; // Strafe left
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
             if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
             {
-                fx += mMove; // Strafe right
+                fx -= mMove; // Strafe right
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
             }
-            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !p->groundConstantSet && !spacePressedLast) 
+            if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast)// && !p->groundConstantSet && !spacePressedLast) 
             {
                 if(p->performJump())
                 {

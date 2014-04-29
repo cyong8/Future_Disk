@@ -37,7 +37,7 @@ void Server::createScene()
 
     sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
-    /********************  OBJECT CREATION  ********************/
+    /********************  POWER UPS  ********************/
     // Power = new Target("Power", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
     // Speed = new Target("Speed", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
     // JumpPower = new Target("Jump", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
@@ -101,11 +101,11 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         updateClock = clock();
     }
     
-    // if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL)
-    // {
-    //     gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
-    //     gameDisk->addToSimulator();
-    // }    
+    if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL && numberOfClients > 1)
+    {
+        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
+        gameDisk->addToSimulator();
+    }    
 }
 //-------------------------------------------------------------------------------------
 void Server::updateClientVelocity(Player* p)

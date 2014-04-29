@@ -29,6 +29,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 			position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 		else 
 			position = Ogre::Vector3(0.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
 	}
 	else if (playerID == 2)
 	{
@@ -42,6 +43,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	{
 		playerSide = "Left Side";
 		position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
 	}
 	else if (playerID == 4)
 	{
@@ -186,12 +188,15 @@ float Player::getGroundY()
 //-------------------------------------------------------------------------------------
 bool Player::performJump()
 {
-	if (groundConstantSet == false)
-		groundY = rootNode->getPosition().y;
-	if (!(rootNode->getPosition().y > groundY))
+	// if (groundConstantSet == false)
+	// 	groundY = rootNode->getPosition().y;
+	// if (/*!(rootNode->getPosition().y > groundY) && */states[JUMP] == false)
+	if (states[JUMP] == false)
 	{	
 		body->setLinearVelocity(body->getLinearVelocity() + btVector3(0.0f, jumpFactor, 0.0f));
 	    groundConstantSet = true;
+	    states[JUMP] = true;
+	    /* PLAY MUSIC HERE 	*/
 	    return true;
 	}
 	return false;
@@ -199,7 +204,6 @@ bool Player::performJump()
 //-------------------------------------------------------------------------------------
 Ogre::String Player::checkPlayerSide()
 {
-
 }
 //-------------------------------------------------------------------------------------
 void Player::increaseJump() 
@@ -242,13 +246,13 @@ Ogre::Vector3 Player::fillVelocityVector(Ogre::Real m, float sprintFactor)
     Ogre::Vector3 velocityVector = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 
 	if (states[LEFT])
-		velocityVector += Ogre::Vector3(-m, 0.0f, 0.0f);
-	if (states[RIGHT])
 		velocityVector += Ogre::Vector3(m, 0.0f, 0.0f);
+	if (states[RIGHT])
+		velocityVector += Ogre::Vector3(-m, 0.0f, 0.0f);
 	if (states[BACK])
-		velocityVector += Ogre::Vector3(0.0f, 0.0f, m);
-	if (states[FORWARD])
 		velocityVector += Ogre::Vector3(0.0f, 0.0f, -m);
+	if (states[FORWARD])
+		velocityVector += Ogre::Vector3(0.0f, 0.0f, m);
 	if (states[BOOST])
 		velocityVector *= sprintFactor;
 

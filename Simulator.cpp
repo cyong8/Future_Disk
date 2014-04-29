@@ -214,8 +214,7 @@ void Simulator::parseCollisions(void)
 {
 	int numManifolds = dynamicsWorld->getDispatcher()->getNumManifolds();
 	int i;
-	int groundCheck1 = false; //checking Tile taking care of multiple collisions
-	int groundCheck2 = false;
+	int localGameStart = false;
 
 	for (i=0;i<numManifolds;i++)
 	{
@@ -235,35 +234,47 @@ void Simulator::parseCollisions(void)
 			handleDiskCollisions(gB, gA);
 		else if ((gA->typeName == "Player" && gB->typeName == "Tile") || (gB->typeName == "Player" && gA->typeName == "Tile"))
 		{
-			if (!groundCheck1 && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
+			Player* localP;
+
+			if (gA->typeName == "Player")
+				localP = (Player*)gA;
+			else 
+				localP = (Player*)gB;
+
+			if (localP->getBody()->getLinearVelocity().getY() < 5.0f)
+				localP->setState(JUMP, false);
+			// printf("Y velocity: %f\n\n", localP->getBody()->getLinearVelocity().getY());
+			/*if (!groundCheck1 && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
 				groundCheck1 = true;
 			if (!groundCheck2 && ((gA->getGameObjectName() == "Player2") || (gB->getGameObjectName() == "Player2")))
-				groundCheck2 = true;
+				groundCheck2 = true;*/
+			localGameStart = true;
 		}
 		contactManifold->clearManifold();
 	}
+	if (localGameStart && gameDisk == NULL)
+		setDisk = true;
+	// if (!groundCheck1)	 // HARD CODE PLAYER FLAG
+	// 	soundedJump = true;
+	// else
+	// 	if (playerList[0] != NULL)
+	// 		playerList[0]->groundConstantSet = false;
 
-	if (!groundCheck1)	 // HARD CODE PLAYER FLAG
-		soundedJump = true;
-	else
-		if (playerList[0] != NULL)
-			playerList[0]->groundConstantSet = false;
+	// if (!groundCheck2)
+	// 	soundedJump = true;
+	// else
+	// 	if (playerList[1] != NULL) 
+	// 		playerList[1]->groundConstantSet = false;
 
-	if (!groundCheck2)
-		soundedJump = true;
-	else
-		if (playerList[1] != NULL) 
-			playerList[1]->groundConstantSet = false;
-
-	if ((groundCheck1 || groundCheck2) && gameDisk == NULL) 
-	{
-    	setDisk = true;
-	}
-	if (soundedJump && groundCheck1)	// played jumping sound, now check if he has hit the ground(landed)
-	{
-		//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
-		soundedJump = false;
-	}
+	// if ((groundCheck1 || groundCheck2) && gameDisk == NULL) 
+	// {
+ //    	setDisk = true;
+	// }
+	// if (soundedJump && groundCheck1)	// played jumping sound, now check if he has hit the ground(landed)
+	// {
+	// 	//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
+	// 	soundedJump = false;
+	// }
 }
 //-------------------------------------------------------------------------------------
 void Simulator::setThrowFlag()
@@ -300,7 +311,6 @@ void Simulator::performThrow(Player* p)
 
 		throwFlag = false;
 
-
 		p->togglePlayerCanCatch();
 
 		gameDisk->setPlayerLastThrew(p);
@@ -309,9 +319,9 @@ void Simulator::performThrow(Player* p)
     else // Update position relative to the Player
     {
     	Ogre::Vector3 dpos;
-    	float newDiskZ= -p->getPlayerDimensions().z;  // HARD CODE PLAYER FLAG
+    	float newDiskZ= p->getPlayerDimensions().z;  // HARD CODE PLAYER FLAG
     	if(p->getGameObjectName() == "Player2")
-    		newDiskZ = p->getPlayerDimensions().z;
+    		newDiskZ = -p->getPlayerDimensions().z;
 
     	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
 		gameDisk->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());

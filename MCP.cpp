@@ -114,10 +114,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
 //-------------------------------------------------------------------------------------
 bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
-    bool ret = BaseApplication::frameRenderingQueued(evt);
-    
-    if(!processUnbufferedInput(evt)) 
-        return false;
+    bool ret = BaseApplication::frameRenderingQueued(evt);    
 
     if (mShutDown)
         return false;
@@ -131,15 +128,14 @@ bool MCP::frameRenderingQueued(const Ogre::FrameEvent& evt)
     if(solo != NULL)
         solo->frameRenderingQueued(evt.timeSinceLastFrame, mKeyboard, mMouse);
 
+    if(!processUnbufferedInput(evt)) 
+        return false;
 
     return ret;
 }
 //-------------------------------------------------------------------------------------
 bool MCP::processUnbufferedInput(const Ogre::FrameEvent& evt)
 {
-    if(solo != NULL)
-        solo->processUnbufferedInput(evt.timeSinceLastFrame, mKeyboard, mMouse);
-
     return true;
 }
 
