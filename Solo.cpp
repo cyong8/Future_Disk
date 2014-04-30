@@ -56,6 +56,7 @@ void Solo::createScene()
         target->addToSimulator();
         target_list.push_back(target);
     }
+
     // These actually don't belong - initialize target list instead
     /*
     Power = new Target("Power", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
@@ -132,7 +133,7 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
             updatePauseTime(pcurrTime);
         }
     }
-    printf("Y velocity: %f\n\n", player->getBody()->getLinearVelocity().getY());
+    //printf("Y velocity: %f\n\n", player->getBody()->getLinearVelocity().getY());
     processUnbufferedInput(tSinceLastFrame, mKeyboard, mMouse);
     restrictPlayerMovement();
 

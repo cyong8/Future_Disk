@@ -392,7 +392,7 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 			{
 			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
 								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
+							       Ogre::Math::RangeRandom(getGameObject("client111")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
 			    if (gameDisk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName())))
@@ -402,13 +402,18 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
                     gameMusic->playMusic("SpeedUp");
 			}
 			else
-			{		    
-			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("Ceiling")->getSceneNode()->getPosition().z
-								    ,getGameObject("FarWall")->getSceneNode()->getPosition().z));
+			{		  
+				// This is hardcoded right now  
+				Ogre::Real width, height, gap;
+				width = 30;
+				height = 60;
+				gap = 10;
+				Ogre::Vector3 *bounds = new Ogre::Vector3(width, height, gap);
+			    Ogre::Real posx, posy, posz;
+				posx = Ogre::Math::RangeRandom(-bounds->x, bounds->x); // From left to right
+				posy = Ogre::Math::RangeRandom(0, bounds->y); // From base to top
+				posz = Ogre::Math::RangeRandom(-bounds->y, bounds->z); // From gap front to room back
+			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
 		    }
 			o->addToSimulator();
