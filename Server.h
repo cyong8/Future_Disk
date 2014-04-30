@@ -60,6 +60,7 @@ private:
 	void restrictPlayerMovement(Player* p);
 	bool interpretClientPacket(int playerID);
 	void processClientInput(int playerIndex, char inputType);
+	void removePlayer(int playerIndex);
 };
 
 #endif // #ifndef __Server_h_

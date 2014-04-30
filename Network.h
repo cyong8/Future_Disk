@@ -148,6 +148,7 @@ public:
 	char* receivePacket(int socketID);
 	bool checkSockets(int socketID);
 	int getPacketSize(char type);
+	void removeClient(int clientIndex);
 
 private:
 	SDLNet_SocketSet clientSet;

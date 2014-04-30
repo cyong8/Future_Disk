@@ -75,6 +75,8 @@ class Simulator
 		void restoreTile(void);
 		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);
 		void resetSimulator();
+		void removePlayer(int playerIndex);
+
 		bool soundedJump;
 		Disk* gameDisk;
 		bool setDisk;

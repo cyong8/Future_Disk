@@ -141,6 +141,7 @@ void Simulator::removeObject(Ogre::String name)
 			if (Ogre::StringUtil::match(targetList[i]->getGameObjectName(), name, true))
 			{
 				targetList.erase(targetList.begin());	
+				return;
 			}
 		}
 	}	
@@ -151,7 +152,7 @@ void Simulator::removeObject(Ogre::String name)
 			dynamicsWorld->removeRigidBody(getGameObject(name)->getBody());
 			getGameObject(name)->removeFromSimulator();
 			objList.erase(objList.begin() + i);
-
+			return;
 		}
 	}
 }
@@ -584,4 +585,9 @@ void Simulator::resetSimulator()
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	setDisk = false;
+}
+void Simulator::removePlayer(int playerIndex)
+{
+	removeObject(playerList[playerIndex]->getGameObjectName());
+	playerList[playerIndex] = NULL;
 }

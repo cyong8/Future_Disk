@@ -37,7 +37,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 		if (roomDimensions.z > 2)
 			position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 		else 
-			position = Ogre::Vector3(0.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+			position = Ogre::Vector3(0.0f, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
 	}
 	else if (playerID == 3)
 	{
@@ -224,7 +224,7 @@ void Player::decreaseJump()
 void Player::initializeStates()
 {
 	int i = VIEWMODE;
-	while (i > 0)
+	while (i >= 0)
 	{
 		states.push_back(false);
 		i--;

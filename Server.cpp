@@ -92,7 +92,6 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
 
         updateClientVelocity(playerList[i]);
         // restrictPlayerMovement(playerList[i]);
-
     }
     
     if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f)
@@ -124,9 +123,13 @@ void Server::updateClientVelocity(Player* p)
 bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO THIS FUNCTION; CONSTRUCT PACKETS ONCE INSTEAD OF N */
 {
     char* buff;
+    char* dBuff;
     int totalBytesSent = 0;
-    buff = (char*)malloc(sizeof(S_PLAYER_packet));
+
     vector<S_PLAYER_packet> packList; 
+    DISK_packet dp;
+    
+    buff = (char*)malloc(sizeof(S_PLAYER_packet));
 
     /* Sending each player's position to clients */
     for (int i = 0; i < numberOfClients; i++)
@@ -197,20 +200,17 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
     // }
     if (gameDisk != NULL)
     {
-        buff = (char*)malloc(sizeof(DISK_packet));
+        memset(&dp, 0, sizeof(DISK_packet));
 
-        DISK_packet pack;
-        memset(&pack, 0, sizeof(DISK_packet));
-
-        pack.packetID = (char)(((int)'0') + DISK);
-        pack.diskID = (char)((int)'0');
-        pack.x = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        pack.y = gameDisk->getSceneNode()->_getDerivedPosition().y;
-        pack.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
-        pack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
-
-        memcpy(buff, &pack, sizeof(DISK_packet));
-        // gameNetwork->sendPacket(buff, clientIndex);
+        dp.packetID = (char)(((int)'0') + DISK);
+        dp.diskID = (char)((int)'0');
+        dp.x = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        dp.y = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        dp.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
+        dp.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
+    
+        dBuff = (char*)malloc(sizeof(DISK_packet));
+        memcpy(dBuff, &dp, sizeof(DISK_packet));
     }
     // if (gameSimulator->checkGameStart()) // Don't want to do every frame
     // {
@@ -229,6 +229,10 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
         {
             if (playerList[j] != NULL)
                 gameNetwork->sendPacket(buff, j);
+            if (gameDisk != NULL)
+            {
+                gameNetwork->sendPacket(dBuff, j);
+            }
         }
     }
 
@@ -464,15 +468,22 @@ void Server::processClientInput(int playerIndex, char keyPressed)
             else
                 p->setState(BOOST, true);
             break;
-        case 'm':  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
+        case 't':  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
+            gameSimulator->setThrowFlag();
             break;
         case 'q':  // GAME STATE CHANGE
+            removePlayer(playerIndex);
             break;
         case 'k':// ENTER: // GAME STATE CHANGE
             break;
     }
 }
 //-------------------------------------------------------------------------------------
+void Server::removePlayer(int playerIndex)
+{
+    playerList[playerIndex]->getSceneNode()->setVisible(false);
+    gameSimulator->removePlayer(playerIndex);
+}
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

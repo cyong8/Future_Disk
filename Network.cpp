@@ -266,3 +266,9 @@ int Network::getPacketSize(char type)
 		return sizeof(EXPANSION_packet);
 }
 //-------------------------------------------------------------------------------------
+void Network::removeClient(int clientIndex)
+{
+	SDLNet_TCP_Close((connections[clientIndex].sock));
+	connections[clientIndex].active = false;
+}
+//-------------------------------------------------------------------------------------

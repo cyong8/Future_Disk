@@ -84,18 +84,20 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     INPUT_packet pack;
     char* iBuff = (char*)malloc(sizeof(INPUT_packet));
 
+    pack.packetID =(char)(((int)'0') + INPUT);
+
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
     {
         clientOrientationChange = false;
        
-        C_PLAYER_packet pack;
-        pack.packetID =(char)(((int)'0') + C_PLAYER);
-        pack.playID = (char)(((int)'0') + playerID);
-        pack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
+        C_PLAYER_packet cPack;
+        cPack.packetID =(char)(((int)'0') + C_PLAYER);
+        cPack.playID = (char)(((int)'0') + playerID);
+        cPack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
         // printf("Client Sending Quaternion: %f, %f, %f\n", pack.orientation.getYaw().valueRadians(), pack.orientation.getRoll().valueRadians(), pack.orientation.getPitch().valueRadians());
        
         cpBuff = (char*)malloc(sizeof(C_PLAYER_packet));
-        memcpy(cpBuff, &pack, sizeof(C_PLAYER_packet));
+        memcpy(cpBuff, &cPack, sizeof(C_PLAYER_packet));
 
         gameNetwork->sendPacket(cpBuff, playerID);
         updateClock = clock();
@@ -103,26 +105,25 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
         /* Close player socket and allow for another player to take its place */
+        pack.packetID =(char)(((int)'0') + INPUT);
     }
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'w';
 
         clientPlayer->setState(FORWARD, true);
-        pack.key = 'w';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'w';
 
         clientPlayer->setState(FORWARD, false);
-        pack.key = 'w';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -130,22 +131,20 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE LEFT */
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'a';
 
         clientPlayer->setState(LEFT, true);
-        pack.key = 'a';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'a';
 
         clientPlayer->setState(LEFT, false);
-        pack.key = 'a';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -153,22 +152,20 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE BACK */
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 's';
 
         clientPlayer->setState(BACK, true);
-        pack.key = 's';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 's';
 
         clientPlayer->setState(BACK, false);
-        pack.key = 's';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -176,32 +173,27 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE RIGHT */
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'd';
 
         clientPlayer->setState(RIGHT, true);
-        pack.key = 'd';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'd';
 
         clientPlayer->setState(RIGHT, false);
-        pack.key = 'd';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
-
-        //clientPlayer->setState(JUMP, true);
         pack.key = 'j';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
@@ -209,54 +201,53 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
-        pack.packetID = (char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'b';
 
         clientPlayer->setState(BOOST, true);
-        pack.key = 'b';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
     {
-        pack.packetID = (char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'b';
 
         clientPlayer->setState(BOOST, false);
-        pack.key = 'b';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    if (mKeyboard->isKeyDown(OIS::KC_V) && !clientPlayer->checkState(VIEWMODE))            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
     {
         pCam->toggleThirdPersonView();
+        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'v';
 
-        vKeydown = true;
+        clientPlayer->setState(VIEWMODE, true);
         
         if (gameDisk != NULL)
             gameDisk->getSceneNode()->setVisible(false);
         pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
+    else if (!mKeyboard->isKeyDown(OIS::KC_V) && clientPlayer->checkState(VIEWMODE))        
     {
         pCam->toggleThirdPersonView();
+        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'v';
 
-        vKeydown = false;
+        clientPlayer->setState(VIEWMODE, false);
 
         if (gameDisk != NULL)
             gameDisk->getSceneNode()->setVisible(true);
         pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
-    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkHolding())
     {
-        pack.packetID = (char)(((int)'0') + INPUT);
         pack.playID = (char)(((int)'0') + playerID);
-
         pack.key = 't';
+
         clientPlayer->setHolding(false);
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
@@ -307,7 +298,7 @@ void Client::interpretServerPacket(char* packList)
         {
             // printf("updating disk\n");
             DISK_packet d;
-            memcpy(&d, packList + indexIntoBuff, sizeof(DISK_packet));
+            memcpy(&d, packList+indexIntoBuff, sizeof(DISK_packet));
 
             if (gameDisk == NULL)
             {
