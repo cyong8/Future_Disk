@@ -4,27 +4,31 @@
 #include "Player.h"
 #include "PlayerCamera.h"
 #include "Disk.h"
-
+#include "Tile.h"
 
 Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music) 
 {
 	diskSpeedFactor = 22.0f;
 	score = 0;
 	soundedJump = false;
-	viewChangeP1 = false;
-	viewChangeP2 = false;
 	throwFlag = false;
 
 	gameState = NOTSTARTED;
 	gameStart = false;
-	
+
     wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
 	gameDisk = NULL;
-	setDisk = false;
+	diskSet = false;
 
 	playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
+
+	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+	{
+		PlayerTileIdentity* ptID = new PlayerTileIdentity;
+		playerTileIdentities.push_back(ptID);
+	}
 
 	gameMusic = music;
 	sceneMgr = mSceneMgr;
@@ -39,7 +43,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	solver = new btSequentialImpulseConstraintSolver();
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-	
+
 	dynamicsWorld->setGravity(btVector3(0.0f,-9.8f, 0.0f));
 	dynamicsWorld->debugDrawWorld();
 	//keep track of the shapes, we release memory at exit
@@ -63,7 +67,7 @@ void Simulator::addObject (GameObject* o)
 	objList.push_back(o); // Add the object to the list of object
 
 	dynamicsWorld->addRigidBody(o->getBody());
-	
+
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
@@ -73,7 +77,7 @@ void Simulator::addObject (GameObject* o)
 	}
 	if(o->typeName == "Disk")
 	{
-		Player* iPlayer = (Player*)getGameObject(((Disk*)o)->checkInitialPlayer());
+		Player* iPlayer = playerList[((Disk*)o)->checkIDOfHolder() - 1];
 
 		gameDisk = (Disk*)o;
 		printf("\n\n\n adding game disk\n\n\n");
@@ -103,17 +107,20 @@ void Simulator::addObject (GameObject* o)
 	}
 	if(o->typeName == "Tile")
 	{
-	    if (!(o->checkReAddFlag())) {
-	        if (tileNumber < 42) {
+	    if (!(o->checkReAddFlag())) 
+	    {
+	    	playerTileIdentities[((Tile*)o)->getTileOwner()]->tileList.push_back((Tile*)o);
+/*	        if (tileNumber < 42) {
 	            clientTileList.push_back(o);
 	            ((Tile*)clientTileList[tileNumber])->indexIntoTileArray = tileNumber;
             }
             else {
                 hostTileList.push_back(o);
                 ((Tile*)hostTileList[tileNumber-42])->indexIntoTileArray = tileNumber-42;
-            }
+            }*/
         }
-        else {
+        else 
+        {
             o->getSceneNode()->setVisible(true);
         }
         tileNumber++;
@@ -203,7 +210,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			if (gameDisk->needsOrientationUpdate)
 				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 
-			if(gameDisk->getSceneNode()->getPosition().y < floorY)
+			if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
 			{
 				((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk(gameDisk);
 			}
@@ -222,7 +229,7 @@ void Simulator::parseCollisions(void)
 		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
 		btRigidBody* obA = static_cast<btRigidBody*>(contactManifold->getBody0());
 		btRigidBody* obB = static_cast<btRigidBody*>(contactManifold->getBody1());
-		
+
 		OgreMotionState* OMSA = static_cast<OgreMotionState*>(obA->getMotionState());
 		OgreMotionState* OMSB = static_cast<OgreMotionState*>(obB->getMotionState());
 
@@ -230,9 +237,9 @@ void Simulator::parseCollisions(void)
 		GameObject* gB = OMSB->getGameObject();
 
 		if (gA->typeName == "Disk") // If the first object is a disk
-			handleDiskCollisions(gA, gB);
+			handleDiskCollisions((Disk*)gA, gB);
 		else if (gB->typeName == "Disk") // If the second object is a disk
-			handleDiskCollisions(gB, gA);
+			handleDiskCollisions((Disk*)gB, gA);
 		else if ((gA->typeName == "Player" && gB->typeName == "Tile") || (gB->typeName == "Player" && gA->typeName == "Tile"))
 		{
 			Player* localP;
@@ -244,33 +251,13 @@ void Simulator::parseCollisions(void)
 
 			if (localP->getBody()->getLinearVelocity().getY() < 5.0f)
 				localP->setState(JUMP, false);
-			// printf("Y velocity: %f\n\n", localP->getBody()->getLinearVelocity().getY());
-			/*if (!groundCheck1 && ((gA->getGameObjectName() == "Player1") || (gB->getGameObjectName() == "Player1")))
-				groundCheck1 = true;
-			if (!groundCheck2 && ((gA->getGameObjectName() == "Player2") || (gB->getGameObjectName() == "Player2")))
-				groundCheck2 = true;*/
+
 			localGameStart = true;
 		}
 		contactManifold->clearManifold();
 	}
 	if (localGameStart && gameDisk == NULL)
-		setDisk = true;
-	// if (!groundCheck1)	 // HARD CODE PLAYER FLAG
-	// 	soundedJump = true;
-	// else
-	// 	if (playerList[0] != NULL)
-	// 		playerList[0]->groundConstantSet = false;
-
-	// if (!groundCheck2)
-	// 	soundedJump = true;
-	// else
-	// 	if (playerList[1] != NULL) 
-	// 		playerList[1]->groundConstantSet = false;
-
-	// if ((groundCheck1 || groundCheck2) && gameDisk == NULL) 
-	// {
- //    	setDisk = true;
-	// }
+		diskSet = true;
 	// if (soundedJump && groundCheck1)	// played jumping sound, now check if he has hit the ground(landed)
 	// {
 	// 	//gameMusic->playCollisionSound("Player", "Ground"); // Not sure if I like this collision sound or if it's necessary
@@ -296,7 +283,7 @@ void Simulator::performThrow(Player* p)
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
 		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
-		
+
 		/* The new disk direction is along player's orientation */
 		diskDirection = p->getSceneNode()->getOrientation() * diskDirection;
 
@@ -341,36 +328,36 @@ int Simulator::tallyScore(void)
 	return tmpScore;
 }
 //-------------------------------------------------------------------------------------
-void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
+void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 {
-	// Wall
 	if (o->typeName == "Wall")
 	{	
 		wallHitAfterThrow = true;
-		
+
 		if (previousWallHit == "NULL")
 		{
 			// gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
-			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			adjustDiskOrientation(disk, disk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
-			// gameDisk->needsOrientationUpdate = true;
+			// disk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
-			adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			adjustDiskOrientation(disk, disk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 	}
 	// Player
 	else if (o->typeName == "Player")
 	{
-		if (((Player*)o)->checkHolding() == false)  // HARD CODE PLAYER FLAG
+		if (((Player*)o)->checkHolding() == false)
 		{
 			if (((Player*)o)->checkPlayerCanCatch())
 			{
 				((Player*)o)->attachDisk((Disk*)disk);
+				disk->setHolder(((Player*)o)->getPlayerID());
 				gameMusic->playCollisionSound("Disk", "Player");
 			}
 			gameStart = true;
@@ -384,8 +371,6 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 		if (((Target*)o)->checkHitFlag() == false)
 		{
 			//printf("COLLIDED WITH TILE!\n\n\n");
-
-			// The 47.0f value is the x-width and y-height of the disk
 		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());
 			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
@@ -395,14 +380,14 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 							       Ogre::Math::RangeRandom(getGameObject("client111")->getSceneNode()->getPosition().y + (2.0f/3.0f)
 								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
 							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
-			    if (gameDisk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName())))
-			        restoreTile();
+			    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
+			        // restoreTile();
                 gameMusic->playCollisionSound("Disk", "Target");
-                if (gameDisk->powerUp == "Speed")
+                if (disk->powerUp == "Speed")
                     gameMusic->playMusic("SpeedUp");
 			}
 			else
-			{
+			{		  
 				// This is hardcoded right now  
 				Ogre::Real width, height, gap;
 				width = 30;
@@ -415,27 +400,20 @@ void Simulator::handleDiskCollisions(GameObject* disk, GameObject* o)
 				posz = Ogre::Math::RangeRandom(-bounds->y, bounds->z); // From gap front to room back
 			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
-			    score = 10;
 		    }
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[0]->checkHolding())  // HARD CODE PLAYER FLAG
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding())  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
-		removeObject(((Tile*)o)->getGameObjectName());
 
-		int index = ((Tile *)o)->indexIntoTileArray;
-		
-		if (((Tile*)hostTileList[((Tile *)o)->indexIntoTileArray])->getGameObjectName() == o->getGameObjectName())
-		    destroyTiles(hostTileList, hostRemoveIndexes, index);
-		else
-		    destroyTiles(clientTileList, clientRemoveIndexes, index);
+		destroyTiles((Tile*)o);
+
+		disk->resetPowerUp();
+		((Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName()))->attachDisk((Disk*)disk);
+
 		newRemovedTile = true;
-		gameDisk->resetPowerUp();
-		gameDisk->setPlayerLastThrew(playerList[0]);
-		((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk((Disk*)disk);
-
 	}
 }
 
@@ -466,78 +444,92 @@ void Simulator::adjustDiskOrientation(Disk* d, btVector3 currVelocity, Ogre::Str
 void Simulator::handlePlayerCollisions(GameObject* cPlayer, GameObject* o)
 {
 }
-// void Simulator::updatePlayerCamera(PlayerCamera* cam, const Ogre::Real elapseTime) // CAN REMOVE - JUST EXAMPLE FOR CLIENT
-// {
-// 	if (cam->name == "P1Cam")
-// 	{
-// 		if (viewChangeP1) // View was toggled; now check what view it needs to be changed to
-// 		{
-// 			toggleViewChange(p1->getGameObjectName()); // want to set toggle flag back since you are now either entering or leaving Aim View
-
-// 			if(player1Cam->isInAimMode()) // Go into Aim view
-// 				player1Cam->initializePosition(((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-// 			else // Return from Aim view
-// 				player1Cam->initializePosition(p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-// 		}
-// 		else  // No toggle, so just update the position of the camera; need to add an if for AimMode rotation
-// 		{
-// 			if (player1Cam->isInAimMode())
-// 				player1Cam->update(elapseTime, ((GameObject*)p1)->getSceneNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());
-// 			else
-// 				player1Cam->update(elapseTime, p1->getPlayerCameraNode()->_getDerivedPosition(), p1->getPlayerSightNode()->_getDerivedPosition());			
-// 		}
-// 	}
-// }
 //-------------------------------------------------------------------------------------
 bool Simulator::checkGameStart()
 {
 	return gameStart;
 }
 //---------------------------------------------------------------------------------------
-void Simulator::restoreTile() { // HARD CODE PLAYER FLAG
-    if (playerList[0] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && hostRemoveIndexes.size() > 0) {
-        hostTileList[hostRemoveIndexes.back()]->addToSimulator();
-        hostRemoveIndexes.pop_back();
-        gameMusic->playMusic("Restore");
-    }
-    else if (playerList[1] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && clientRemoveIndexes.size() > 0) {
-        clientTileList[clientRemoveIndexes.back()]->addToSimulator();
-        clientRemoveIndexes.pop_back();
-        gameMusic->playMusic("Restore");
-    }
+void Simulator::restoreTile() // TILE UPDATE FLAG
+{ 
+	// if (playerTileIdenttites)
+
+    // if (playerList[0] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && hostRemoveIndexes.size() > 0) {
+    //     hostTileList[hostRemoveIndexes.back()]->addToSimulator();
+    //     hostRemoveIndexes.pop_back();
+    //     gameMusic->playMusic("Restore");
+    // }
+    // else if (playerList[1] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && clientRemoveIndexes.size() > 0) {
+    //     clientTileList[clientRemoveIndexes.back()]->addToSimulator();
+    //     clientRemoveIndexes.pop_back();
+    //     gameMusic->playMusic("Restore");
+    // }
 }
 //-------------------------------------------------------------------------------------
-void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index) {
-    removeIndexes.push_back(index);
+void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
+{
+	int playerID = t->getTileOwner();
+	int tileIndex = t->getTileNumber();
+
+    removeObject(t->getGameObjectName());
+    playerTileIdentities[playerID]->removedTiles.push_back(t);
+    playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex);
+
+
     /* When removing from client - add to clientRemoveIndexes */
-    if (gameDisk->powerUp == "Power") {
-        int col = index % 6;
-        if (col != 0) { // remove left - not in far left column
-            if (!(tileList[index-1]->checkHitFlag())) {
-                tileList[index-1]->toggleHitFlag();
-                removeIndexes.push_back(index-1);
-                removeObject(tileList[index-1]->getGameObjectName());
+    if (gameDisk->powerUp == "Power")
+    {
+        int tPerRow = tPerRow;
+        int tPerCol = gameRoom->getTilesPerColumn();
+
+        int col = tileIndex % tPerRow;
+
+        if (col != 0) // remove left - not in far left column
+        { 
+            if (!(playerTileIdentities[playerID]->tileList[tileIndex]->checkHitFlag()))
+            {
+                playerTileIdentities[playerID]->tileList[tileIndex - 1]->toggleHitFlag();
+
+                playerTileIdentities[playerID]->removedTiles.push_back(playerTileIdentities[playerID]->tileList[tileIndex - 1]);
+    			playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex - 1);
+
+                removeObject(playerTileIdentities[playerID]->tileList[tileIndex - 1]->getGameObjectName());
             }
         }
-        if (col != 5) { // remove right - not in far right column
-            if (!(tileList[index+1]->checkHitFlag())) {
-                tileList[index+1]->toggleHitFlag();
-                removeIndexes.push_back(index+1);
-                removeObject(tileList[index+1]->getGameObjectName());
+        if (col != (tPerRow - 1)) // remove right - not in far right column
+        { 
+            if (!(playerTileIdentities[playerID]->tileList[tileIndex + 1]->checkHitFlag()))
+            {
+                playerTileIdentities[playerID]->tileList[tileIndex + 1]->toggleHitFlag();
+
+                playerTileIdentities[playerID]->removedTiles.push_back(playerTileIdentities[playerID]->tileList[tileIndex + 1]);
+    			playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex + 1);
+
+                removeObject(playerTileIdentities[playerID]->tileList[tileIndex + 1]->getGameObjectName());
             }
         }
-        if (index > 5) { // remove top - not in top row
-            if (!(tileList[index-6]->checkHitFlag())) {
-                tileList[index-6]->toggleHitFlag();
-                removeIndexes.push_back(index-6);
-                removeObject(tileList[index-6]->getGameObjectName());
+        if (tileIndex > tPerRow) // remove top - not in top row
+        { 
+            if (!(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->checkHitFlag()))
+            {
+                playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->toggleHitFlag();
+
+                playerTileIdentities[playerID]->removedTiles.push_back(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]);
+    			playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex - tPerRow);
+
+                removeObject(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->getGameObjectName());
             }
         }
-        if (index < 36) { // remove bottom - not in bottom row
-            if (!(tileList[index+6]->checkHitFlag())) {
-                tileList[index+6]->toggleHitFlag();
-                removeIndexes.push_back(index+6);
-                removeObject(tileList[index+6]->getGameObjectName());
+        if (tileIndex < (tPerRow * (tPerCol - 1))) // remove bottom - not in bottom row
+        { 
+            if (!(playerTileIdentities[playerID]->tileList[tileIndex + tPerRow]->checkHitFlag()))
+            {
+                playerTileIdentities[playerID]->tileList[tileIndex + tPerRow]->toggleHitFlag();
+
+				playerTileIdentities[playerID]->removedTiles.push_back(playerTileIdentities[playerID]->tileList[tileIndex + tPerRow]);
+    			playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex + tPerRow);
+
+                removeObject(playerTileIdentities[playerID]->tileList[tileIndex + tPerRow]->getGameObjectName());
             }
         }
         gameMusic->playMusic("BigBlast");
@@ -545,11 +537,7 @@ void Simulator::destroyTiles(vector<GameObject*>& tileList, vector<int>& removeI
     else
         gameMusic->playMusic("Blast");
 }
-void Simulator::setFloorY(Ogre::Real y)
-{
-	floorY = y;
-}
-
+//-------------------------------------------------------------------------------------
 void Simulator::resetSimulator()
 {
     for (int i = 0; i < playerList.size(); i++) 
@@ -563,7 +551,7 @@ void Simulator::resetSimulator()
     	    btTransform transform = btTransform(playerOrientation, btVector3(ppos_derived.x, ppos_derived.y, ppos_derived.z));
     	    playerList[i]->getBody()->setCenterOfMassTransform(transform);
     	    playerList[i]->getBody()->setLinearVelocity(btVector3(0, 0, 0));*/
-	    
+
             if (playerList[i]->checkHolding()) {
                 setThrowFlag();
                 performThrow(playerList[i]);
@@ -579,21 +567,25 @@ void Simulator::resetSimulator()
     gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(0, 0, 0));   
 
     soundedJump = false;
-	viewChangeP1 = false;
-	viewChangeP2 = false;
 	throwFlag = false;
 
 	gameState = NOTSTARTED;
 	gameStart = false;
-	
+
     wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
 	gameDisk = NULL;
-	setDisk = false;
+	diskSet = false;
 }
+//-------------------------------------------------------------------------------------
 void Simulator::removePlayer(int playerIndex)
 {
 	removeObject(playerList[playerIndex]->getGameObjectName());
 	playerList[playerIndex] = NULL;
+}
+//-------------------------------------------------------------------------------------
+void Simulator::setGameRoom(Room* rm)
+{
+	gameRoom = rm;
 }
