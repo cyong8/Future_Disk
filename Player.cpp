@@ -7,8 +7,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 {
 	initializeStates();
 	this->dimensions = dimensions;
-	// Ogre::Vector3(room->width, room->height, numberOfPlayers)
 	playerRoom = gameRoom;
+	// Ogre::Vector3(room->width, room->height, numberOfPlayers)
 	typeName = "Player";
 	jumpFactor = 10.0f;
 	jumpTimer = 0;
@@ -20,9 +20,9 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	customAnimationState = NULL;
 
 	Ogre::Vector3 position;
-	Ogre::Real roomWidth = gameRoom->getWidth();
-	Ogre::Real roomHeight = gameRoom->getHeight();
-	Ogre::Real numberOfPlayers = gameRoom->getNumberOfPlayers();
+	Ogre::Real roomWidth = playerRoom->getWidth();
+	Ogre::Real roomHeight = playerRoom->getHeight();
+	Ogre::Real numberOfPlayers = playerRoom->getNumberOfPlayers();
 
 	if (playerID == 1)
 	{
@@ -123,10 +123,6 @@ bool Player::checkHolding()
 	return isHolding;
 }
 //-------------------------------------------------------------------------------------
-void Player::throwDisk()
-{
-}
-//-------------------------------------------------------------------------------------
 void Player::attachDisk(Disk* d)
 {
 	isHolding = true;
@@ -189,10 +185,6 @@ bool Player::performJump()
 	return false;
 }
 //-------------------------------------------------------------------------------------
-Ogre::String Player::checkPlayerSide()
-{
-}
-//-------------------------------------------------------------------------------------
 void Player::increaseJump() 
 {
     jumpFactor = 12.0f;
@@ -216,6 +208,7 @@ void Player::initializeStates()
 		states.push_back(false);
 		i--;
 	}
+	states[PLAYING] = true;
 }
 //-------------------------------------------------------------------------------------
 bool Player::checkState(int index)
@@ -261,4 +254,9 @@ void Player::animateCharacter(Ogre::String stateName)
 	customAnimationState = customPlayerEnt->getAnimationState(stateName);
 	customAnimationState->setEnabled(true);
     customAnimationState->setLoop(false);
+}
+//-------------------------------------------------------------------------------------
+void Player::setPlayerSpace()
+{
+	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
 }

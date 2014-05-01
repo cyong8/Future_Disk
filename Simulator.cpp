@@ -62,7 +62,6 @@ Simulator::~Simulator()
 //-------------------------------------------------------------------------------------
 void Simulator::addObject (GameObject* o) 
 {
-    static int tileNumber = 0;
 	o->getBody()->setActivationState(DISABLE_DEACTIVATION);	
 	objList.push_back(o); // Add the object to the list of object
 
@@ -72,7 +71,7 @@ void Simulator::addObject (GameObject* o)
 	if(o->typeName == "Player")
 	{
 		playerList[((Player*)o)->getPlayerID() - 1] = (Player*)o; // P1 = playerList[0], P2 = playerList[1]...
-		printf("adding player at index: %d\n\n\n\n", ((Player*)o)->getPlayerID() - 1);
+		// printf("adding player at index: %d\n\n\n\n", ((Player*)o)->getPlayerID() - 1);
 		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 	}
 	if(o->typeName == "Disk")
@@ -80,7 +79,7 @@ void Simulator::addObject (GameObject* o)
 		Player* iPlayer = playerList[((Disk*)o)->checkIDOfHolder() - 1];
 
 		gameDisk = (Disk*)o;
-		printf("\n\n\n adding game disk\n\n\n");
+		// printf("\n\n\n adding game disk\n\n\n");
 		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
@@ -108,22 +107,9 @@ void Simulator::addObject (GameObject* o)
 	if(o->typeName == "Tile")
 	{
 	    if (!(o->checkReAddFlag())) 
-	    {
-	    	playerTileIdentities[((Tile*)o)->getTileOwner()]->tileList.push_back((Tile*)o);
-/*	        if (tileNumber < 42) {
-	            clientTileList.push_back(o);
-	            ((Tile*)clientTileList[tileNumber])->indexIntoTileArray = tileNumber;
-            }
-            else {
-                hostTileList.push_back(o);
-                ((Tile*)hostTileList[tileNumber-42])->indexIntoTileArray = tileNumber-42;
-            }*/
-        }
+	    	playerTileIdentities[((Tile*)o)->getTileOwner() - 1]->tileList.push_back((Tile*)o);
         else 
-        {
             o->getSceneNode()->setVisible(true);
-        }
-        tileNumber++;
 	}
 }
 //-------------------------------------------------------------------------------------
@@ -468,10 +454,12 @@ void Simulator::restoreTile() // TILE UPDATE FLAG
 //-------------------------------------------------------------------------------------
 void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
 {
-	int playerID = t->getTileOwner();
+	int playerID = t->getTileOwner() - 1;
 	int tileIndex = t->getTileNumber();
 
     removeObject(t->getGameObjectName());
+    printf("*******Destorying Tiles....");
+    printf("\tPlayer ID = %d\tTile Index = %d\n\n\n", playerID + 1, tileIndex);
     playerTileIdentities[playerID]->removedTiles.push_back(t);
     playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex);
 
@@ -543,23 +531,15 @@ void Simulator::resetSimulator()
     for (int i = 0; i < playerList.size(); i++) 
     {
         if (playerList[i] != NULL)
-        {
-            /*playerList[i]->getSceneNode()->_setDerivedPosition(playerList[i]->getStartingPosition());
-
-    	    Ogre::Vector3 ppos_derived = playerList[i]->getSceneNode()->_getDerivedPosition();
-	        btQuaternion playerOrientation = btQuaternion(0, 0, 0);
-    	    btTransform transform = btTransform(playerOrientation, btVector3(ppos_derived.x, ppos_derived.y, ppos_derived.z));
-    	    playerList[i]->getBody()->setCenterOfMassTransform(transform);
-    	    playerList[i]->getBody()->setLinearVelocity(btVector3(0, 0, 0));*/
-	    
-            if (playerList[i]->checkHolding()) {
+        {	    
+            if (playerList[i]->checkHolding()) 
+            {
                 setThrowFlag();
                 performThrow(playerList[i]);
             }
             
             removeObject(playerList[i]->getGameObjectName());
             playerList[i]->getSceneNode()->_setDerivedPosition(playerList[i]->getStartingPosition());
-            
         }
     }
     
@@ -588,5 +568,23 @@ void Simulator::removePlayer(int playerIndex)
 void Simulator::setGameRoom(Room* rm)
 {
 	gameRoom = rm;
+}
+//-------------------------------------------------------------------------------------
+void Simulator::removeTiles(vector<Tile*>& rt)
+{
+	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+	{
+		if (playerList[i] != NULL && playerList[i]->checkState(PLAYING))
+		{
+			PlayerTileIdentity* localIdentity = playerTileIdentities[i];
+			for (int j = 0; j < localIdentity->removedTileIndices.size(); j++)
+			{
+				Tile* tileRemoved = localIdentity->tileList[localIdentity->removedTileIndices[j]];
+				rt.push_back(tileRemoved);
+				printf("NEW REMOVED TILE - Player: %d\t Tile #: %d\n\n", tileRemoved->getTileOwner(), tileRemoved->getTileNumber());
+			}
+			localIdentity->removedTileIndices.clear();
+		}
+	}
 }
 //-------------------------------------------------------------------------------------

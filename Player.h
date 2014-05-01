@@ -3,7 +3,7 @@
 
 #include "GameObject.h"
 
-enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, HOLDING, VIEWMODE};
+enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, HOLDING, PLAYING, VIEWMODE};
 
 class Disk;
 class Room;
@@ -14,7 +14,6 @@ public:
 	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID,  Room* gameRoom);//Ogre::Vector3 roomDims);
 	void setHolding(bool x); // Set whether the player is holding the disk
 	bool checkHolding(void); // Check if the player is holding the disk
-	void throwDisk(void); // Throw the disk in a particular direction
 	void attachDisk(Disk* d); // Attach the disk to the player
 	Ogre::String getPlayerSide(void);
 	void setMovementRestriction(bool x);
@@ -27,7 +26,6 @@ public:
 	
 	int getPlayerID(void);
 	bool performJump(void);
-	Ogre::String checkPlayerSide(void);
 	void increaseJump(void);
 	void decreaseJump(void);
 	void initializeStates(void);
@@ -43,6 +41,8 @@ public:
 	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
 	void animateCharacter(Ogre::String stateName);
 
+	void setPlayerSpace();
+	struct RoomSpace* getPlayerSpace() { return playerSpace; };
 
 	int jumpTimer;
 	bool jumpPowerActive;
@@ -69,8 +69,9 @@ protected:
 	
 	/* Game Attributes */ 
 	Ogre::Real jumpFactor;
-	Room* playerRoom;
 	Disk* playerDisk;
+	Room* playerRoom;
+	struct RoomSpace* playerSpace;
 };
 
 #endif // #ifndef __Player_h_

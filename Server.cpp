@@ -18,6 +18,7 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     sprintFactor = 2.0f;
     gameDisk = NULL;
     numberOfClients = 0;
+    forceUpdate = false;
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
@@ -82,7 +83,6 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             playerList[numberOfClients-1]->addToSimulator();
         }
     }
-    updateRemovedTiles();
 
     for (int i = 0; i < numberOfClients; i++)  // CHECK FOR ACTIVITY FROM CURRENT PLAYERS
     {
@@ -93,10 +93,11 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         // restrictPlayerMovement(playerList[i]);
     }
     
-    if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f)
+    if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f || forceUpdate)
     {
         constructAndSendGameState();
         updateClock = clock();
+        forceUpdate = false;
     }
     
     if (gameSimulator->checkDiskSet() && gameDisk == NULL && numberOfClients > 1)
@@ -119,19 +120,21 @@ void Server::updateClientVelocity(Player* p)
     // }
 }
 //-------------------------------------------------------------------------------------
-bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO THIS FUNCTION; CONSTRUCT PACKETS ONCE INSTEAD OF N */
+bool Server::constructAndSendGameState()
 {
-    char* buff;
+    char* sBuff;
     char* dBuff;
+    char* tBuff;
     int totalBytesSent = 0;
 
-    vector<S_PLAYER_packet> packList; 
+    vector<S_PLAYER_packet> playerPackList; 
+    vector<TILE_packet> tilePackList;
     DISK_packet dp;
     
-    buff = (char*)malloc(sizeof(S_PLAYER_packet));
+    sBuff = (char*)malloc(sizeof(S_PLAYER_packet));
 
     /* Sending each player's position to clients */
-    for (int i = 0; i < numberOfClients; i++)
+    for (int i = 0; i < numberOfClients; i++)   // might want to limit to players who have changed position
     {
         S_PLAYER_packet pack;
      
@@ -146,9 +149,27 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
         pack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
         // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
         pack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
-        packList.push_back(pack);
+        playerPackList.push_back(pack);
     }
 
+    if (updateRemovedTiles())
+    {
+        for (int i = 0; i < removedTiles.size(); i++)
+        {
+            Tile* localTile = removedTiles[i];
+
+            TILE_packet tp;
+
+            tp.packetID = (char)(((int)'0') + TILE);
+            tp.playID = (char)(((int)'0') + (localTile->getTileOwner()));
+            tp.removed = '1';
+            tp.tileNumber = localTile->getTileNumber();
+
+            tilePackList.push_back(tp);
+        }
+        tBuff = (char*)malloc(sizeof(TILE_packet));
+        removedTiles.clear();
+    }
     /* UPDATE ACTIVE POWER UPS */
 
     // if ()
@@ -175,28 +196,6 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
     // pack.y_coordinate = Restore->getSceneNode()->_getDerivedPosition().y;
     // pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
     // packList.push_back(pack);
-
-    // int rIndex;
-    // while (removedCTileList.size() != 0)
-    // {
-    //     pack.id = 'C';
-
-    //     rIndex = removedCTileList[removedCTileList.size() - 1];
-    //     removedCTileList.pop_back();
-
-    //     pack.tileIndex = rIndex;
-    //     packList.push_back(pack);
-    // }
-    // while (removedHTileList.size() != 0)
-    // {
-    //     pack.id = 'H';   
-
-    //     rIndex = removedHTileList[removedHTileList.size() - 1];
-    //     removedHTileList.pop_back();
-
-    //     pack.tileIndex = rIndex;
-    //     packList.push_back(pack);
-    // }
     if (gameDisk != NULL)
     {
         memset(&dp, 0, sizeof(DISK_packet));
@@ -214,58 +213,37 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
         dBuff = (char*)malloc(sizeof(DISK_packet));
         memcpy(dBuff, &dp, sizeof(DISK_packet));
     }
-    // if (gameSimulator->checkGameStart()) // Don't want to do every frame
-    // {
-    //     GAMESTATE_packet pack;
-    //     memset(&pack, 0, sizeof(GAMESTATE_packet));
-
-    //     pack.packetID = (char)(((int)'0') + GAMESTATE);   
-    //     memcpy(buff + indexIntoBuff, &pack, sizeof(GAMESTATE_packet));
-    //     indexIntoBuff += sizeof(GAMESTATE_packet);
-    // }
+    /* Send all packets to each player */
     for (int i = 0; i < numberOfClients; i++)
     {
-        memcpy(buff, &packList[i], sizeof(S_PLAYER_packet));
-
-        for (int j = 0; j < numberOfClients; j++)
+        /* All Player packets */
+        for (int j = 0; j < playerPackList.size(); j++)
         {
-            if (playerList[j] != NULL)
-                gameNetwork->sendPacket(buff, j);
-            if (gameDisk != NULL)
-            {
-                gameNetwork->sendPacket(dBuff, j);
-            }
+            memcpy(sBuff, &playerPackList[j], sizeof(S_PLAYER_packet));
+            gameNetwork->sendPacket(sBuff, i);
         }
+        /* All tile packets */
+        for (int j = 0; j < tilePackList.size(); j++)
+        {
+            memcpy(tBuff, &tilePackList[j], sizeof(TILE_packet));
+            // printf("Tile Removal Packet: \n");
+            // printf("\tTile Number: %d\t Tile Owner ID: %c\n\n", tilePackList[j].tileNumber, tilePackList[j].playID);
+            gameNetwork->sendPacket(tBuff, i);
+        }
+        /* All Disk Packets */
+        if (gameDisk != NULL)
+            gameNetwork->sendPacket(dBuff, i);
     }
-
-    // printf("*****Sending packets to Client%d of size %d....\n\n", 1, totalBytesSent);
 }
 //-------------------------------------------------------------------------------------
-void Server::updateRemovedTiles() // HACKED
+bool Server::updateRemovedTiles()
 {
-    // if (removedHTileList.size() != gameSimulator->hostRemoveIndexes.size() && gameSimulator->newRemovedTile)
-    // {
-    //     int i = removedHTileList.size() - 1;
+    gameSimulator->removeTiles(removedTiles);
 
-    //     while (i != (gameSimulator->hostRemoveIndexes.size()))
-    //     {
-    //         removedHTileList.push_back(gameSimulator->hostRemoveIndexes[i]);
-    //         i++;
-    //     }
-    //     gameSimulator->newRemovedTile = false;
-    // }
-    // if (removedCTileList.size() != gameSimulator->clientRemoveIndexes.size() && gameSimulator->newRemovedTile)
-    // {
-    //     int i = removedCTileList.size() - 1;
-
-    //     while (i != (gameSimulator->clientRemoveIndexes.size()))
-    //     {
-    //         removedCTileList.push_back(gameSimulator->clientRemoveIndexes[i]);
-    //         i++;
-    //     }
-
-    //     gameSimulator->newRemovedTile = false;
-    // }
+    if (removedTiles.size() > 0)
+        return true;
+    else 
+        return false;
 }
 //-------------------------------------------------------------------------------------
 void Server::restrictPlayerMovement(Player* p)
@@ -485,7 +463,10 @@ void Server::processClientInput(int playerIndex, char keyPressed)
             break;
         case 't':  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
             if (playerList[playerIndex]->checkHolding())
+            {
                 gameSimulator->setThrowFlag();
+                forceUpdate = true;
+            }
             break;
         case 'q':  // GAME STATE CHANGE
             removePlayer(playerIndex);

@@ -35,6 +35,14 @@ void Client::createScene()
     /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
     clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, gameRoom);
+    clientPlayer->setPlayerSpace();
+
+    // for (int i = 0; i < clientPlayer->getPlayerSpace()->tileList.size(); i++)
+    // {
+    //     Tile* ct = clientPlayer->getPlayerSpace()->tileList[i];
+    //     printf("Player: %d\t Tile #: %d\n", ct->getTileOwner(), ct->getTileNumber());
+    // }
+
     playerList[playerID-1] = clientPlayer;
     numPlayers++;
 
@@ -314,6 +322,8 @@ void Client::interpretServerPacket(char* packList)
                 gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
                 gameDisk->particleNode->setVisible(true);
             }
+            if (d.playID == (char)(((int)'0') + playerID))
+                clientPlayer->setState(HOLDING, true);
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
             gameDisk->getSceneNode()->_setDerivedOrientation(d.orientation);
@@ -328,7 +338,7 @@ void Client::interpretServerPacket(char* packList)
 
             newPlayerID = p.playID - '0';
             playerIndex = newPlayerID - 1;
-            printf("*******New player ID: %d\n\n", newPlayerID);
+            // printf("*******New player ID: %d\n\n", newPlayerID);
             /* NEW PLAYER NOT BEING ADDED TO SCENE */
             if (playerList[playerIndex] == NULL)
             {
@@ -337,6 +347,7 @@ void Client::interpretServerPacket(char* packList)
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
                 playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, gameRoom);
+                playerList[playerIndex]->setPlayerSpace();
                 numPlayers++;
             }
             if (newPlayerID != playerID)
@@ -349,40 +360,23 @@ void Client::interpretServerPacket(char* packList)
 
             indexIntoBuff += sizeof(S_PLAYER_packet);
         }
-        // if(packType == 'D')
-        // {
-        //     clientPlayer->setHolding(true);
-        // }
+        /* UPDATE TILES */
+        else if (packType == (char)(((int)'0') + TILE))
+        {
+            TILE_packet t;
+            memcpy(&t, packList+indexIntoBuff, sizeof(TILE_packet));
 
-        // if(packType == 'P')
-        // {
-        //     Power->getSceneNode()->_setDerivedPosition(newPos);
-        //     Power->getSceneNode()->needUpdate();
-        // }
-        // if(packType == 'S')
-        // {
-        //     Speed->getSceneNode()->_setDerivedPosition(newPos);
-        //     Speed->getSceneNode()->needUpdate();
-        // }
-        // if(packType == 'J')
-        // {
-        //     JumpPower->getSceneNode()->_setDerivedPosition(newPos);
-        //     JumpPower->getSceneNode()->needUpdate();
-        // }
-        // if(packType == 'R')
-        // {
-        //     Restore->getSceneNode()->_setDerivedPosition(newPos);
-        //     Restore->getSceneNode()->needUpdate();
-        // }
-        // if (packType == 'H')
-        // {
-        //     gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-        // }
-        // if (packType == 'C')
-        // {
-        //     gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-        // }
-        /* BEGIN GAME */ 
+            newPlayerID = (t.playID - '0'); 
+            Tile* localTile = playerList[newPlayerID - 1]->getPlayerSpace()->tileList[t.tileNumber];
+
+            if (t.removed == (char)(((int)'0') + 1))
+            {
+                localTile->getSceneNode()->setVisible(false);
+            }
+            // printf("Tile Removal Packet: \n");
+            // printf("\tTile Number: %d\t Tile Owner ID: %d\n\n", t.tileNumber, newPlayerID);
+            indexIntoBuff += sizeof(TILE_packet);
+        }
         // else if(packType == (char)(((int)'0') + GAMESTATE))
         // {
         //     gameStart = true;
@@ -418,11 +412,6 @@ bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
     return true;
 }
 //-------------------------------------------------------------------------------------
-Player* Client::getPlayer()
-{
-    return clientPlayer;
-}
-//-------------------------------------------------------------------------------------
 void Client::createOverlays(PlayerCamera* playCam) // might move to Client and Server
 {
     /********************    MENUS    ********************/
@@ -455,6 +444,7 @@ void Client::createOverlays(PlayerCamera* playCam) // might move to Client and S
 
     playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }
+//-------------------------------------------------------------------------------------
 Ogre::Vector3 Client::clientChangePosition()
 {
     Ogre::Vector3 currentPosition = clientPlayer->getSceneNode()->getPosition();
@@ -468,3 +458,4 @@ Ogre::Vector3 Client::clientChangePosition()
     else 
         return diffVector;
 }
+//-------------------------------------------------------------------------------------

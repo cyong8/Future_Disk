@@ -9,7 +9,9 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *gameSimulator, int numPlaye
 	char gapBufferNode[35];
 	char gapBufferPlane[35];
 	char gapBufferEntity[35];
-	gameSimulator->setGameRoom(this);
+
+	if (gameSimulator != NULL)
+		gameSimulator->setGameRoom(this);
 
 	playerRoomSpaces = vector<RoomSpace*>(numPlayers, NULL);
 
@@ -282,11 +284,8 @@ Wall* Room::getWall(int index)
 	return wallList[index];
 }
 //-------------------------------------------------------------------------------------
-int Room::getNumberOfPlayers()
+Ogre::Vector3 Room::getBounds()
 {
-	if (numberOfPlayers == 3)
-		return numberOfPlayers + 1;
-	else 
-		return numberOfPlayers;
+	return Ogre::Vector3(width/2, height/2, gapSize/2);
 }
 //-------------------------------------------------------------------------------------

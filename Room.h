@@ -20,7 +20,6 @@ struct RoomSpace
 {
 	Ogre::SceneNode* horizontalGap;
 	Ogre::SceneNode* verticalGap;
-
 	vector<Tile*> tileList;
 };
 
@@ -35,7 +34,9 @@ public:
 	Ogre::Real getHeight(void) { return height; } ;
 	Ogre::Real getGapSize(void) { return gapSize; } ;
 	Ogre::Real getFloorPositionY(void) { return floorPositionY; } ;
+	
 	RoomSpace* getPlayerRoomSpace(int playerID);
+	
 	Wall* getWall(int index);
 	int getNumberOfPlayers(void);
 	Ogre::Vector3 getBounds(void);

@@ -107,8 +107,8 @@ struct TILE_packet
 	char packetID;
 	// tile removed/added
 	char playID;
-	bool removed;
-	short tileNumber;
+	char removed; // 0 = Restored, 1 = Removed
+	int tileNumber;
 };
 struct GAMESTATE_packet 
 {

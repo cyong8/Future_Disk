@@ -45,10 +45,10 @@ private:
 
 	/* Client State Variables */
 		/* Tiles List */
-	vector<int> removedHTileList;
-	vector<int> removedCTileList;
+	vector<Tile*> removedTiles;
 		/* Update Time Tracker */
 	clock_t updateClock;
+	bool forceUpdate;
 		/* Gap Check Time */ //Most likely needs to be in respective Player's class
 	time_t gapStartTime;
 	time_t gapEndTime;
@@ -56,7 +56,7 @@ private:
 	Ogre::Light* directLight;
 	void updateClientVelocity(Player* p);
 	bool constructAndSendGameState(void);
-	void updateRemovedTiles(void);
+	bool updateRemovedTiles(void);
 	void restrictPlayerMovement(Player* p);
 	bool interpretClientPacket(int playerID);
 	void processClientInput(int playerIndex, char inputType);

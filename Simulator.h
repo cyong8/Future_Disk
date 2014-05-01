@@ -52,6 +52,7 @@ class Simulator
 		bool wallHitAfterThrow;
 		
 		bool gameStart;
+		bool diskSet;
 		enum gameState gameState;	// Not doing anything right now
 		
 		Ogre::String previousWallHit;
@@ -81,10 +82,10 @@ class Simulator
 		void resetSimulator(void);
 		void removePlayer(int playerIndex);
 		void setGameRoom(Room* rm);
+		void removeTiles(vector<Tile*>& rt);
 		bool checkDiskSet() { return diskSet; };
 
 		bool soundedJump;
-		bool diskSet;
 };
 
 #endif // #ifndef __Simulator_h_
