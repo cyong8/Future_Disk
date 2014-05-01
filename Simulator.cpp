@@ -15,7 +15,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 
 	gameState = NOTSTARTED;
 	gameStart = false;
-	
+
     wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
@@ -43,7 +43,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	solver = new btSequentialImpulseConstraintSolver();
 	dispatcher = new btCollisionDispatcher(collisionConfiguration);
 	dynamicsWorld = new btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-	
+
 	dynamicsWorld->setGravity(btVector3(0.0f,-9.8f, 0.0f));
 	dynamicsWorld->debugDrawWorld();
 	//keep track of the shapes, we release memory at exit
@@ -66,7 +66,7 @@ void Simulator::addObject (GameObject* o)
 	objList.push_back(o); // Add the object to the list of object
 
 	dynamicsWorld->addRigidBody(o->getBody());
-	
+
 	// Set custom btRigidBody WRT specific GameObjects 
 	if(o->typeName == "Player")
 	{
@@ -215,7 +215,7 @@ void Simulator::parseCollisions(void)
 		btPersistentManifold* contactManifold = dynamicsWorld->getDispatcher()->getManifoldByIndexInternal(i);
 		btRigidBody* obA = static_cast<btRigidBody*>(contactManifold->getBody0());
 		btRigidBody* obB = static_cast<btRigidBody*>(contactManifold->getBody1());
-		
+
 		OgreMotionState* OMSA = static_cast<OgreMotionState*>(obA->getMotionState());
 		OgreMotionState* OMSB = static_cast<OgreMotionState*>(obB->getMotionState());
 
@@ -269,7 +269,7 @@ void Simulator::performThrow(Player* p)
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
 		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
-		
+
 		/* The new disk direction is along player's orientation */
 		diskDirection = p->getSceneNode()->getOrientation() * diskDirection;
 
@@ -319,7 +319,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 	if (o->typeName == "Wall")
 	{	
 		wallHitAfterThrow = true;
-		
+
 		if (previousWallHit == "NULL")
 		{
 			// gameDisk->needsOrientationUpdate = true;
@@ -393,9 +393,9 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding())  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
-		
+
 		destroyTiles((Tile*)o);
-		
+
 		disk->resetPowerUp();
 		((Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName()))->attachDisk((Disk*)disk);
 
@@ -551,7 +551,7 @@ void Simulator::resetSimulator()
 
 	gameState = NOTSTARTED;
 	gameStart = false;
-	
+
     wallHitAfterThrow = true;
     playerLastThrew = "";
 	previousWallHit = "NULL";
