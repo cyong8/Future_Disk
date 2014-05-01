@@ -3,15 +3,15 @@
 
 #include "GameObject.h"
 
-enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, VIEWMODE};
+enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, HOLDING, VIEWMODE};
 
 class Disk;
+class Room;
 
 class Player : public GameObject
 {
 public:
-	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID, Ogre::Vector3 roomDims);
-	// NOTE: roomDims is Ogre::Vector3(room->width, room->height), numberOfPlayers)
+	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID,  Room* gameRoom);//Ogre::Vector3 roomDims);
 	void setHolding(bool x); // Set whether the player is holding the disk
 	bool checkHolding(void); // Check if the player is holding the disk
 	void throwDisk(void); // Throw the disk in a particular direction
@@ -26,12 +26,8 @@ public:
 	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
 	
 	int getPlayerID(void);
-	void setGroundY(float y);
-	Ogre::Real getGroundY(void);
 	bool performJump(void);
 	Ogre::String checkPlayerSide(void);
-	bool groundConstantSet;
-	Ogre::Real jumpFactor;
 	void increaseJump(void);
 	void decreaseJump(void);
 	void initializeStates(void);
@@ -43,30 +39,38 @@ public:
 	bool togglePlayerCanCatch(void);
 	
 	Ogre::Vector3 getStartingPosition() { return startingPosition; }
+	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
+	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
+	void animateCharacter(Ogre::String stateName);
+
 
 	int jumpTimer;
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
-	Ogre::Entity* ent;
-	Ogre::AnimationState *animationState;
 
 
 protected:
+	/* Custom Mesh Attributes */
+	Ogre::Entity* customPlayerEnt;
+	Ogre::AnimationState* customAnimationState;
+
+	/* Player Specific Attributes */ 
 	vector<bool> states;
-	Disk* playerDisk;
 	Ogre::Vector3 dimensions;
 	Ogre::SceneNode* pCamNode;   // The camera is supposed to be here
 	Ogre::SceneNode* pSightNode; // The character is supposed to be looking here
-	Ogre::Real groundY;
-	Ogre::Real prevGroundY;
 	Ogre::String playerSide;
 	bool isHolding;
 	bool movementRestricted;	
 	int playerID;	
 	bool playerCanCatch;
-	Ogre::Vector3 roomDimensions;
 	Ogre::Vector3 startingPosition;
+	
+	/* Game Attributes */ 
+	Ogre::Real jumpFactor;
+	Room* playerRoom;
+	Disk* playerDisk;
 };
 
 #endif // #ifndef __Player_h_

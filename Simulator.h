@@ -2,8 +2,6 @@
 #define __Simulator_h_
 
 #include "BaseApplication.h"
-#include <vector>
-#include <iostream>
 #include "Target.h"
 #include "Music.h"
 
@@ -14,8 +12,17 @@ class Player;
 class PlayerCamera;
 class Disk;
 class Music;
+class Room;
+class Tile;
 
 enum gameState{NOTSTARTED, STARTED, PAUSED, OVER};
+
+struct PlayerTileIdentity
+{
+	vector<Tile*> tileList; 
+	vector<Tile*> removedTiles;
+	vector<int> removedTileIndices;
+};
 
 class Simulator
 {
@@ -26,28 +33,26 @@ class Simulator
 		btSequentialImpulseConstraintSolver* solver;
 		btDiscreteDynamicsWorld* dynamicsWorld;
 		btConstraintSolver* mConstraintsolver;
-		//btCollisionWorld* mWorld;
+
 		Ogre::SceneManager* sceneMgr;
+		
 		vector<GameObject*> objList;
 		vector<Target*> targetList;
 		vector<Player*> playerList;
-		Ogre::Real floorY;
-		
-		PlayerCamera* player1Cam;
-		PlayerCamera* player2Cam;
+		Disk* gameDisk;
+		Room* gameRoom;
+	
+			/* Tile Objects */
+		vector<PlayerTileIdentity*> playerTileIdentities;
+		bool newRemovedTile;
+	
 		Ogre::String playerLastThrew;
 		int score;
-		bool viewChangeP1;
-		bool viewChangeP2;
 		bool throwFlag;
 		bool wallHitAfterThrow;
 		
 		bool gameStart;
-		enum gameState gameState;
-
-		bool player1CanCatch;
-	    bool player2CanCatch;
-		bool giveDisk;
+		enum gameState gameState;	// Not doing anything right now
 		
 		Ogre::String previousWallHit;
 		Ogre::Real diskSpeedFactor;
@@ -66,26 +71,20 @@ class Simulator
 		void setThrowFlag(void);
 		void performThrow(Player* p);
 		int tallyScore(void);
-		bool checkOnFloor(void);
-		void resetOnFloor(void);
-		void handleDiskCollisions(GameObject* disk, GameObject* o);
+		void handleDiskCollisions(Disk* disk, GameObject* o);
 		void adjustDiskOrientation(Disk *d, btVector3 currVelocity, Ogre::String wallName);
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		bool checkGameStart(void);
 		void restoreTile(void);
-		void destroyTiles(vector<GameObject*>& tileList, vector<int>& removeIndexes, int index);
-		void resetSimulator();
+		void destroyTiles(Tile* t);
+		void setFloorY(Ogre::Real);
+		void resetSimulator(void);
 		void removePlayer(int playerIndex);
+		void setGameRoom(Room* rm);
+		bool checkDiskSet() { return diskSet; };
 
 		bool soundedJump;
-		Disk* gameDisk;
-		bool setDisk;
-		vector<GameObject*> hostTileList;
-		vector<GameObject*> clientTileList;
-		vector<int> hostRemoveIndexes;
-		vector<int> clientRemoveIndexes;
-		void setFloorY(Ogre::Real);
-		bool newRemovedTile;
+		bool diskSet;
 };
 
 #endif // #ifndef __Simulator_h_

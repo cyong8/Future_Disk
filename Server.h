@@ -61,6 +61,7 @@ private:
 	bool interpretClientPacket(int playerID);
 	void processClientInput(int playerIndex, char inputType);
 	void removePlayer(int playerIndex);
+	void restartRound(void);
 };
 
 #endif // #ifndef __Server_h_

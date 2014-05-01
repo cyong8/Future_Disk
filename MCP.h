@@ -19,6 +19,10 @@
 #include "GUI.h"
 #include "Solo.h"
 
+#include <assert.h>
+#include <vector>
+#include <iostream>
+
 class Simulator;
 class Music;
 class GUI;

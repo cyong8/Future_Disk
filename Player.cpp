@@ -1,54 +1,56 @@
 #include "Player.h"
 #include "Disk.h"
+#include "Room.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Ogre::Vector3 roomDims) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Room* gameRoom)//Ogre::Vector3 roomDims) 
 	: GameObject(nym, mgr, sim)
 {
 	initializeStates();
 	this->dimensions = dimensions;
-	roomDimensions = roomDims;		// Ogre::Vector3(room->width, room->height, numberOfPlayers)
+	// Ogre::Vector3(room->width, room->height, numberOfPlayers)
+	playerRoom = gameRoom;
 	typeName = "Player";
-	groundY = -99999.0f;
-	prevGroundY = -99999.0f;
-	jumpFactor = 8.0f;
+	jumpFactor = 10.0f;
 	jumpTimer = 0;
 	jumpPowerActive = false;
 	movementRestricted = false;
 	isHolding = false; // Is the player holding the disk?
-	groundConstantSet = false;
 	playerID = playID;
 	playerCanCatch = true;
-	animationState = NULL;
+	customAnimationState = NULL;
 
 	Ogre::Vector3 position;
+	Ogre::Real roomWidth = gameRoom->getWidth();
+	Ogre::Real roomHeight = gameRoom->getHeight();
+	Ogre::Real numberOfPlayers = gameRoom->getNumberOfPlayers();
 
 	if (playerID == 1)
 	{
-		playerSide = "Positive Side";
-		if (roomDimensions.z > 2)
-			position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		playerSide = "Positive Side";	//REMOVE
+		if (numberOfPlayers > 2)
+			position = Ogre::Vector3(-(roomWidth/roomHeight), 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		else 
-			position = Ogre::Vector3(0.0f, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+			position = Ogre::Vector3(0.0f, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
 	}
 	else if (playerID == 2)
 	{
 		playerSide = "Negative Side";
-		if (roomDimensions.z > 2)
-			position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, (roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		if (numberOfPlayers > 2)
+			position = Ogre::Vector3(roomWidth/roomHeight, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		else 
-			position = Ogre::Vector3(0.0f, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+			position = Ogre::Vector3(0.0f, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 	}
 	else if (playerID == 3)
 	{
 		playerSide = "Left Side";
-		position = Ogre::Vector3(-(roomDimensions.x/roomDimensions.y), 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		position = Ogre::Vector3(-(roomWidth/roomHeight), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
 	}
 	else if (playerID == 4)
 	{
 		playerSide = "Right Side";
-		position = Ogre::Vector3(roomDimensions.x/roomDimensions.y, 0.0f, -(roomDimensions.x/3.0f + roomDimensions.y)/roomDimensions.z);
+		position = Ogre::Vector3(roomWidth/roomHeight, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 	}
 	startingPosition = position;
 
@@ -58,12 +60,12 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     particleNode->attachObject(tailParticle);
     particleNode->setVisible(false);
 
-	ent = mgr->createEntity(nym, "Waddlelly.mesh"); // Create entity;apply mesh
-	rootNode->attachObject(ent); 	// Attach player to a scene node
+	customPlayerEnt = mgr->createEntity(nym, "Waddlelly.mesh"); // Create entity;apply mesh
+	rootNode->attachObject(customPlayerEnt); 	// Attach player to a scene node
 	rootNode->scale(dimensions.x/25.0, dimensions.y/25.0, dimensions.z/25.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(position); // Set the position of the player
-	ent->setMaterialName("w_texture_1Material");
+	customPlayerEnt->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
 	mass = 0.5f; // Set mass of player
@@ -135,7 +137,7 @@ void Player::attachDisk(Disk* d)
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 }
 //-------------------------------------------------------------------------------------
-Ogre::String Player::getPlayerSide()
+Ogre::String Player::getPlayerSide() // REMOVE ONCE I KNOW IT'S NOT BEING USED
 {
 	return playerSide;
 }
@@ -175,26 +177,11 @@ int Player::getPlayerID(void)
 	return playerID;
 }
 //-------------------------------------------------------------------------------------
-void Player::setGroundY(Ogre::Real y)
-{
-	groundY = y;
-	groundConstantSet = true;           	
-}
-//-------------------------------------------------------------------------------------
-float Player::getGroundY()
-{
-	return groundY;
-}
-//-------------------------------------------------------------------------------------
 bool Player::performJump()
 {
-	// if (groundConstantSet == false)
-	// 	groundY = rootNode->getPosition().y;
-	// if (/*!(rootNode->getPosition().y > groundY) && */states[JUMP] == false)
 	if (states[JUMP] == false)
 	{	
 		body->setLinearVelocity(body->getLinearVelocity() + btVector3(0.0f, jumpFactor, 0.0f));
-	    groundConstantSet = true;
 	    states[JUMP] = true;
 	    /* PLAY MUSIC HERE 	*/
 	    return true;
@@ -267,4 +254,11 @@ bool Player::checkPlayerCanCatch()
 bool Player::togglePlayerCanCatch()
 {
 	playerCanCatch = !playerCanCatch;
+}
+//-------------------------------------------------------------------------------------
+void Player::animateCharacter(Ogre::String stateName)
+{
+	customAnimationState = customPlayerEnt->getAnimationState(stateName);
+	customAnimationState->setEnabled(true);
+    customAnimationState->setLoop(false);
 }

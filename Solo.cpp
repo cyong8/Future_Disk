@@ -40,22 +40,21 @@ Solo::~Solo(void)
 //-------------------------------------------------------------------------------------
 void Solo::createScene()
 {
-    gameRoom = new Room(sceneMgr, gameSimulator, 0, 2);
-    gameSimulator->setFloorY(gameRoom->getFloorPositionY());
+    gameRoom = new Room(sceneMgr, gameSimulator, 2);
 
-    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
+    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, gameRoom);
     player->addToSimulator();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(player);
 
-    for (int i=0; i < NUM_OF_TARGETS; i++)
-    {
-        Target *target = new Target("Target_" + i, sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());
-        target->addToSimulator();
-        target_list.push_back(target);
-    }
+    // for (int i=0; i < NUM_OF_TARGETS; i++)
+    // {
+    //     Target *target = new Target("Target_" + i, sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());
+    //     target->addToSimulator();
+    //     target_list.push_back(target);
+    // }
     // These actually don't belong - initialize target list instead
     /*
     Power = new Target("Power", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
@@ -90,8 +89,8 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     // else if (!gameStart) // may need
     //     gameStart = true;
     //bool ret = BaseApplication::frameRenderingQueued(evt);
-    if(player->animationState != NULL)
-        player->animationState->addTime(tSinceLastFrame);
+    if(player->getCustomAnimationState() != NULL)
+        player->getCustomAnimationState()->addTime(tSinceLastFrame);
 
     if(!gameStart && !gameOver) // Game not started
     {
@@ -132,14 +131,14 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
             updatePauseTime(pcurrTime);
         }
     }
-    printf("Y velocity: %f\n\n", player->getBody()->getLinearVelocity().getY());
+
     processUnbufferedInput(tSinceLastFrame, mKeyboard, mMouse);
     restrictPlayerMovement();
 
-    if (gameSimulator->setDisk && !diskAdded)
+    if (gameSimulator->checkDiskSet() && !diskAdded)
     {
         if (gameDisk == NULL) 
-            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
+            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/);
             
         gameDisk->addToSimulator();
         diskAdded = true;
@@ -193,6 +192,7 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 
     return true;
 }
+//-------------------------------------------------------------------------------------
 bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
     /********************  KEY VARIABLES ********************/    
@@ -288,9 +288,10 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
             {
                 spacePressedLast = false;
-                player->animationState = player->ent->getAnimationState("jump");
-                player->animationState->setEnabled(true);
-                player->animationState->setLoop(false);
+                player->animateCharacter("jump");
+                // player->getCustomAnimationState() = player->getMeshEntity()->getAnimationState("jump");
+                // player->getCustomAnimationState()->setEnabled(true);
+                // player->getCustomAnimationState()->setLoop(false);
             }
             if(keyWasPressed && !p->checkMovementRestriction())
             {   // Rotate the velocity vector by the orientation of the player
@@ -307,7 +308,7 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
         }
     }
 }
-
+//-------------------------------------------------------------------------------------
 void Solo::togglePause()
 {
     MasterControl->gui->pauseMenu(gamePause);
@@ -331,7 +332,7 @@ void Solo::togglePause()
         time(&pauseTime);
     }
 } 
-
+//-------------------------------------------------------------------------------------
 void Solo::createOverlays(PlayerCamera* playCam) // might move to Client and Server
 {
     /********************    MENUS    ********************/
@@ -364,7 +365,7 @@ void Solo::createOverlays(PlayerCamera* playCam) // might move to Client and Ser
 
     playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }
-
+//-------------------------------------------------------------------------------------
 void Solo::restrictPlayerMovement()
 {
     Ogre::Vector3 pos = player->getSceneNode()->getPosition();
@@ -381,9 +382,9 @@ void Solo::restrictPlayerMovement()
     Ogre::AxisAlignedBox playerBox = player->getSceneNode()->_getWorldAABB();
 
 
-    Gap* gp = gameRoom->getPlayerGapSceneNode(player->getPlayerID());
+    RoomSpace* gp = gameRoom->getPlayerRoomSpace(player->getPlayerID());
 
-    restrictHNode = gp->hGap;
+    restrictHNode = gp->horizontalGap;
     gapHBox = restrictHNode->_getWorldAABB();
 
     // restrictVNode = gp->vGap;
@@ -430,7 +431,7 @@ void Solo::restrictPlayerMovement()
         player->setMovementRestriction(false);
     }
 }
-
+//-------------------------------------------------------------------------------------
 bool Solo::updateTimer(time_t currTime)
 {
     double secondsElapsed = difftime(currTime, initTime);
@@ -459,12 +460,12 @@ bool Solo::updateTimer(time_t currTime)
         return true;
     return false;
 }
-
+//-------------------------------------------------------------------------------------
 void Solo::updatePauseTime(time_t currTime)
 {
     pTimePassed = difftime(currTime, pauseTime);
 }
-
+//-------------------------------------------------------------------------------------
 void Solo::restartGame()
 {	
     gameSimulator->resetSimulator();
@@ -485,3 +486,4 @@ void Solo::restartGame()
     
     //player->addToSimulator();
 }    
+//-------------------------------------------------------------------------------------

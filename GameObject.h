@@ -2,7 +2,6 @@
 #define __GameObject_h_
 
 #include "BaseApplication.h"
-#include <assert.h>
 
 class Simulator;
 class OgreMotionState;

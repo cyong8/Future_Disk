@@ -29,12 +29,12 @@ void Client::createScene()
     char cameraBuffer[25];
 
     /* GAME ROOM */
-    gameRoom = new Room(cSceneMgr, NULL, 1, 2);
+    gameRoom = new Room(cSceneMgr, NULL, 2);
     printf("\n\nPlayer ID: %d\n\n", playerID);
 
     /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
-    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
+    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, gameRoom);
     playerList[playerID-1] = clientPlayer;
     numPlayers++;
 
@@ -62,7 +62,7 @@ void Client::createScene()
     directLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getHeight()/2, 0.0f));
     // directLight->setDirection(Ogre::Vector3( 1, -1, -1));
 
-    // createOverlays(pCam);
+    createOverlays(pCam);
     updateClock = clock();
     previousPosition = clientPlayer->getSceneNode()->getPosition();
 }
@@ -85,6 +85,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     char* iBuff = (char*)malloc(sizeof(INPUT_packet));
 
     pack.packetID =(char)(((int)'0') + INPUT);
+    pack.playID = (char)(((int)'0') + playerID);
 
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
     {
@@ -105,12 +106,15 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
         /* Close player socket and allow for another player to take its place */
-        pack.packetID =(char)(((int)'0') + INPUT);
+        pack.key = 'q';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+        return;
     }
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'w';
 
         clientPlayer->setState(FORWARD, true);
@@ -120,7 +124,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'w';
 
         clientPlayer->setState(FORWARD, false);
@@ -131,7 +134,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE LEFT */
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'a';
 
         clientPlayer->setState(LEFT, true);
@@ -141,7 +143,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'a';
 
         clientPlayer->setState(LEFT, false);
@@ -152,7 +153,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE BACK */
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 's';
 
         clientPlayer->setState(BACK, true);
@@ -162,7 +162,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 's';
 
         clientPlayer->setState(BACK, false);
@@ -173,7 +172,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE RIGHT */
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'd';
 
         clientPlayer->setState(RIGHT, true);
@@ -183,7 +181,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'd';
 
         clientPlayer->setState(RIGHT, false);
@@ -193,7 +190,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'j';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
@@ -201,7 +197,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'b';
 
         clientPlayer->setState(BOOST, true);
@@ -211,7 +206,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
     {
-        pack.playID = (char)(((int)'0') + playerID);
         pack.key = 'b';
 
         clientPlayer->setState(BOOST, false);
@@ -222,9 +216,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mKeyboard->isKeyDown(OIS::KC_V) && !clientPlayer->checkState(VIEWMODE))            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
     {
         pCam->toggleThirdPersonView();
-        pack.playID = (char)(((int)'0') + playerID);
-        pack.key = 'v';
-
         clientPlayer->setState(VIEWMODE, true);
         
         if (gameDisk != NULL)
@@ -234,24 +225,42 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     else if (!mKeyboard->isKeyDown(OIS::KC_V) && clientPlayer->checkState(VIEWMODE))        
     {
         pCam->toggleThirdPersonView();
-        pack.playID = (char)(((int)'0') + playerID);
-        pack.key = 'v';
-
         clientPlayer->setState(VIEWMODE, false);
 
         if (gameDisk != NULL)
             gameDisk->getSceneNode()->setVisible(true);
         pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
-    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkHolding())
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkState(HOLDING))
     {
-        pack.playID = (char)(((int)'0') + playerID);
+        /* Using Disk packet to send position of player's sight node (i.e. Direction of throw) */
+        DISK_packet dPack;
+        char* dBuff = (char*)malloc(sizeof(DISK_packet));
+
+        dPack.packetID =(char)(((int)'0') + DISK);
+        dPack.diskID = (char)(((int)'0') + playerID);
+        dPack.playID = (char)(((int)'0') + playerID);
+
+        // Grab Sight Node position
+        Ogre::Vector3 sightPos = clientPlayer->getPlayerSightNode()->_getDerivedPosition();
+
+        dPack.x = sightPos.x;
+        dPack.y = sightPos.y;
+        dPack.z = sightPos.z;
+        dPack.orientation = Ogre::Quaternion::IDENTITY;
+
+        memcpy(dBuff, &dPack, sizeof(DISK_packet));
+        gameNetwork->sendPacket(dBuff, playerID);
+        
+        /* Send the input packet after the direction, so that throw isn't done before updated direction */
         pack.key = 't';
 
         clientPlayer->setHolding(false);
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
+
+        gameDisk->getSceneNode()->setVisible(true);
     }
 }
 //-------------------------------------------------------------------------------------
@@ -327,12 +336,11 @@ void Client::interpretServerPacket(char* packList)
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
-                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers() + 1));
+                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, gameRoom);
                 numPlayers++;
             }
             if (newPlayerID != playerID)
             {
-                // printf("\n\n\n\n\n\nCHANGING PLAYER ORIENTATION\n\n\n\n\n");
                 playerList[playerIndex]->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
                 playerList[playerIndex]->getSceneNode()->_setDerivedOrientation(p.orientation);
             }

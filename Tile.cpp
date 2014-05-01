@@ -1,10 +1,12 @@
 #include "Tile.h"
 
-Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 position, Ogre::Real tileSize)
+Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 position, Ogre::Real tileSize, int tileNum, int pID)
 	: GameObject(nym, mgr, sim)
 {
 	typeName = "Tile";
 	pos = position;
+	tileNumber = tileNum;
+	tileOwner = pID;
  	Ogre::Vector3 tile_dimensions = Ogre::Vector3(tileSize, 0.01f, tileSize);
 
 	//create entity for plane

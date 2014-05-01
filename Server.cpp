@@ -32,8 +32,7 @@ Server::~Server(void)
 //-------------------------------------------------------------------------------------
 void Server::createScene()
 {
-    gameRoom = new Room(sSceneMgr, gameSimulator, 0, 2);
-    gameSimulator->setFloorY(gameRoom->getFloorPositionY());
+    gameRoom = new Room(sSceneMgr, gameSimulator, 2);
 
     sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
@@ -78,7 +77,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             char playerBuffer[25];
             sprintf(playerBuffer, "Player%d", numberOfClients);
 
-            Player *newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
+            Player *newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, gameRoom);
             playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
@@ -100,9 +99,9 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         updateClock = clock();
     }
     
-    if (gameSimulator->setDisk && gameSimulator->gameDisk == NULL && numberOfClients > 1)
+    if (gameSimulator->checkDiskSet() && gameDisk == NULL && numberOfClients > 1)
     {
-        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 0.0f/*Ogre::Math::RangeRandom(0,2)*/);
+        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/);
         gameDisk->addToSimulator();
     }    
 }
@@ -204,9 +203,12 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
 
         dp.packetID = (char)(((int)'0') + DISK);
         dp.diskID = (char)((int)'0');
+        dp.playID = (char)(((int)'0') + gameDisk->checkIDOfHolder());
+
         dp.x = gameDisk->getSceneNode()->_getDerivedPosition().x;
         dp.y = gameDisk->getSceneNode()->_getDerivedPosition().y;
         dp.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
+
         dp.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
     
         dBuff = (char*)malloc(sizeof(DISK_packet));
@@ -241,29 +243,29 @@ bool Server::constructAndSendGameState() /* MOVE LOOPED CALL OF THIS FUNCTION TO
 //-------------------------------------------------------------------------------------
 void Server::updateRemovedTiles() // HACKED
 {
-    if (removedHTileList.size() != gameSimulator->hostRemoveIndexes.size() && gameSimulator->newRemovedTile)
-    {
-        int i = removedHTileList.size() - 1;
+    // if (removedHTileList.size() != gameSimulator->hostRemoveIndexes.size() && gameSimulator->newRemovedTile)
+    // {
+    //     int i = removedHTileList.size() - 1;
 
-        while (i != (gameSimulator->hostRemoveIndexes.size()))
-        {
-            removedHTileList.push_back(gameSimulator->hostRemoveIndexes[i]);
-            i++;
-        }
-        gameSimulator->newRemovedTile = false;
-    }
-    if (removedCTileList.size() != gameSimulator->clientRemoveIndexes.size() && gameSimulator->newRemovedTile)
-    {
-        int i = removedCTileList.size() - 1;
+    //     while (i != (gameSimulator->hostRemoveIndexes.size()))
+    //     {
+    //         removedHTileList.push_back(gameSimulator->hostRemoveIndexes[i]);
+    //         i++;
+    //     }
+    //     gameSimulator->newRemovedTile = false;
+    // }
+    // if (removedCTileList.size() != gameSimulator->clientRemoveIndexes.size() && gameSimulator->newRemovedTile)
+    // {
+    //     int i = removedCTileList.size() - 1;
 
-        while (i != (gameSimulator->clientRemoveIndexes.size()))
-        {
-            removedCTileList.push_back(gameSimulator->clientRemoveIndexes[i]);
-            i++;
-        }
+    //     while (i != (gameSimulator->clientRemoveIndexes.size()))
+    //     {
+    //         removedCTileList.push_back(gameSimulator->clientRemoveIndexes[i]);
+    //         i++;
+    //     }
 
-        gameSimulator->newRemovedTile = false;
-    }
+    //     gameSimulator->newRemovedTile = false;
+    // }
 }
 //-------------------------------------------------------------------------------------
 void Server::restrictPlayerMovement(Player* p)
@@ -278,10 +280,10 @@ void Server::restrictPlayerMovement(Player* p)
     Ogre::AxisAlignedBox playerBox = p->getSceneNode()->_getWorldAABB();
     Ogre::Real pushBackVelocity = 5.0f;
 
-    Gap* gp = gameRoom->getPlayerGapSceneNode(p->getPlayerID());
+    RoomSpace* gp = gameRoom->getPlayerRoomSpace(p->getPlayerID());
 
-    restrictHNode = gp->hGap;
-    restrictVNode = gp->vGap;
+    restrictHNode = gp->horizontalGap;
+    restrictVNode = gp->verticalGap;
 
     gapHBox = restrictHNode->_getWorldAABB();
     gapVBox = restrictVNode->_getWorldAABB();
@@ -336,22 +338,21 @@ bool Server::interpretClientPacket(int playerID)
     if (buff == NULL)
         return false;
 
-    printf("*****Client sending sequence\n\n");
+    // printf("*****Client sending sequence\n\n");
     while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 0x00)
     {
         int packetID = buff[indexIntoBuff] - '0';
-        printf("\tpacketID = %d\n", packetID);
+        // printf("\tpacketID = %d\n", packetID);
 
         if (packetID == INPUT)
         {
             INPUT_packet i;
-
             memcpy(&i, buff+indexIntoBuff, sizeof(INPUT_packet));
 
             // interpret i
             int pID = i.playID - '0';
             // keyID inputID = static_cast<keyID>(i.key - '0');
-            printf("PROCESSING CLIENT INPUT: %c\n", i.key);
+            // printf("PROCESSING CLIENT INPUT: %c\n", i.key);
             processClientInput((pID - 1), i.key);
 
             indexIntoBuff += sizeof(INPUT_packet);
@@ -359,7 +360,7 @@ bool Server::interpretClientPacket(int playerID)
         else if (packetID == C_PLAYER)
         {   
             C_PLAYER_packet p;
-            printf("FOUND CLIENT PLAYER PACKET!!!\n\n\n");
+            // printf("FOUND CLIENT PLAYER PACKET!!!\n\n\n");
             memcpy(&p, buff+indexIntoBuff, sizeof(C_PLAYER_packet));
 
             int pID = p.playID - '0';
@@ -378,6 +379,20 @@ bool Server::interpretClientPacket(int playerID)
             cp->getBody()->setCenterOfMassTransform(transform);
 
             indexIntoBuff += sizeof(C_PLAYER_packet);
+        }
+        else if(packetID == DISK)
+        {
+            DISK_packet dp;
+            memcpy(&dp, buff+indexIntoBuff, sizeof(DISK_packet));
+
+            int dID = dp.diskID - '0';
+            int pID = dp.playID - '0';
+
+            Player* cp = playerList[pID-1];
+
+            cp->getPlayerSightNode()->_setDerivedPosition(Ogre::Vector3(dp.x, dp.y, dp.z));
+
+            indexIntoBuff += sizeof(DISK_packet);   
         }
         // else if (packetID == GAMESTATE)
         // {
@@ -469,7 +484,8 @@ void Server::processClientInput(int playerIndex, char keyPressed)
                 p->setState(BOOST, true);
             break;
         case 't':  // PERFORM THROW IN SIMULATOR HANDLES IF THROW FLAG IS SET
-            gameSimulator->setThrowFlag();
+            if (playerList[playerIndex]->checkHolding())
+                gameSimulator->setThrowFlag();
             break;
         case 'q':  // GAME STATE CHANGE
             removePlayer(playerIndex);
@@ -485,6 +501,10 @@ void Server::removePlayer(int playerIndex)
     gameSimulator->removePlayer(playerIndex);
 }
 //-------------------------------------------------------------------------------------
+void Server::restartRound()
+{
+
+}
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
