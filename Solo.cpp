@@ -49,6 +49,7 @@ void Solo::createScene()
     pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(player);
 
+
     // for (int i=0; i < NUM_OF_TARGETS; i++)
     // {
     //     Target *target = new Target("Target_" + i, sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());

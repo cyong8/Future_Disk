@@ -282,8 +282,11 @@ Wall* Room::getWall(int index)
 	return wallList[index];
 }
 //-------------------------------------------------------------------------------------
-Ogre::Vector3 Room::getBounds()
+int Room::getNumberOfPlayers()
 {
-	return Ogre::Vector3(width, height, gapSize);
+	if (numberOfPlayers == 3)
+		return numberOfPlayers + 1;
+	else 
+		return numberOfPlayers;
 }
 //-------------------------------------------------------------------------------------

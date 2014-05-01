@@ -41,6 +41,14 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     
 	rootNode->pitch(Ogre::Degree(90));
 
+	Ogre::Real posx, posy, posz;
+
+	posx = Ogre::Math::RangeRandom(-position.x, position.x);
+	posy = Ogre::Math::RangeRandom(0, position.y);
+	posz = Ogre::Math::RangeRandom(-position.y, position.z);
+
+	rootNode->setPosition(posx, posy, posz);
+
     typeName = "Target";
 
 	if (nym == "Power") {
