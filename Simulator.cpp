@@ -293,16 +293,14 @@ void Simulator::performThrow(Player* p)
     else // Update position relative to the Player
     {
     	Ogre::Vector3 dpos;
-    	float newDiskZ= p->getPlayerDimensions().z;  // HARD CODE PLAYER FLAG
-    	if(p->getGameObjectName() == "Player2")
-    		newDiskZ = -p->getPlayerDimensions().z;
+    	float newDiskZ = p->getPlayerDimensions().z;
 
     	dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
 		gameDisk->getSceneNode()->_setDerivedPosition(dpos + p->getSceneNode()->getPosition());
 
 		Ogre::Vector3 dpos_derived = gameDisk->getSceneNode()->_getDerivedPosition();
 		diskOrientation = btQuaternion(0, 0, 0);
-		transform = btTransform(diskOrientation, btVector3(dpos_derived.x, dpos_derived.y, dpos_derived.z));
+		transform = btTransform(diskOrientation, btVector3(dpos_derived.x, dpos_derived.y, dpos_derived.z)); // might want to do 0.0f in x and y
 		gameDisk->getBody()->setCenterOfMassTransform(transform);
     }
 }
@@ -458,8 +456,8 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
 	int tileIndex = t->getTileNumber();
 
     removeObject(t->getGameObjectName());
-    printf("*******Destorying Tiles....");
-    printf("\tPlayer ID = %d\tTile Index = %d\n\n\n", playerID + 1, tileIndex);
+    // printf("*******Destorying Tiles....");
+    // printf("\tPlayer ID = %d\tTile Index = %d\n\n\n", playerID + 1, tileIndex);
     playerTileIdentities[playerID]->removedTiles.push_back(t);
     playerTileIdentities[playerID]->removedTileIndices.push_back(tileIndex);
 
@@ -581,7 +579,7 @@ void Simulator::removeTiles(vector<Tile*>& rt)
 			{
 				Tile* tileRemoved = localIdentity->tileList[localIdentity->removedTileIndices[j]];
 				rt.push_back(tileRemoved);
-				printf("NEW REMOVED TILE - Player: %d\t Tile #: %d\n\n", tileRemoved->getTileOwner(), tileRemoved->getTileNumber());
+				// printf("NEW REMOVED TILE - Player: %d\t Tile #: %d\n\n", tileRemoved->getTileOwner(), tileRemoved->getTileNumber());
 			}
 			localIdentity->removedTileIndices.clear();
 		}

@@ -321,7 +321,7 @@ bool Server::interpretClientPacket(int playerID)
     {
         int packetID = buff[indexIntoBuff] - '0';
         // printf("\tpacketID = %d\n", packetID);
-
+        /* PLAYER INPUT */
         if (packetID == INPUT)
         {
             INPUT_packet i;
@@ -335,6 +335,7 @@ bool Server::interpretClientPacket(int playerID)
 
             indexIntoBuff += sizeof(INPUT_packet);
         }
+        /* PLAYER ORIENTATION */
         else if (packetID == C_PLAYER)
         {   
             C_PLAYER_packet p;
@@ -358,6 +359,7 @@ bool Server::interpretClientPacket(int playerID)
 
             indexIntoBuff += sizeof(C_PLAYER_packet);
         }
+        /* SIGHT NODE POSITION */
         else if(packetID == DISK)
         {
             DISK_packet dp;
@@ -367,8 +369,18 @@ bool Server::interpretClientPacket(int playerID)
             int pID = dp.playID - '0';
 
             Player* cp = playerList[pID-1];
+            printf("Updating Sight Node of Player%d\n", pID);
 
-            cp->getPlayerSightNode()->_setDerivedPosition(Ogre::Vector3(dp.x, dp.y, dp.z));
+            cp->getSceneNode()->_setDerivedOrientation(dp.orientation);
+
+            btQuaternion rotationQ;
+            btTransform transform = cp->getBody()->getCenterOfMassTransform();
+            rotationQ = btQuaternion(dp.orientation.getYaw().valueRadians(), 0, 0);
+            transform.setRotation(rotationQ);
+
+            cp->getBody()->setCenterOfMassTransform(transform);
+
+            cp->getPlayerSightNode()->setPosition(Ogre::Vector3(dp.x, dp.y, dp.z));
 
             indexIntoBuff += sizeof(DISK_packet);   
         }

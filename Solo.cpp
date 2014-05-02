@@ -189,6 +189,7 @@ bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
     pBody->setCenterOfMassTransform(transform);
     
     pSightNode->setPosition(pSightNode->getPosition() + sightHeight);
+    // pCamNode->setPosition(Ogre::Vector3(pCamNode->getPosition().x, -pSightNode->getPosition().y, pCamNode->getPosition().z));
     pCamNode->setPosition(Ogre::Vector3(pCamNode->getPosition().x, pCamNode->getPosition().y, -pSightNode->getPosition().z));
 
     return true;

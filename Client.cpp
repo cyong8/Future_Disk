@@ -250,12 +250,12 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         dPack.playID = (char)(((int)'0') + playerID);
 
         // Grab Sight Node position
-        Ogre::Vector3 sightPos = clientPlayer->getPlayerSightNode()->_getDerivedPosition();
+        Ogre::Vector3 sightPos = clientPlayer->getPlayerSightNode()->getPosition();
 
         dPack.x = sightPos.x;
         dPack.y = sightPos.y;
         dPack.z = sightPos.z;
-        dPack.orientation = Ogre::Quaternion::IDENTITY;
+        dPack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
 
         memcpy(dBuff, &dPack, sizeof(DISK_packet));
         gameNetwork->sendPacket(dBuff, playerID);
@@ -264,6 +264,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         pack.key = 't';
 
         clientPlayer->setHolding(false);
+        clientPlayer->setState(HOLDING, false);
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
