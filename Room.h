@@ -3,6 +3,7 @@
 
 #include "Wall.h"
 #include "Tile.h"
+#include "BaseApplication.h"
 
 enum wallIndex
 {
@@ -21,10 +22,12 @@ struct RoomSpace
 	Ogre::SceneNode* horizontalGap;
 	Ogre::SceneNode* verticalGap;
 	vector<Tile*> tileList;
+	bool active;
 };
 
 class Wall;
 class Tile;
+class Simulator;
 
 class Room
 {
@@ -40,15 +43,23 @@ public:
 	Wall* getWall(int index);
 	int getNumberOfPlayers(void);
 	Ogre::Vector3 getBounds(void);
-	int getTilesPerRow() { return (int)tilesPerRow; };
-	int getTilesPerColumn() { return (int)tilesPerCol; };
+	void activateRoom(void);
+	void deactivateRoom(void);
+	void deactivateRoomSpace(int playerID);
+	int getTilesPerRow(void) { return (int)tilesPerRow; };
+	int getTilesPerColumn(void) { return (int)tilesPerCol; };
+	bool checkActive(void) { return active; };
 
 	vector<Tile*> cTileList;
 	vector<Tile*> hTileList;
 
 	vector<Wall*> wallList;
 protected:
+	Simulator* roomSimulator;
+	Ogre::SceneManager* rSceneMgr;
+
 	vector<RoomSpace*> playerRoomSpaces;
+
 	Ogre::Real width;
 	Ogre::Real height;
 	Ogre::Real heightScalingFactor;
@@ -61,6 +72,7 @@ protected:
 	
 	Ogre::Real floorPositionY;
 	int numberOfPlayers;
+	bool active;
 };
 
 #endif // #ifndef __Room_h_

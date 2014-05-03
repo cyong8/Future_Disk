@@ -16,6 +16,9 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     mMove = 5.0f;
     mRotate = 0.1f;
     sprintFactor = 2.0f;
+    pseudoHostStartGame = false;
+    gameRoomCreated = false;
+
     gameDisk = NULL;
     numberOfClients = 0;
     forceUpdate = false;
@@ -33,9 +36,9 @@ Server::~Server(void)
 //-------------------------------------------------------------------------------------
 void Server::createScene()
 {
-    gameRoom = new Room(sSceneMgr, gameSimulator, 2);
+    twoPlayerGameRoom = new Room(sSceneMgr, gameSimulator, 2);
+    fourPlayerGameRoom = new Room(sSceneMgr, gameSimulator, 4);
 
-    sSceneMgr->getCamera("PlayerCam")->lookAt(gameSimulator->getGameObject("Ceiling")->getSceneNode()->getPosition());
 
     /********************  POWER UPS  ********************/
     // Power = new Target("Power", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
@@ -43,29 +46,29 @@ void Server::createScene()
     // JumpPower = new Target("Jump", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
     // Restore = new Target("Restore", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
 
-    // Power->addToSimulator();
-    // Speed->addToSimulator();
-    // JumpPower->addToSimulator();
-    // Restore->addToSimulator();
-
     sSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     sSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
     
-    directLight = sSceneMgr->createLight("directionalLight");  // Point light
-    directLight->setType(Ogre::Light::LT_POINT); // change to directional light
+    directLight = sSceneMgr->createLight("roomLight");
+    directLight->setType(Ogre::Light::LT_POINT);            // change to directional light
     directLight->setDiffuseColour(Ogre::ColourValue::White);
     directLight->setSpecularColour(Ogre::ColourValue::White);
     directLight->setVisible(true);
-    directLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getWall(Ceiling)->getSceneNode()->getPosition().y, 0.0f));
-    // directLight->setDirection(Ogre::Vector3( 0, -1, 0));
-    
+
+    twoPlayerGameRoom->activateRoom();
+    activeRoom = twoPlayerGameRoom;
+    sSceneMgr->getCamera("PlayerCam")->lookAt(activeRoom->getWall(Ceiling)->getSceneNode()->getPosition());
+
     updateClock = clock();
 }
 //-------------------------------------------------------------------------------------
 bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on socketSet index 0
 {
-    gameSimulator->stepSimulation(tSinceLastFrame, 1, 1.0f/120.0f);
-    gameSimulator->parseCollisions(); // check collisions
+    if (pseudoHostStartGame)
+    {
+        gameSimulator->stepSimulation(tSinceLastFrame, 1, 1.0f/120.0f);
+        gameSimulator->parseCollisions();
+    }
 
     if (gameNetwork->checkSockets(-1)) // CHECK FOR NEW PLAYERS
     {
@@ -78,7 +81,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             char playerBuffer[25];
             sprintf(playerBuffer, "Player%d", numberOfClients);
 
-            Player *newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, gameRoom);
+            Player *newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, activeRoom);
             playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
@@ -93,7 +96,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         // restrictPlayerMovement(playerList[i]);
     }
     
-    if (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f || forceUpdate)
+    if (pseudoHostStartGame && (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f || forceUpdate))
     {
         constructAndSendGameState();
         updateClock = clock();
@@ -125,49 +128,61 @@ bool Server::constructAndSendGameState()
     char* sBuff;
     char* dBuff;
     char* tBuff;
+    char* gBuff = NULL;
     int totalBytesSent = 0;
 
     vector<S_PLAYER_packet> playerPackList; 
     vector<TILE_packet> tilePackList;
-    DISK_packet dp;
+    DISK_packet dPack;
     
-    sBuff = (char*)malloc(sizeof(S_PLAYER_packet));
+    sBuff = new char[sizeof(S_PLAYER_packet)];
 
     /* Sending each player's position to clients */
     for (int i = 0; i < numberOfClients; i++)   // might want to limit to players who have changed position
     {
-        S_PLAYER_packet pack;
+        S_PLAYER_packet sPack;
      
-        memset(&pack, 0, sizeof(S_PLAYER_packet));
+        memset(&sPack, 0, sizeof(S_PLAYER_packet));
 
-        pack.packetID = (char)(((int)'0') + S_PLAYER);
-        pack.playID = (char)(((int)'0') + (i + 1));
+        sPack.packetID = (char)(((int)'0') + S_PLAYER);
+        sPack.playID = (char)(((int)'0') + (i + 1));
 
-        // printf("\n\nconstructing PLAYER_packet: packetID = %c, playID = %c\n\n", pack.packetID, pack.playID);
-        pack.x = playerList[i]->getSceneNode()->_getDerivedPosition().x;
-        pack.y = playerList[i]->getSceneNode()->_getDerivedPosition().y;
-        pack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
-        // printf("\tPack Position: Ogre::Vector3(%f, %f, %f)\n", pack.x, pack.y, pack.z);
-        pack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
-        playerPackList.push_back(pack);
+        sPack.x = playerList[i]->getSceneNode()->_getDerivedPosition().x;
+        sPack.y = playerList[i]->getSceneNode()->_getDerivedPosition().y;
+        sPack.z = playerList[i]->getSceneNode()->_getDerivedPosition().z;
+        
+        sPack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
+        playerPackList.push_back(sPack);
     }
+    if (pseudoHostStartGame && !gameRoomCreated)
+    {
+        gameRoomCreated = true;
 
+        GAMESTATE_packet gPack;
+        
+        gPack.packetID = (char)(((int)'0') + GAMESTATE);
+        gPack.stateID = (char)(((int)'0') + START);
+        gPack.stateAttribute = (char)(((int)'0') + numberOfClients);
+
+        gBuff = new char[sizeof(GAMESTATE_packet)];
+        memcpy(gBuff, &gPack, sizeof(DISK_packet));
+    }
     if (updateRemovedTiles())
     {
         for (int i = 0; i < removedTiles.size(); i++)
         {
             Tile* localTile = removedTiles[i];
 
-            TILE_packet tp;
+            TILE_packet tPack;
 
-            tp.packetID = (char)(((int)'0') + TILE);
-            tp.playID = (char)(((int)'0') + (localTile->getTileOwner()));
-            tp.removed = '1';
-            tp.tileNumber = localTile->getTileNumber();
+            tPack.packetID = (char)(((int)'0') + TILE);
+            tPack.playID = (char)(((int)'0') + (localTile->getTileOwner()));
+            tPack.removed = '1';
+            tPack.tileNumber = localTile->getTileNumber();
 
-            tilePackList.push_back(tp);
+            tilePackList.push_back(tPack);
         }
-        tBuff = (char*)malloc(sizeof(TILE_packet));
+        tBuff = new char[sizeof(TILE_packet)];
         removedTiles.clear();
     }
     /* UPDATE ACTIVE POWER UPS */
@@ -198,20 +213,20 @@ bool Server::constructAndSendGameState()
     // packList.push_back(pack);
     if (gameDisk != NULL)
     {
-        memset(&dp, 0, sizeof(DISK_packet));
+        memset(&dPack, 0, sizeof(DISK_packet));
 
-        dp.packetID = (char)(((int)'0') + DISK);
-        dp.diskID = (char)((int)'0');
-        dp.playID = (char)(((int)'0') + gameDisk->checkIDOfHolder());
+        dPack.packetID = (char)(((int)'0') + DISK);
+        dPack.diskID = (char)((int)'0');
+        dPack.playID = (char)(((int)'0') + gameDisk->checkIDOfHolder());
 
-        dp.x = gameDisk->getSceneNode()->_getDerivedPosition().x;
-        dp.y = gameDisk->getSceneNode()->_getDerivedPosition().y;
-        dp.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
+        dPack.x = gameDisk->getSceneNode()->_getDerivedPosition().x;
+        dPack.y = gameDisk->getSceneNode()->_getDerivedPosition().y;
+        dPack.z = gameDisk->getSceneNode()->_getDerivedPosition().z;
 
-        dp.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
+        dPack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
     
-        dBuff = (char*)malloc(sizeof(DISK_packet));
-        memcpy(dBuff, &dp, sizeof(DISK_packet));
+        dBuff = new char[sizeof(DISK_packet)];
+        memcpy(dBuff, &dPack, sizeof(DISK_packet));
     }
     /* Send all packets to each player */
     for (int i = 0; i < numberOfClients; i++)
@@ -230,6 +245,8 @@ bool Server::constructAndSendGameState()
             // printf("\tTile Number: %d\t Tile Owner ID: %c\n\n", tilePackList[j].tileNumber, tilePackList[j].playID);
             gameNetwork->sendPacket(tBuff, i);
         }
+        if (gBuff != NULL)
+            gameNetwork->sendPacket(gBuff, i);
         /* All Disk Packets */
         if (gameDisk != NULL)
             gameNetwork->sendPacket(dBuff, i);
@@ -258,7 +275,7 @@ void Server::restrictPlayerMovement(Player* p)
     Ogre::AxisAlignedBox playerBox = p->getSceneNode()->_getWorldAABB();
     Ogre::Real pushBackVelocity = 5.0f;
 
-    RoomSpace* gp = gameRoom->getPlayerRoomSpace(p->getPlayerID());
+    RoomSpace* gp = activeRoom->getPlayerRoomSpace(p->getPlayerID());
 
     restrictHNode = gp->horizontalGap;
     restrictVNode = gp->verticalGap;
@@ -316,36 +333,30 @@ bool Server::interpretClientPacket(int playerID)
     if (buff == NULL)
         return false;
 
-    // printf("*****Client sending sequence\n\n");
     while (indexIntoBuff < MAX_SIZE_OF_BUFFER && buff[indexIntoBuff] != 0x00)
     {
         int packetID = buff[indexIntoBuff] - '0';
-        // printf("\tpacketID = %d\n", packetID);
-        /* PLAYER INPUT */
+        /******************** PLAYER INPUT ********************/
         if (packetID == INPUT)
         {
             INPUT_packet i;
             memcpy(&i, buff+indexIntoBuff, sizeof(INPUT_packet));
 
-            // interpret i
             int pID = i.playID - '0';
-            // keyID inputID = static_cast<keyID>(i.key - '0');
-            // printf("PROCESSING CLIENT INPUT: %c\n", i.key);
             processClientInput((pID - 1), i.key);
 
             indexIntoBuff += sizeof(INPUT_packet);
         }
-        /* PLAYER ORIENTATION */
+        /******************** PLAYER ORIENTATION ********************/
         else if (packetID == C_PLAYER)
         {   
             C_PLAYER_packet p;
-            // printf("FOUND CLIENT PLAYER PACKET!!!\n\n\n");
+            
             memcpy(&p, buff+indexIntoBuff, sizeof(C_PLAYER_packet));
 
             int pID = p.playID - '0';
             Ogre::Quaternion quat = p.orientation;
 
-            // interpret p
             Player* cp = playerList[pID-1];
 
             cp->getSceneNode()->_setDerivedOrientation(p.orientation);
@@ -359,7 +370,7 @@ bool Server::interpretClientPacket(int playerID)
 
             indexIntoBuff += sizeof(C_PLAYER_packet);
         }
-        /* SIGHT NODE POSITION */
+        /******************** SIGHT NODE POSITION ********************/
         else if(packetID == DISK)
         {
             DISK_packet dp;
@@ -384,52 +395,23 @@ bool Server::interpretClientPacket(int playerID)
 
             indexIntoBuff += sizeof(DISK_packet);   
         }
-        // else if (packetID == GAMESTATE)
-        // {
-        //     GAMESTATE_packet g;
+        /******************** GAMESTATE UPDATES ********************/
+        else if (packetID == GAMESTATE)
+        {
+            GAMESTATE_packet g;
 
-        //     memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
+            memcpy(&g, buff+indexIntoBuff, sizeof(GAMESTATE_packet));
 
-        //     // interpret g
+            if (g.stateID == (char)(((int)'0') + START))
+            {
+                pseudoHostStartGame = true;
 
-        //     indexIntoBuff += sizeof(GAMESTATE_packet);
-        // }
+                switchRooms();
+            }
+
+            indexIntoBuff += sizeof(GAMESTATE_packet);
+        }
     }
-    // if (typeInput == 'j') //&& !clientPlayer->groundConstantSet)   // Jump
-    // {
-    //     // clientPlayer->performJump();
-    // }
-    // if (typeInput == 'v')                                       // View Mode Toggle
-    // {
-    //     // clientVKeyDown = !clientVKeyDown;
-    // }
-    // if (typeInput == 'b')                                       // speed boost
-    // {
-    //     // if (hostPlayer->checkState(Boost))
-    //     //     hostPlayer->toggleState(Boost, false);
-    //     // else
-    //     //     hostPlayer->toggleState(Boost, true);
-    // }
-    // if (typeInput == 't') //&& clientPlayer->checkHolding())       // Player tried to throw
-    // {
-    //     gameSimulator->setThrowFlag();
-    // }
-    // if (typeInput == 'o')
-    // {
-    //     // clientPlayer->getSceneNode()->_setDerivedOrientation(pack.orientationQ);
-
-    //     // btQuaternion rotationQ;
-    //     // btTransform transform = clientPlayer->getBody()->getCenterOfMassTransform();
-
-    //     // rotationQ = btQuaternion(clientPlayer->getSceneNode()->getOrientation().getYaw().valueRadians(), 0, 0);
-    //     // transform.setRotation(rotationQ);
-
-    //     // clientPlayer->getBody()->setCenterOfMassTransform(transform);
-    // }
-    // if (typeInput == 'S')
-    // {
-    //     // clientPlayer->getPlayerSightNode()->setPosition(Ogre::Vector3(pack.x_coordinate, pack.y_coordinate, pack.z_coordinate));
-    // }
 
     return false;
 }
@@ -492,6 +474,44 @@ void Server::removePlayer(int playerIndex)
 {
     playerList[playerIndex]->getSceneNode()->setVisible(false);
     gameSimulator->removePlayer(playerIndex);
+}
+//-------------------------------------------------------------------------------------
+void Server::switchRooms()
+{
+    if (numberOfClients > 2 && twoPlayerGameRoom->checkActive())
+    {
+        twoPlayerGameRoom->deactivateRoom();
+        fourPlayerGameRoom->activateRoom();
+        activeRoom = fourPlayerGameRoom;
+
+        for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+        {
+            if (playerList[i] != NULL)
+            {
+                playerList[i]->changeGameRoom(activeRoom);
+                playerList[i]->setPlayerStartingPosition(true);
+                /* Adjust for any players that might have left */
+            }
+        }
+
+        if (numberOfClients == 3)
+            fourPlayerGameRoom->deactivateRoomSpace(4);
+    }
+    else if (numberOfClients == 2 && fourPlayerGameRoom->checkActive())
+    {
+        fourPlayerGameRoom->deactivateRoom();
+        twoPlayerGameRoom->activateRoom();
+        activeRoom = twoPlayerGameRoom;
+
+        // for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+        // {
+        //     if (playerList[i] != NULL)
+        //     {
+        //         playerList[i]->changeGameRoom(activeRoom);
+        //         /* Adjust for any players that might have left */
+        //     }
+        // }
+    }
 }
 //-------------------------------------------------------------------------------------
 void Server::restartRound()

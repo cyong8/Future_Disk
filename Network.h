@@ -21,6 +21,14 @@ enum identifier
 	CLIENT
 };
 
+enum gameStates
+{
+	START,
+	QUIT,
+	SOUND,
+	ENDROUND
+};
+
 enum keyID
 {
 	W,
@@ -113,8 +121,8 @@ struct TILE_packet
 struct GAMESTATE_packet 
 {
 	char packetID;
-	int stateChange;	// type of state change
-	// Activate respective power up 
+	char stateID;		// either player ID for resize or music ID
+	char stateAttribute;	// type of state change
 	// sound
 	// GUI stuff- lose, win, gameStart
 };

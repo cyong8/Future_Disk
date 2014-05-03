@@ -29,12 +29,41 @@ void Client::createScene()
     char cameraBuffer[25];
 
     /* GAME ROOM */
-    gameRoom = new Room(cSceneMgr, NULL, 2);
+    twoPlayerGameRoom = new Room(cSceneMgr, NULL, 2);
+    fourPlayerGameRoom = new Room(cSceneMgr, NULL, 4);
+    
+    /********************  POWER UPS  ********************/
+    // Power = new Target("Power", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
+    // Speed = new Target("Speed", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
+    // JumpPower = new Target("Jump", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
+    // Restore = new Target("Restore", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
+
+    cSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
+    cSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
+
+    // Create Light for room
+    directLight = cSceneMgr->createLight("roomLight");  // Point light
+    directLight->setType(Ogre::Light::LT_POINT);
+    directLight->setDiffuseColour(Ogre::ColourValue::White);
+    directLight->setSpecularColour(Ogre::ColourValue::White);
+    directLight->setVisible(true);
+
+    if (playerID > 2)
+    {
+        fourPlayerGameRoom->activateRoom();
+        activeRoom = fourPlayerGameRoom;
+    }
+    else
+    {
+        twoPlayerGameRoom->activateRoom();
+        activeRoom = twoPlayerGameRoom;
+    }
+
     printf("\n\nPlayer ID: %d\n\n", playerID);
 
     /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
-    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, gameRoom);
+    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, activeRoom);
     clientPlayer->setPlayerSpace();
 
     // for (int i = 0; i < clientPlayer->getPlayerSpace()->tileList.size(); i++)
@@ -51,24 +80,6 @@ void Client::createScene()
     pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));
     pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     pCam->setPlayer(clientPlayer);
-    
-    /********************  POWER UPS  ********************/
-    // Power = new Target("Power", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
-    // Speed = new Target("Speed", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
-    // JumpPower = new Target("Jump", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
-    // Restore = new Target("Restore", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
-
-    cSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
-    cSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
-
-    // Create Light for room
-    directLight = cSceneMgr->createLight("directionalLight");  // Point light
-    directLight->setType(Ogre::Light::LT_POINT);
-    directLight->setDiffuseColour(Ogre::ColourValue::White);
-    directLight->setSpecularColour(Ogre::ColourValue::White);
-    directLight->setVisible(true);
-    directLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getHeight()/2, 0.0f));
-    // directLight->setDirection(Ogre::Vector3( 1, -1, -1));
 
     createOverlays(pCam);
     updateClock = clock();
@@ -87,12 +98,27 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
+    if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1)
+    {
+        char* gBuff = new char[sizeof(GAMESTATE_packet)];
+        
+        GAMESTATE_packet gPack;
+        gPack.packetID = (char)(((int)'0') + GAMESTATE);
+        gPack.stateID = (char)(((int)'0') + START);
+        gPack.stateAttribute = ' ';
+
+        memcpy(gBuff, &gPack, sizeof(GAMESTATE_packet));
+        gameNetwork->sendPacket(gBuff, playerID);
+    }
+    else if (!gameStart)
+        return;
+
     char* cpBuff;
     static bool vKeydown = false;
     INPUT_packet pack;
-    char* iBuff = (char*)malloc(sizeof(INPUT_packet));
+    char* iBuff = new char[sizeof(INPUT_packet)];
 
-    pack.packetID =(char)(((int)'0') + INPUT);
+    pack.packetID = (char)(((int)'0') + INPUT);
     pack.playID = (char)(((int)'0') + playerID);
 
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
@@ -105,7 +131,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         cPack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
         // printf("Client Sending Quaternion: %f, %f, %f\n", pack.orientation.getYaw().valueRadians(), pack.orientation.getRoll().valueRadians(), pack.orientation.getPitch().valueRadians());
        
-        cpBuff = (char*)malloc(sizeof(C_PLAYER_packet));
+        cpBuff = new char[sizeof(C_PLAYER_packet)];
         memcpy(cpBuff, &cPack, sizeof(C_PLAYER_packet));
 
         gameNetwork->sendPacket(cpBuff, playerID);
@@ -243,7 +269,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     {
         /* Using Disk packet to send position of player's sight node (i.e. Direction of throw) */
         DISK_packet dPack;
-        char* dBuff = (char*)malloc(sizeof(DISK_packet));
+        char* dBuff = new char[sizeof(DISK_packet)];
 
         dPack.packetID =(char)(((int)'0') + DISK);
         dPack.diskID = (char)(((int)'0') + playerID);
@@ -347,7 +373,7 @@ void Client::interpretServerPacket(char* packList)
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
-                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, gameRoom);
+                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, activeRoom);
                 playerList[playerIndex]->setPlayerSpace();
                 numPlayers++;
             }
@@ -378,16 +404,42 @@ void Client::interpretServerPacket(char* packList)
             // printf("\tTile Number: %d\t Tile Owner ID: %d\n\n", t.tileNumber, newPlayerID);
             indexIntoBuff += sizeof(TILE_packet);
         }
-        // else if(packType == (char)(((int)'0') + GAMESTATE))
-        // {
-        //     gameStart = true;
-        // }
+        else if(packType == (char)(((int)'0') + GAMESTATE))
+        {
+            GAMESTATE_packet g;
+            memcpy(&g, packList+indexIntoBuff, sizeof(GAMESTATE_packet));
+
+            if (g.stateID == (char)(((int)'0') + START))
+            {
+                int playersInRoom = (g.stateAttribute - '0'); 
+                
+                switchRooms(playersInRoom);
+
+                gameStart = true;
+            }
+            else if (g.stateID == (char)(((int)'0') + QUIT))
+            {
+
+            }
+            else if (g.stateID == (char)(((int)'0') + SOUND))
+            {
+
+            }
+            else if (g.stateID == (char)(((int)'0') + ENDROUND))
+            {
+
+            }
+            indexIntoBuff += sizeof(GAMESTATE_packet);
+        }
     }
     // printf("ENDING INTERPRETING PACKETS\n\n\n");
 }
 //-------------------------------------------------------------------------------------
 bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
+    if (!gameStart)
+        return false;
+
     Ogre::SceneNode* pSceneNode = clientPlayer->getSceneNode();
     Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = clientPlayer->getPlayerCameraNode();
@@ -458,5 +510,51 @@ Ogre::Vector3 Client::clientChangePosition()
     }
     else 
         return diffVector;
+}
+//-------------------------------------------------------------------------------------
+void Client::switchRooms(int playersInRoom)
+{
+    if (playersInRoom > 2)
+    {
+        if (!fourPlayerGameRoom->checkActive()) // Not currently in 4Player Room - Switch
+        {
+            twoPlayerGameRoom->deactivateRoom();
+            fourPlayerGameRoom->activateRoom();
+            activeRoom = fourPlayerGameRoom;
+
+            for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+            {
+                if (playerList[i] != NULL)
+                {
+                    playerList[i]->changeGameRoom(activeRoom);
+                    /* Adjust for any players that might have left
+                        (i.e. player 4 becomes player 2 if 2 and 3 left)
+                        need to do this whether or not the room shifted****
+                    */
+                }
+            }
+
+            if (playersInRoom == 3)
+                fourPlayerGameRoom->deactivateRoomSpace(4);
+        }
+    }
+    else 
+    {
+        if (!twoPlayerGameRoom->checkActive()) // Not currently in 2Player Room - Switch
+        {
+            fourPlayerGameRoom->deactivateRoom();
+            twoPlayerGameRoom->activateRoom();
+            activeRoom = twoPlayerGameRoom;
+            /* Still need to adjust client players and client player positions */
+            // for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+            // {
+            //     if (playerList[i] != NULL)
+            //     {
+            //         playerList[i]->changeGameRoom();
+            //         /* Adjust for any players that might have left */
+            //     }
+            // }
+        }
+    }
 }
 //-------------------------------------------------------------------------------------

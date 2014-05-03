@@ -19,40 +19,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	playerCanCatch = true;
 	customAnimationState = NULL;
 
-	Ogre::Vector3 position;
-	Ogre::Real roomWidth = playerRoom->getWidth();
-	Ogre::Real roomHeight = playerRoom->getHeight();
-	Ogre::Real numberOfPlayers = playerRoom->getNumberOfPlayers();
-
-	if (playerID == 1)
-	{
-		playerSide = "Positive Side";	//REMOVE
-		if (numberOfPlayers > 2)
-			position = Ogre::Vector3(-(roomWidth/roomHeight), 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
-		else 
-			position = Ogre::Vector3(0.0f, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
-		rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
-	}
-	else if (playerID == 2)
-	{
-		playerSide = "Negative Side";
-		if (numberOfPlayers > 2)
-			position = Ogre::Vector3(roomWidth/roomHeight, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
-		else 
-			position = Ogre::Vector3(0.0f, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
-	}
-	else if (playerID == 3)
-	{
-		playerSide = "Left Side";
-		position = Ogre::Vector3(-(roomWidth/roomHeight), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
-		rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
-	}
-	else if (playerID == 4)
-	{
-		playerSide = "Right Side";
-		position = Ogre::Vector3(roomWidth/roomHeight, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
-	}
-	startingPosition = position;
+	setPlayerStartingPosition(false);
 
 	tailParticle = mgr->createParticleSystem("CyanSun_" + nym, "Examples/CyanSun");
     particleNode = rootNode->createChildSceneNode("PlayerParticle_" + nym);
@@ -64,7 +31,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->attachObject(customPlayerEnt); 	// Attach player to a scene node
 	rootNode->scale(dimensions.x/25.0, dimensions.y/25.0, dimensions.z/25.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
-	rootNode->setPosition(position); // Set the position of the player
+	rootNode->setPosition(startingPosition); // Set the startingPosition of the player
 	customPlayerEnt->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
@@ -76,22 +43,28 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, -15.00));
-		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 4.0f, 15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, 15.00));
 	}
 	else if (playerID == 2)
 	{	
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
-		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 4.0f, -15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, -15.00));
 	}
 	else if (playerID == 3)
 	{
-		
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
+		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, -15.00));
 	}
 	else if (playerID == 4)		
 	{
-
+		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
+		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
+		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, -15.00));
 	}
 
  	// DEBUGGING 
@@ -118,11 +91,6 @@ void Player::setHolding(bool x)
 	isHolding = x;
 }
 //-------------------------------------------------------------------------------------
-bool Player::checkHolding()
-{
-	return isHolding;
-}
-//-------------------------------------------------------------------------------------
 void Player::attachDisk(Disk* d)
 {
 	isHolding = true;
@@ -133,44 +101,9 @@ void Player::attachDisk(Disk* d)
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 }
 //-------------------------------------------------------------------------------------
-Ogre::String Player::getPlayerSide() // REMOVE ONCE I KNOW IT'S NOT BEING USED
-{
-	return playerSide;
-}
-//-------------------------------------------------------------------------------------
 void Player::setMovementRestriction(bool x)
 {
 	movementRestricted = x;
-}
-//-------------------------------------------------------------------------------------
-bool Player::checkMovementRestriction()
-{
-	return movementRestricted;
-}
-//-------------------------------------------------------------------------------------
-Disk* Player::getPlayerDisk()
-{
-	return playerDisk;
-}
-//-------------------------------------------------------------------------------------
-Ogre::SceneNode* Player::getPlayerSightNode()
-{
-	return pSightNode;
-}
-//-------------------------------------------------------------------------------------
-Ogre::SceneNode* Player::getPlayerCameraNode()
-{
-	return pCamNode;
-}
-//-------------------------------------------------------------------------------------
-Ogre::Vector3 Player::getPlayerDimensions()
-{
-	return dimensions;
-}
-//-------------------------------------------------------------------------------------
-int Player::getPlayerID(void)
-{
-	return playerID;
 }
 //-------------------------------------------------------------------------------------
 bool Player::performJump()
@@ -239,11 +172,6 @@ Ogre::Vector3 Player::fillVelocityVector(Ogre::Real m, float sprintFactor)
 	return velocityVector;
 }
 //-------------------------------------------------------------------------------------
-bool Player::checkPlayerCanCatch()
-{
-	return playerCanCatch;
-}
-//-------------------------------------------------------------------------------------
 bool Player::togglePlayerCanCatch()
 {
 	playerCanCatch = !playerCanCatch;
@@ -260,3 +188,58 @@ void Player::setPlayerSpace()
 {
 	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
 }
+//-------------------------------------------------------------------------------------
+void Player::changeGameRoom(Room* newGameRoom)
+{
+	playerRoom = newGameRoom;
+	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
+}
+//-------------------------------------------------------------------------------------
+void Player::setPlayerStartingPosition(bool changeRoomFlag)
+{
+	Ogre::Real roomWidth = playerRoom->getWidth();
+	Ogre::Real roomHeight = playerRoom->getHeight();
+	int numberOfPlayers = playerRoom->getNumberOfPlayers();
+
+	if (playerID == 1)
+	{
+		if (numberOfPlayers > 2)
+			startingPosition = Ogre::Vector3(-(roomWidth/numberOfPlayers), 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
+		else 
+			startingPosition = Ogre::Vector3(0.0f, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
+		
+		if (!changeRoomFlag)
+			rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
+	}
+	else if (playerID == 2)
+	{
+		if (numberOfPlayers > 2)
+			startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
+		else 
+			startingPosition = Ogre::Vector3(0.0f, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
+	}
+	else if (playerID == 3)
+	{
+		startingPosition = Ogre::Vector3(-(roomWidth/numberOfPlayers), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
+		
+		if (!changeRoomFlag)
+			rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
+	}
+	else if (playerID == 4)
+	{
+		startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
+	}
+
+	rootNode->setPosition(startingPosition);
+	
+	if (changeRoomFlag)
+	{
+		Ogre::Vector3 pos = rootNode->getPosition();
+		btQuaternion rotationQ;
+        rotationQ = btQuaternion(rootNode->getOrientation().getYaw().valueRadians(), 0, 0);
+        btTransform transform = btTransform(rotationQ, btVector3(pos.x, pos.y, pos.z));
+
+       	body->setCenterOfMassTransform(transform);
+	}
+}
+//-------------------------------------------------------------------------------------

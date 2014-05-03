@@ -42,13 +42,6 @@ void Solo::createScene()
 {
     gameRoom = new Room(sceneMgr, gameSimulator, 2);
 
-    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, gameRoom);
-    player->addToSimulator();
-    
-    pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
-    pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
-    pCam->setPlayer(player);
-
 
     // for (int i=0; i < NUM_OF_TARGETS; i++)
     // {
@@ -73,13 +66,22 @@ void Solo::createScene()
     sceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     sceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
     
-    pointLight = sceneMgr->createLight("pointLight");  // Point light
+    pointLight = sceneMgr->createLight("roomLight");  // Point light
     pointLight->setType(Ogre::Light::LT_POINT);
     pointLight->setDiffuseColour(Ogre::ColourValue::White);
     pointLight->setSpecularColour(Ogre::ColourValue::White);
     pointLight->setVisible(true);
     pointLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getWall(Ceiling)->getSceneNode()->getPosition().y, 0.0f));
 
+    gameRoom->activateRoom();
+
+    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, gameRoom);
+    player->addToSimulator();
+    
+    pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
+    pCam->initializePosition(player->getPlayerCameraNode()->_getDerivedPosition(), player->getPlayerSightNode()->_getDerivedPosition());
+    pCam->setPlayer(player);
+    
     gameStart = true;
 
     createOverlays(pCam);
@@ -158,8 +160,9 @@ void Solo::updateCamera(Ogre::Real elapseTime)
 //-------------------------------------------------------------------------------------
 bool Solo::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
-
     if (gamePause || !gameStart)
+        return true;
+    if (!gameSimulator->checkGameStart())
         return true;
 
     Ogre::SceneNode* pSceneNode = player->getSceneNode();

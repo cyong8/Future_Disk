@@ -16,6 +16,7 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	ent->setMaterialName("2 - Default");
 	ent->setCastShadows(false);
 	rootNode->setPosition(position);
+	rootNode->setVisible(false);
 
 	mass = 0.0f;
 

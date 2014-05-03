@@ -25,31 +25,37 @@ private:
 	int numberOfClients; // allows server to index into socketSet
 						 // index in socketSet = playerID
 
-	/* Game Functionality Constants */
-	Ogre::Real mMove; 			// Move Constant
+/* Game Functionality Constants */
+	/* Move Constants */
+	Ogre::Real mMove; 			
 	Ogre::Real mRotate;
-	float sprintFactor;			// Sprint Constant
+	float sprintFactor;
+	/* Psuedo Host Trigger */
+	bool pseudoHostStartGame;
+	bool gameRoomCreated;
 
-	/* Game Objects */
-		/* Room */
-	Room* gameRoom;
-		/* Players */
+/* Game Objects */
+	/* Room */
+	Room* twoPlayerGameRoom;
+	Room* fourPlayerGameRoom;
+	Room* activeRoom;
+	/* Players */
 	vector<Player*> playerList;
-		/* Power Ups */
+	/* Power Ups */
 	Target *Power;
 	Target *Speed;
 	Target *JumpPower;
 	Target *Restore;
-		/* Disk */
+	/* Disk */
 	Disk* gameDisk;
 
-	/* Client State Variables */
-		/* Tiles List */
+/* Client State Variables */
+	/* Tiles List */
 	vector<Tile*> removedTiles;
-		/* Update Time Tracker */
+	/* Update Time Tracker */
 	clock_t updateClock;
 	bool forceUpdate;
-		/* Gap Check Time */ //Most likely needs to be in respective Player's class
+	/* Gap Check Time */ //Most likely needs to be in respective Player's class
 	time_t gapStartTime;
 	time_t gapEndTime;
 
@@ -61,6 +67,7 @@ private:
 	bool interpretClientPacket(int playerID);
 	void processClientInput(int playerIndex, char inputType);
 	void removePlayer(int playerIndex);
+	void switchRooms();
 	void restartRound(void);
 };
 

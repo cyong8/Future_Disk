@@ -193,8 +193,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
             else    
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
 
-			if (gameDisk->needsOrientationUpdate)
-				adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
+			// if (gameDisk->needsOrientationUpdate)
+			// 	adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
 
 			if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
 			{
@@ -322,14 +322,14 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 		{
 			// gameDisk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
-			adjustDiskOrientation(disk, disk->getBody()->getLinearVelocity(), previousWallHit);
+			// adjustDiskOrientation(disk, disk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 		else if (previousWallHit != o->getGameObjectName())
 		{
 			// disk->needsOrientationUpdate = true;
 			previousWallHit = o->getGameObjectName();
-			adjustDiskOrientation(disk, disk->getBody()->getLinearVelocity(), previousWallHit);
+			// adjustDiskOrientation(disk, disk->getBody()->getLinearVelocity(), previousWallHit);
 			gameMusic->playCollisionSound("Disk", "Wall");
 		}
 	}

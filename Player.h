@@ -13,18 +13,9 @@ class Player : public GameObject
 public:
 	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID,  Room* gameRoom);//Ogre::Vector3 roomDims);
 	void setHolding(bool x); // Set whether the player is holding the disk
-	bool checkHolding(void); // Check if the player is holding the disk
 	void attachDisk(Disk* d); // Attach the disk to the player
-	Ogre::String getPlayerSide(void);
 	void setMovementRestriction(bool x);
-	bool checkMovementRestriction(void);
-
-	Disk* getPlayerDisk(void); // Get the disk that the player is holding
-	Ogre::SceneNode* getPlayerSightNode(void); // Get the scene node where the player is looking
-	Ogre::SceneNode* getPlayerCameraNode(void); // Get the camera node attached to the player
-	Ogre::Vector3 getPlayerDimensions(void); // Get the dimensions of the player
 	
-	int getPlayerID(void);
 	bool performJump(void);
 	void increaseJump(void);
 	void decreaseJump(void);
@@ -33,16 +24,32 @@ public:
 	void setState(int index, bool value);
 	Ogre::Vector3 fillVelocityVector(Ogre::Real m, float sprintFactor);
 
-	bool checkPlayerCanCatch(void);
 	bool togglePlayerCanCatch(void);
-	
-	Ogre::Vector3 getStartingPosition() { return startingPosition; }
-	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
-	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
+
 	void animateCharacter(Ogre::String stateName);
 
-	void setPlayerSpace();
-	struct RoomSpace* getPlayerSpace() { return playerSpace; };
+	void setPlayerSpace(void);
+	void changeGameRoom(Room* newGameRoom);
+	void setPlayerStartingPosition(bool roomChangeFlag);
+	
+	int getPlayerID(void) { return playerID; }
+	Ogre::Vector3 getPlayerDimensions(void) { return dimensions; }
+
+	bool checkPlayerCanCatch(void) { return playerCanCatch; } 
+	bool checkHolding(void) { return isHolding; } 
+	Disk* getPlayerDisk(void) { return playerDisk; }
+
+	Ogre::SceneNode* getPlayerSightNode(void) { return pSightNode; }
+	Ogre::SceneNode* getPlayerCameraNode(void) { return pCamNode; }
+	
+
+	bool checkMovementRestriction(void) { return movementRestricted; }
+	struct RoomSpace* getPlayerSpace() { return playerSpace; }
+	Ogre::Vector3 getStartingPosition() { return startingPosition; }
+	
+	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
+	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
+
 
 	int jumpTimer;
 	bool jumpPowerActive;
