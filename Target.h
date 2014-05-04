@@ -14,9 +14,10 @@ public:
 	void targetHit();
 	void resetHit();
 	bool isHit(); 
+	Ogre::Vector3 getDimensions() { return dims; }
 
 protected:
-	bool hit; // set true on hit, set false on placement
+	Ogre::Vector3 dims;
 };
 
 #endif // #ifndef __Target_h_

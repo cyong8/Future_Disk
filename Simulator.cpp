@@ -91,13 +91,11 @@ void Simulator::addObject (GameObject* o)
 	}
 	if(o->typeName == "Target")
 	{
+		o->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
+		o->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
+
 		if (o->checkReAddFlag())
-		{
 			((Target*)o)->toggleHitFlag();
-			if (o->getGameObjectName() != "Power" || o->getGameObjectName() != "Speed" || o->getGameObjectName() != "Jump" || o->getGameObjectName() != "Restore") {
-			    score = 10;
-		    }
-		}
 		else
 			targetList.push_back((Target*)o);
 	}
@@ -130,8 +128,12 @@ void Simulator::removeObject(Ogre::String name)
 {
 	for (int i = 0; i < objList.size(); i++)
 	{
-		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
+		Ogre::String localName = objList[i]->getGameObjectName();
+		if (Ogre::StringUtil::match(localName, name, true))
 		{		
+			if (objList[i]->typeName == "Target" && (localName != "Power" || localName != "Speed" || localName != "Jump" || localName != "Restore")) 
+			    score = 10;
+
 			dynamicsWorld->removeRigidBody(getGameObject(name)->getBody());
 			getGameObject(name)->removeFromSimulator();
 			objList.erase(objList.begin() + i);
@@ -370,9 +372,9 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				height = gameRoom->getHeight();
 				gap = gameRoom->getGapSize();
 
-				posx = Ogre::Math::RangeRandom(-width/2.0f, width/2.0f); // From left to right
-				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f); // From base to top
-				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f); // From gap front to room back
+				posx = Ogre::Math::RangeRandom(-width/2.0f, width/2.0f);
+				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f); 
+				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f); 
 			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
 		    }
