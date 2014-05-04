@@ -111,7 +111,7 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
             gameOver = updateTimer(currTime);
             if (gameOver)
                 gameMusic->playMusic("Pause");
-            //modifyScore(gameSimulator->tallyScore());
+            modifyScore(gameSimulator->tallyScore());
         }
         else
         {
@@ -309,7 +309,7 @@ void Solo::togglePause()
         gameMusic->playMusic("Play");
         gamePause = false;
         MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));
-        MasterControl->gui->removePanel(MasterControl->getPanel(OBJECTIVE));
+        //MasterControl->gui->removePanel(MasterControl->getPanel(OBJECTIVE));
         //MasterControl->gui->removePanel(MasterControl->getPanel(INSTRUCT));
     }
     else //entering Pause
@@ -317,7 +317,7 @@ void Solo::togglePause()
         gameMusic->playMusic("Start");
         MasterControl->getLabel(PAUSE)->setCaption("GAME PAUSED!");
         MasterControl->gui->addLabel(MasterControl->getLabel(PAUSE), OgreBites::TL_CENTER);
-        MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_BOTTOM);
+        //MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_BOTTOM);
         //MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
         gamePause = true;
         time(&pauseTime);
@@ -446,6 +446,7 @@ bool Solo::updateTimer(time_t currTime)
     if(seconds <= 0)
         sec = "00";
     
+    MasterControl->getPanel(SCORE)->setParamValue(0, Ogre::StringConverter::toString(score));
     MasterControl->getPanel(SCORE)->setParamValue(1, mins + ":" + sec);
     if(minutes <= 0 && seconds <= 0)
         return true;
@@ -474,7 +475,13 @@ void Solo::restartGame()
 	time(&initTime);
 	
 	MasterControl->gui->removePanel(MasterControl->getPanel(GAMEOVER));
+	
+	score = 0;
     
     //player->addToSimulator();
 }    
 //-------------------------------------------------------------------------------------
+void Solo::modifyScore(int increase)
+{
+    score += increase;
+}
