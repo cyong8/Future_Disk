@@ -9,7 +9,6 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
 	gameSimulator = new Simulator(sceneMgr, gameMusic);
 
     score = 0;
-    NUM_OF_TARGETS = 7;
 
     srand(time(0));
     time(&gapStartTime);
@@ -42,25 +41,12 @@ void Solo::createScene()
 {
     gameRoom = new Room(sceneMgr, gameSimulator, 2);
 
-
     for (int i = 0; i < NUM_OF_TARGETS; i++)
     {
-        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());
+        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom);
         target->addToSimulator();
         target_list.push_back(target);
     }
-    // These actually don't belong - initialize target list instead
-    /*
-    Power = new Target("Power", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-    Speed = new Target("Speed", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-    JumpPower = new Target("Jump", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-    Restore = new Target("Restore", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
-
-    Power->addToSimulator();
-    Speed->addToSimulator();
-    JumpPower->addToSimulator();
-    Restore->addToSimulator();
-    */
 
     // Lights
     sceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light

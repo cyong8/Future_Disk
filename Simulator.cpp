@@ -98,7 +98,8 @@ void Simulator::addObject (GameObject* o)
 			    score = 10;
 		    }
 		}
-		targetList.push_back((Target*)o);
+		else
+			targetList.push_back((Target*)o);
 	}
 	if(o->typeName == "Wall" || o->typeName == "Tile")
 	{
@@ -127,17 +128,6 @@ GameObject* Simulator::getGameObject(Ogre::String name)
 //-------------------------------------------------------------------------------------
 void Simulator::removeObject(Ogre::String name)
 {
-	if (getGameObject(name)->typeName == "Target")
-	{
-		for (int i = 0; i < targetList.size(); i++)
-		{	
-			if (Ogre::StringUtil::match(targetList[i]->getGameObjectName(), name, true))
-			{
-				targetList.erase(targetList.begin());	
-				return;
-			}
-		}
-	}	
 	for (int i = 0; i < objList.size(); i++)
 	{
 		if (Ogre::StringUtil::match(objList[i]->getGameObjectName(), name, true))
@@ -374,17 +364,17 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			{		  
 				// This is hardcoded right now  
 				Ogre::Real width, height, gap;
-				width = 30;
-				height = 60;
-				gap = 10;
-				Ogre::Vector3 *bounds = new Ogre::Vector3(width, height, gap);
 			    Ogre::Real posx, posy, posz;
-				posx = Ogre::Math::RangeRandom(-bounds->x/2.0f, bounds->x/2.0f); // From left to right
+
+				width = gameRoom->getWidth();
+				height = gameRoom->getHeight();
+				gap = gameRoom->getGapSize();
+
+				posx = Ogre::Math::RangeRandom(-width/2.0f, width/2.0f); // From left to right
 				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f); // From base to top
-				posz = Ogre::Math::RangeRandom(0, -bounds->y/2.0f + 10.0f); // From gap front to room back
-			    o->getSceneNode()->setPosition(0, 0, 0);
+				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f); // From gap front to room back
+			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
-			    cout << o->getGameObjectName() << "'s new position position is " << "(" << posx << ", " << posy << ", " << posz << ")\n";
 		    }
 			o->addToSimulator();
 		}

@@ -340,11 +340,6 @@ Wall* Room::getWall(int index)
 	return wallList[index];
 }
 //-------------------------------------------------------------------------------------
-Ogre::Vector3 Room::getBounds()
-{
-	return Ogre::Vector3(width/2, height/2, gapSize/2);
-}
-//-------------------------------------------------------------------------------------
 void Room::activateRoom()
 {
 	// Add all player tiles to the simulator and/or make visible

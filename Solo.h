@@ -40,9 +40,6 @@ private:
 	
 	int score;
 
-	int NUM_OF_TARGETS;
-
-	
 	bool gameStart;
 	bool gameOver;
 	bool gamePause;

@@ -42,7 +42,6 @@ public:
 	
 	Wall* getWall(int index);
 	int getNumberOfPlayers(void);
-	Ogre::Vector3 getBounds(void);
 	void activateRoom(void);
 	void deactivateRoom(void);
 	void deactivateRoomSpace(int playerID);
