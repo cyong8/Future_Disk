@@ -14,15 +14,15 @@ Wall::Wall(Ogre::String nym, Ogre::String planeNym, Ogre::SceneManager *mgr, Sim
 	ent->setCastShadows(false);
 	rootNode->setPosition(position);
 
-	if(nym == "FarLeftWall" || nym == "NearRightWall")
+	if(nym == "2_FarLeftWall" || nym == "2_NearRightWall" || nym == "4_FarLeftWall" || nym == "4_NearRightWall" )
 	{
 		rootNode->yaw(Ogre::Degree(45));
 	}
-	else if(nym == "FarRightWall" || nym == "NearLeftWall")
+	else if(nym == "2_FarRightWall" || nym == "2_NearLeftWall" || nym == "4_FarRightWall" || nym == "4_NearLeftWall")
 	{
 		rootNode->yaw(Ogre::Degree(-45));
 	}
-	
+	rootNode->setVisible(false);
 	mass = 0.0f;
 	shape = new btBoxShape(btVector3(dimensions.x/2.0f, dimensions.y/2.0f, dimensions.z/2.0f));
 }

@@ -154,9 +154,6 @@ int Network::sendPacket(char* pack, int socketIndex)
 	/********************************* CLIENT *********************************/
 	if (networkID == CLIENT)
 	{
-		C_PLAYER_packet p;
-		memcpy(&p, pack, sizeof(C_PLAYER_packet));
-
 		// printf("\tPacket ID: %c\n", p.packetID);
 		// printf("\tPlayer ID: %c\n", p.playID);
 		numSent = SDLNet_TCP_Send(clientSocket, pack, packSize);
@@ -164,9 +161,6 @@ int Network::sendPacket(char* pack, int socketIndex)
 	/********************************* SERVER *********************************/
 	if (networkID == SERVER)
 	{
-		S_PLAYER_packet p;
-        memcpy(&p, pack, sizeof(S_PLAYER_packet));
-        printf("\tUpdate of Player%c\n", p.playID);
 		numSent = SDLNet_TCP_Send(connections[socketIndex].sock, pack, packSize);
 	}
 	return numSent;
@@ -188,7 +182,7 @@ char* Network::receivePacket(int socketIndex)
 	if (networkID == CLIENT)
 	{
 		numRead = SDLNet_TCP_Recv(clientSocket, buff, MAX_SIZE_OF_BUFFER);
-		printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
+		// printf("Number of bytes read: %d\t\t max: %d\n\n", numRead, MAX_SIZE_OF_BUFFER);
 	}
 	/********************************* SERVER *********************************/
 	if (networkID == SERVER)
@@ -264,5 +258,11 @@ int Network::getPacketSize(char type)
 		return sizeof(GAMESTATE_packet);
 	if (type == (char)(((int)'0') + EXPANSION))
 		return sizeof(EXPANSION_packet);
+}
+//-------------------------------------------------------------------------------------
+void Network::removeClient(int clientIndex)
+{
+	SDLNet_TCP_Close((connections[clientIndex].sock));
+	connections[clientIndex].active = false;
 }
 //-------------------------------------------------------------------------------------

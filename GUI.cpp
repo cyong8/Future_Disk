@@ -192,6 +192,12 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     quit->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
+    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/BackButton");
+    back->setText("Back to Main Menu");
+    back->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim(0, 0)));
+    back->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
+    
     CEGUI::Window *ip = wmgr.createWindow("OgreTray/Editbox", "TronGame/ClientMenu/IPEditbox");
     ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     ip->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
@@ -204,12 +210,14 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     enter->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
     sheet->addChildWindow(quit);
+    sheet->addChildWindow(back);
     sheet->addChildWindow(ip);
     sheet->addChildWindow(enter);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
+    back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenu, mcp));
     enter->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, mcp));
 }
 //-------------------------------------------------------------------------------------

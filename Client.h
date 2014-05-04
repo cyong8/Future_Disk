@@ -33,7 +33,9 @@ private:
 
 	/* Other Objects in the Scene */
 		/* Room */
-	Room* gameRoom;
+	Room* twoPlayerGameRoom;
+	Room* fourPlayerGameRoom;
+	Room* activeRoom;
 		/* Other Players */
 	vector<Player*> playerList;
 	int numPlayers;
@@ -52,14 +54,15 @@ private:
 	/* Game State Constants */
 	bool clientOrientationChange;
 	Ogre::Real mRotate;
-	bool gameStart;
 	clock_t updateClock;
+	bool gameStart;
 
 	Ogre::Light* directLight;
 	void updateScene(void);
 	void updateCamera(void);
 	void interpretServerPacket(char* packList);
 	Ogre::Vector3 clientChangePosition(void);
+	void switchRooms(int playersInRoom);
 };
 
 #endif // #ifndef __Client_h_

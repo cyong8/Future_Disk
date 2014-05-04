@@ -29,20 +29,8 @@ void Client::createScene()
     char cameraBuffer[25];
 
     /* GAME ROOM */
-    gameRoom = new Room(cSceneMgr, NULL, 1, 2);
-    printf("\n\nPlayer ID: %d\n\n", playerID);
-
-    /* CLIENT PLAYER */
-    sprintf(playerBuffer, "Player%d", playerID);
-    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers()));
-    playerList[playerID-1] = clientPlayer;
-    numPlayers++;
-
-    /* CLIENT'S PLAYER CAMERA */
-	sprintf(cameraBuffer, "Player%dCam", playerID);
-    pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));
-    pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
-    pCam->setPlayer(clientPlayer);
+    twoPlayerGameRoom = new Room(cSceneMgr, NULL, 2);
+    fourPlayerGameRoom = new Room(cSceneMgr, NULL, 4);
     
     /********************  POWER UPS  ********************/
     // Power = new Target("Power", cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f)); // Create initial Power-up
@@ -54,15 +42,46 @@ void Client::createScene()
     cSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
 
     // Create Light for room
-    directLight = cSceneMgr->createLight("directionalLight");  // Point light
+    directLight = cSceneMgr->createLight("roomLight");  // Point light
     directLight->setType(Ogre::Light::LT_POINT);
     directLight->setDiffuseColour(Ogre::ColourValue::White);
     directLight->setSpecularColour(Ogre::ColourValue::White);
     directLight->setVisible(true);
-    directLight->setPosition(Ogre::Vector3(0.0f, gameRoom->getHeight()/2, 0.0f));
-    // directLight->setDirection(Ogre::Vector3( 1, -1, -1));
 
-    // createOverlays(pCam);
+    if (playerID > 2)
+    {
+        fourPlayerGameRoom->activateRoom();
+        activeRoom = fourPlayerGameRoom;
+    }
+    else
+    {
+        twoPlayerGameRoom->activateRoom();
+        activeRoom = twoPlayerGameRoom;
+    }
+
+    printf("\n\nPlayer ID: %d\n\n", playerID);
+
+    /* CLIENT PLAYER */
+    sprintf(playerBuffer, "Player%d", playerID);
+    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, activeRoom);
+    clientPlayer->setPlayerSpace();
+
+    // for (int i = 0; i < clientPlayer->getPlayerSpace()->tileList.size(); i++)
+    // {
+    //     Tile* ct = clientPlayer->getPlayerSpace()->tileList[i];
+    //     printf("Player: %d\t Tile #: %d\n", ct->getTileOwner(), ct->getTileNumber());
+    // }
+
+    playerList[playerID-1] = clientPlayer;
+    numPlayers++;
+
+    /* CLIENT'S PLAYER CAMERA */
+	sprintf(cameraBuffer, "Player%dCam", playerID);
+    pCam = new PlayerCamera(cameraBuffer, cSceneMgr, cSceneMgr->getCamera("PlayerCam"));
+    pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
+    pCam->setPlayer(clientPlayer);
+
+    createOverlays(pCam);
     updateClock = clock();
     previousPosition = clientPlayer->getSceneNode()->getPosition();
 }
@@ -79,23 +98,41 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
+    if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1)
+    {
+        char* gBuff = new char[sizeof(GAMESTATE_packet)];
+        
+        GAMESTATE_packet gPack;
+        gPack.packetID = (char)(((int)'0') + GAMESTATE);
+        gPack.stateID = (char)(((int)'0') + START);
+        gPack.stateAttribute = ' ';
+
+        memcpy(gBuff, &gPack, sizeof(GAMESTATE_packet));
+        gameNetwork->sendPacket(gBuff, playerID);
+    }
+    else if (!gameStart)
+        return;
+
     char* cpBuff;
     static bool vKeydown = false;
     INPUT_packet pack;
-    char* iBuff = (char*)malloc(sizeof(INPUT_packet));
+    char* iBuff = new char[sizeof(INPUT_packet)];
+
+    pack.packetID = (char)(((int)'0') + INPUT);
+    pack.playID = (char)(((int)'0') + playerID);
 
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
     {
         clientOrientationChange = false;
        
-        C_PLAYER_packet pack;
-        pack.packetID =(char)(((int)'0') + C_PLAYER);
-        pack.playID = (char)(((int)'0') + playerID);
-        pack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
+        C_PLAYER_packet cPack;
+        cPack.packetID =(char)(((int)'0') + C_PLAYER);
+        cPack.playID = (char)(((int)'0') + playerID);
+        cPack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
         // printf("Client Sending Quaternion: %f, %f, %f\n", pack.orientation.getYaw().valueRadians(), pack.orientation.getRoll().valueRadians(), pack.orientation.getPitch().valueRadians());
        
-        cpBuff = (char*)malloc(sizeof(C_PLAYER_packet));
-        memcpy(cpBuff, &pack, sizeof(C_PLAYER_packet));
+        cpBuff = new char[sizeof(C_PLAYER_packet)];
+        memcpy(cpBuff, &cPack, sizeof(C_PLAYER_packet));
 
         gameNetwork->sendPacket(cpBuff, playerID);
         updateClock = clock();
@@ -103,26 +140,27 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
     {
         /* Close player socket and allow for another player to take its place */
+        pack.key = 'q';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+        return;
     }
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'w';
 
         clientPlayer->setState(FORWARD, true);
-        pack.key = 'w';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_W) && clientPlayer->checkState(FORWARD))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'w';
 
         clientPlayer->setState(FORWARD, false);
-        pack.key = 'w';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -130,22 +168,18 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE LEFT */
     if (mKeyboard->isKeyDown(OIS::KC_A) && !clientPlayer->checkState(LEFT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'a';
 
         clientPlayer->setState(LEFT, true);
-        pack.key = 'a';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_A) && clientPlayer->checkState(LEFT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'a';
 
         clientPlayer->setState(LEFT, false);
-        pack.key = 'a';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -153,22 +187,18 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE BACK */
     if (mKeyboard->isKeyDown(OIS::KC_S) && !clientPlayer->checkState(BACK))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 's';
 
         clientPlayer->setState(BACK, true);
-        pack.key = 's';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_S) && clientPlayer->checkState(BACK))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 's';
 
         clientPlayer->setState(BACK, false);
-        pack.key = 's';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -176,32 +206,24 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     /* MOVE RIGHT */
     if (mKeyboard->isKeyDown(OIS::KC_D) && !clientPlayer->checkState(RIGHT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'd';
 
         clientPlayer->setState(RIGHT, true);
-        pack.key = 'd';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_D) && clientPlayer->checkState(RIGHT))
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'd';
 
         clientPlayer->setState(RIGHT, false);
-        pack.key = 'd';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
     {
-        pack.packetID =(char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
-
-        //clientPlayer->setState(JUMP, true);
         pack.key = 'j';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
@@ -209,58 +231,71 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
-        pack.packetID = (char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'b';
 
         clientPlayer->setState(BOOST, true);
-        pack.key = 'b';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
     else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
     {
-        pack.packetID = (char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        pack.key = 'b';
 
         clientPlayer->setState(BOOST, false);
-        pack.key = 'b';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    if (mKeyboard->isKeyDown(OIS::KC_V) && !vKeydown)            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
+    if (mKeyboard->isKeyDown(OIS::KC_V) && !clientPlayer->checkState(VIEWMODE))            // Aim View Toggle - Send to Server so they can let you throw; update camera position on client end
     {
         pCam->toggleThirdPersonView();
-        pack.key = 'v';
-
-        vKeydown = true;
+        clientPlayer->setState(VIEWMODE, true);
         
         if (gameDisk != NULL)
             gameDisk->getSceneNode()->setVisible(false);
         pCam->initializePosition(clientPlayer->getSceneNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_V) && vKeydown)        
+    else if (!mKeyboard->isKeyDown(OIS::KC_V) && clientPlayer->checkState(VIEWMODE))        
     {
         pCam->toggleThirdPersonView();
-        pack.key = 'v';
-
-        vKeydown = false;
+        clientPlayer->setState(VIEWMODE, false);
 
         if (gameDisk != NULL)
             gameDisk->getSceneNode()->setVisible(true);
         pCam->initializePosition(clientPlayer->getPlayerCameraNode()->_getDerivedPosition(), clientPlayer->getPlayerSightNode()->_getDerivedPosition());
     }
-    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && vKeydown && clientPlayer->checkHolding())
+    if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkState(HOLDING))
     {
-        pack.packetID = (char)(((int)'0') + INPUT);
-        pack.playID = (char)(((int)'0') + playerID);
+        /* Using Disk packet to send position of player's sight node (i.e. Direction of throw) */
+        DISK_packet dPack;
+        char* dBuff = new char[sizeof(DISK_packet)];
 
+        dPack.packetID =(char)(((int)'0') + DISK);
+        dPack.diskID = (char)(((int)'0') + playerID);
+        dPack.playID = (char)(((int)'0') + playerID);
+
+        // Grab Sight Node position
+        Ogre::Vector3 sightPos = clientPlayer->getPlayerSightNode()->getPosition();
+
+        dPack.x = sightPos.x;
+        dPack.y = sightPos.y;
+        dPack.z = sightPos.z;
+        dPack.orientation = clientPlayer->getSceneNode()->_getDerivedOrientation();
+
+        memcpy(dBuff, &dPack, sizeof(DISK_packet));
+        gameNetwork->sendPacket(dBuff, playerID);
+        
+        /* Send the input packet after the direction, so that throw isn't done before updated direction */
         pack.key = 't';
+
         clientPlayer->setHolding(false);
+        clientPlayer->setState(HOLDING, false);
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
+
+        gameDisk->getSceneNode()->setVisible(true);
     }
 }
 //-------------------------------------------------------------------------------------
@@ -307,13 +342,15 @@ void Client::interpretServerPacket(char* packList)
         {
             // printf("updating disk\n");
             DISK_packet d;
-            memcpy(&d, packList + indexIntoBuff, sizeof(DISK_packet));
+            memcpy(&d, packList+indexIntoBuff, sizeof(DISK_packet));
 
             if (gameDisk == NULL)
             {
                 gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
                 gameDisk->particleNode->setVisible(true);
             }
+            if (d.playID == (char)(((int)'0') + playerID))
+                clientPlayer->setState(HOLDING, true);
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
             gameDisk->getSceneNode()->_setDerivedOrientation(d.orientation);
@@ -328,7 +365,7 @@ void Client::interpretServerPacket(char* packList)
 
             newPlayerID = p.playID - '0';
             playerIndex = newPlayerID - 1;
-            printf("*******New player ID: %d\n\n", newPlayerID);
+            // printf("*******New player ID: %d\n\n", newPlayerID);
             /* NEW PLAYER NOT BEING ADDED TO SCENE */
             if (playerList[playerIndex] == NULL)
             {
@@ -336,12 +373,12 @@ void Client::interpretServerPacket(char* packList)
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
-                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, Ogre::Vector3(gameRoom->getWidth(), gameRoom->getHeight(), (Ogre::Real)gameRoom->getNumberOfPlayers() + 1));
+                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, activeRoom);
+                playerList[playerIndex]->setPlayerSpace();
                 numPlayers++;
             }
             if (newPlayerID != playerID)
             {
-                // printf("\n\n\n\n\n\nCHANGING PLAYER ORIENTATION\n\n\n\n\n");
                 playerList[playerIndex]->getSceneNode()->_setDerivedPosition(Ogre::Vector3(p.x, p.y, p.z));
                 playerList[playerIndex]->getSceneNode()->_setDerivedOrientation(p.orientation);
             }
@@ -350,50 +387,59 @@ void Client::interpretServerPacket(char* packList)
 
             indexIntoBuff += sizeof(S_PLAYER_packet);
         }
-        // if(packType == 'D')
-        // {
-        //     clientPlayer->setHolding(true);
-        // }
+        /* UPDATE TILES */
+        else if (packType == (char)(((int)'0') + TILE))
+        {
+            TILE_packet t;
+            memcpy(&t, packList+indexIntoBuff, sizeof(TILE_packet));
 
-        // if(packType == 'P')
-        // {
-        //     Power->getSceneNode()->_setDerivedPosition(newPos);
-        //     Power->getSceneNode()->needUpdate();
-        // }
-        // if(packType == 'S')
-        // {
-        //     Speed->getSceneNode()->_setDerivedPosition(newPos);
-        //     Speed->getSceneNode()->needUpdate();
-        // }
-        // if(packType == 'J')
-        // {
-        //     JumpPower->getSceneNode()->_setDerivedPosition(newPos);
-        //     JumpPower->getSceneNode()->needUpdate();
-        // }
-        // if(packType == 'R')
-        // {
-        //     Restore->getSceneNode()->_setDerivedPosition(newPos);
-        //     Restore->getSceneNode()->needUpdate();
-        // }
-        // if (packType == 'H')
-        // {
-        //     gameRoom->hTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-        // }
-        // if (packType == 'C')
-        // {
-        //     gameRoom->cTileList[pack.tileIndex]->getSceneNode()->setVisible(false);
-        // }
-        /* BEGIN GAME */ 
-        // else if(packType == (char)(((int)'0') + GAMESTATE))
-        // {
-        //     gameStart = true;
-        // }
+            newPlayerID = (t.playID - '0'); 
+            Tile* localTile = playerList[newPlayerID - 1]->getPlayerSpace()->tileList[t.tileNumber];
+
+            if (t.removed == (char)(((int)'0') + 1))
+            {
+                localTile->getSceneNode()->setVisible(false);
+            }
+            // printf("Tile Removal Packet: \n");
+            // printf("\tTile Number: %d\t Tile Owner ID: %d\n\n", t.tileNumber, newPlayerID);
+            indexIntoBuff += sizeof(TILE_packet);
+        }
+        else if(packType == (char)(((int)'0') + GAMESTATE))
+        {
+            GAMESTATE_packet g;
+            memcpy(&g, packList+indexIntoBuff, sizeof(GAMESTATE_packet));
+
+            if (g.stateID == (char)(((int)'0') + START))
+            {
+                int playersInRoom = (g.stateAttribute - '0'); 
+                
+                switchRooms(playersInRoom);
+
+                gameStart = true;
+            }
+            else if (g.stateID == (char)(((int)'0') + QUIT))
+            {
+
+            }
+            else if (g.stateID == (char)(((int)'0') + SOUND))
+            {
+
+            }
+            else if (g.stateID == (char)(((int)'0') + ENDROUND))
+            {
+
+            }
+            indexIntoBuff += sizeof(GAMESTATE_packet);
+        }
     }
     // printf("ENDING INTERPRETING PACKETS\n\n\n");
 }
 //-------------------------------------------------------------------------------------
 bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
 {
+    if (!gameStart)
+        return false;
+
     Ogre::SceneNode* pSceneNode = clientPlayer->getSceneNode();
     Ogre::SceneNode* pSightNode = clientPlayer->getPlayerSightNode();
     Ogre::SceneNode* pCamNode = clientPlayer->getPlayerCameraNode();
@@ -417,11 +463,6 @@ bool Client::mouseMoved(Ogre::Real relX, Ogre::Real relY)
     updateCamera();
 
     return true;
-}
-//-------------------------------------------------------------------------------------
-Player* Client::getPlayer()
-{
-    return clientPlayer;
 }
 //-------------------------------------------------------------------------------------
 void Client::createOverlays(PlayerCamera* playCam) // might move to Client and Server
@@ -456,6 +497,7 @@ void Client::createOverlays(PlayerCamera* playCam) // might move to Client and S
 
     playCam->setCHOverlays(crossHairVertOverlay, crossHairHorizOverlay);
 }
+//-------------------------------------------------------------------------------------
 Ogre::Vector3 Client::clientChangePosition()
 {
     Ogre::Vector3 currentPosition = clientPlayer->getSceneNode()->getPosition();
@@ -469,3 +511,50 @@ Ogre::Vector3 Client::clientChangePosition()
     else 
         return diffVector;
 }
+//-------------------------------------------------------------------------------------
+void Client::switchRooms(int playersInRoom)
+{
+    if (playersInRoom > 2)
+    {
+        if (!fourPlayerGameRoom->checkActive()) // Not currently in 4Player Room - Switch
+        {
+            twoPlayerGameRoom->deactivateRoom();
+            fourPlayerGameRoom->activateRoom();
+            activeRoom = fourPlayerGameRoom;
+
+            for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+            {
+                if (playerList[i] != NULL)
+                {
+                    playerList[i]->changeGameRoom(activeRoom);
+                    /* Adjust for any players that might have left
+                        (i.e. player 4 becomes player 2 if 2 and 3 left)
+                        need to do this whether or not the room shifted****
+                    */
+                }
+            }
+
+            if (playersInRoom == 3)
+                fourPlayerGameRoom->deactivateRoomSpace(4);
+        }
+    }
+    else 
+    {
+        if (!twoPlayerGameRoom->checkActive()) // Not currently in 2Player Room - Switch
+        {
+            fourPlayerGameRoom->deactivateRoom();
+            twoPlayerGameRoom->activateRoom();
+            activeRoom = twoPlayerGameRoom;
+            /* Still need to adjust client players and client player positions */
+            // for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+            // {
+            //     if (playerList[i] != NULL)
+            //     {
+            //         playerList[i]->changeGameRoom();
+            //         /* Adjust for any players that might have left */
+            //     }
+            // }
+        }
+    }
+}
+//-------------------------------------------------------------------------------------

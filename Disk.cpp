@@ -1,6 +1,6 @@
 #include "Disk.h"
 #include "Player.h"
-// BALL, I MEAN!
+
 Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer) 
 	: GameObject(nym, mgr, sim)
 {	
@@ -18,12 +18,14 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	particleNode->attachObject(tailParticle[0]);
 	previousParticleSystem = 0;
 
-	if (dropToPlayer == 0.0f)
-		initialPlayer = "Player1";
-	if (dropToPlayer == 1.0f)
-		initialPlayer = "Player2";
+	playerIDOfHolder = (int)dropToPlayer;
+	printf("Initial Player Index = %d\n", playerIDOfHolder);
+	
+	// if (dropToPlayer >= 0.0f && dropToPlayer >= 1.0f)
+	// 	initialPlayer = "Player1";
+	// if (dropToPlayer == 1.0f)
+	// 	initialPlayer = "Player2";
 
-	playerIDOfHolder = 0;
 		
 	powerUp = "";
 
@@ -34,8 +36,6 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	
 	typeName = "Disk";
 
-	double scale = 0.1;
-
 	//BALL: Ogre::Entity* ent = mgr->createEntity(nym, "sphere.mesh"); // Create Entity; apply mesh
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
 	rootNode->attachObject(ent); // Attach disk to a scene node
@@ -44,9 +44,9 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	//rootNode->scale(disk_dimensions.x/200.0f, disk_dimensions.y/200.0f, disk_dimensions.z/200.0f);
 	rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
 	
-	ent->setMaterialName("Examples/BumpyMetal"); // apply a material to the mesh
+	ent->setMaterialName("Examples/Chrome"); // apply a material to the mesh
 
-	shape = new btSphereShape(disk_dimensions.x/2.0f); // Sphere shape similar to project1
+	shape = new btSphereShape(disk_dimensions.x/2.0f);
 	mass = 0.1f;
 	offWallRotation = false;
 	
@@ -73,11 +73,6 @@ void Disk::setThrownVelocity(btVector3 v)
 btVector3 Disk::getThrownVelocity()
 {
 	return thrownVelocity;
-}
-//-------------------------------------------------------------------------------------
-Ogre::String Disk::checkInitialPlayer()
-{
-	return initialPlayer;
 }
 //-------------------------------------------------------------------------------------
 void Disk::createNewParticleSystem(int index)

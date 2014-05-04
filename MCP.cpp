@@ -199,36 +199,18 @@ bool MCP::keyReleased(const OIS::KeyEvent &evt)
     return true;
 }
 //-------------------------------------------------------------------------------------
-void MCP::togglePause()
-{
-    // gui->pauseMenu(gamePause);
-    
-    // if (gamePause == true)  //leaving pause
-    // {        
-    //     gameMusic->playMusic("Play");
-    //     gamePause = false;
-    //     gui->removeLabel(pauseLabel);
-    //     gui->removePanel(objectivePanel);
-    //     gui->removePanel(instructPanel);
-    // }
-    // else //entering Pause
-    // {        
-    //     gameMusic->playMusic("Start");
-    //     pauseLabel->setCaption("GAME PAUSED!");
-    //     gui->addLabel(pauseLabel, OgreBites::TL_CENTER);
-    //     gui->addPanel(objectivePanel, OgreBites::TL_TOP);
-    //     gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
-    //     gamePause = true;
-    //     time(&pauseTime);
-    // }
-} 
-//-------------------------------------------------------------------------------------
 bool MCP::checkGameLoss(Player* p) {
     Ogre::Vector3 pos = p->getSceneNode()->getPosition();
     
     if (pos.y < -40.0f)
         return true;
     return false;
+}
+//-----------------------------------------------------------------------------------
+bool MCP::activateMainMenu(const CEGUI::EventArgs &e) 
+{   
+    gui->createMainMenu();
+    return true;
 }
 //-----------------------------------------------------------------------------------
 bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e) 

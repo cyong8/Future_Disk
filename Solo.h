@@ -39,7 +39,7 @@ private:
 	Music* gameMusic;
 	
 	int score;
-	
+
 	bool gameStart;
 	bool gameOver;
 	bool gamePause;
@@ -57,11 +57,10 @@ private:
 	Room* gameRoom;
 		/* Players */
 	Player *player;
+	
 		/* Power Ups */
-	Target *Power;
-	Target *Speed;
-	Target *JumpPower;
-	Target *Restore;
+	vector<Target*> target_list;
+
 		/* Disk */
 	Disk* gameDisk;
 

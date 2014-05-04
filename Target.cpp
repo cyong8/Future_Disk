@@ -1,7 +1,8 @@
 #include "Target.h"
 #include "Simulator.h"
+#include "Room.h"
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 position) /* Position parameter is not used */
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm)
 	: GameObject(nym, mgr, sim)
 {
 	/* 
@@ -18,28 +19,16 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->attachObject(ent);
 
 	rootNode->scale(dimensions.x/47.0f, dimensions.y/442.0f, dimensions.z/47.0f);
-
-	if(sim != NULL)
-	{
-		/* There is no client11 tile */
-		// if (nym != "Power" && nym != "Speed" && nym != "Jump" && nym != "Restore") {
-		//     rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-		// 									    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-		// 								       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-		// 									    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-		// 								       Ogre::Math::RangeRandom(sim->getGameObject("Ceiling")->getSceneNode()->getPosition().z
-		// 									    ,sim->getGameObject("FarWall")->getSceneNode()->getPosition().z));
-	 //    }
-	 //    else {
-	 //       rootNode->setPosition(Ogre::Math::RangeRandom(sim->getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-		// 									    ,sim->getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-		// 								       Ogre::Math::RangeRandom(sim->getGameObject("client11")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-		// 									    ,sim->getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-		// 								       Ogre::Math::RangeRandom(-5.0f, 5.0f));
-  //   	}
-    }
     
 	rootNode->pitch(Ogre::Degree(90));
+
+	Ogre::Real posx, posy, posz;
+
+	posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f, rm->getWidth()/2.0f);
+	posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f, -rm->getFloorPositionY()/2.0f);
+	posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, -rm->getHeight()/2.0f);
+
+	rootNode->setPosition(posx, posy, posz);
 
     typeName = "Target";
 

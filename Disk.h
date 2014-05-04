@@ -2,7 +2,6 @@
 #define __Disk_h_
 
 #include "GameObject.h"
-#include "Player.h"
 
 class Player;
 
@@ -11,7 +10,6 @@ class Disk : public GameObject
 protected:
 	bool offWallRotation;
 	btVector3 thrownVelocity;
-	Ogre::String initialPlayer;
 	int playerIDOfHolder;
 	Player* playerLastThrew;
 
@@ -21,7 +19,6 @@ public:
 	btVector3 getThrownVelocity(void);
 	btVector3 getOldVelocity(void);
 	void setOldVelocity(btVector3 v);
-	Ogre::String checkInitialPlayer(void);
 	void createNewParticleSystem(int index);
 	bool activatePowerUp(Ogre::String name, Player* p);
 	void resetPowerUp(void);

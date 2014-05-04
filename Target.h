@@ -3,12 +3,14 @@
 
 #include "GameObject.h"
 
+#define NUM_OF_TARGETS  7
+
 class Room;
 
 class Target : public GameObject
 {
 public:
-	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Ogre::Vector3 iposition);
+	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm);
 	void targetHit();
 	void resetHit();
 	bool isHit(); 

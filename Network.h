@@ -21,6 +21,14 @@ enum identifier
 	CLIENT
 };
 
+enum gameStates
+{
+	START,
+	QUIT,
+	SOUND,
+	ENDROUND
+};
+
 enum keyID
 {
 	W,
@@ -76,6 +84,7 @@ struct DISK_packet
 {
 	char packetID;
 	char diskID;
+	char playID;
 	// position of the disk
 	float x;
 	float y;
@@ -106,14 +115,14 @@ struct TILE_packet
 	char packetID;
 	// tile removed/added
 	char playID;
-	bool removed;
-	short tileNumber;
+	char removed; // 0 = Restored, 1 = Removed
+	int tileNumber;
 };
 struct GAMESTATE_packet 
 {
 	char packetID;
-	int stateChange;	// type of state change
-	// Activate respective power up 
+	char stateID;		// either player ID for resize or music ID
+	char stateAttribute;	// type of state change
 	// sound
 	// GUI stuff- lose, win, gameStart
 };
@@ -148,6 +157,7 @@ public:
 	char* receivePacket(int socketID);
 	bool checkSockets(int socketID);
 	int getPacketSize(char type);
+	void removeClient(int clientIndex);
 
 private:
 	SDLNet_SocketSet clientSet;
