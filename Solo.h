@@ -30,6 +30,8 @@ public:
     void restartGame();
     
     void togglePause();
+    
+    void modifyScore(int increase);
 
 private:
 	Ogre::SceneManager* sceneMgr;
