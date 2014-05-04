@@ -59,6 +59,7 @@ public:
 	bool soloMode(const CEGUI::EventArgs &e);
 	bool hostGame(const CEGUI::EventArgs &e);
 	bool joinGame(const CEGUI::EventArgs &e);
+	bool activateMainMenu(const CEGUI::EventArgs &e);
 	bool activateMainMenuSolo(const CEGUI::EventArgs &e);
 	bool quit(const CEGUI::EventArgs &e);
 	Ogre::SceneManager* getSceneManager(void);
@@ -83,7 +84,6 @@ protected:
 	virtual bool mouseReleased(const OIS::MouseEvent &arg, OIS::MouseButtonID id);
 	virtual bool keyPressed(const OIS::KeyEvent &evt);
 	virtual bool keyReleased(const OIS::KeyEvent &arg);
-	void togglePause(void);
 	bool checkGameLoss(Player* p);
 	void createOverlays(PlayerCamera* playCam);
 	void restrictPlayerMovement(Player* p);

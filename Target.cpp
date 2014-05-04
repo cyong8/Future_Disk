@@ -48,6 +48,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	posz = Ogre::Math::RangeRandom(-position.y, position.z);
 
 	rootNode->setPosition(posx, posy, posz);
+	
+	cout << nym << "'s initial position is " << "(" << posx << ", " << posy << ", " << posz << ")\n";
 
     typeName = "Target";
 

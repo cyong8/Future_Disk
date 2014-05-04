@@ -379,16 +379,17 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				gap = 10;
 				Ogre::Vector3 *bounds = new Ogre::Vector3(width, height, gap);
 			    Ogre::Real posx, posy, posz;
-				posx = Ogre::Math::RangeRandom(-bounds->x, bounds->x); // From left to right
-				posy = Ogre::Math::RangeRandom(0, bounds->y); // From base to top
-				posz = Ogre::Math::RangeRandom(-bounds->y, bounds->z); // From gap front to room back
-			    o->getSceneNode()->setPosition(posx, posy, posz);
+				posx = Ogre::Math::RangeRandom(-bounds->x/2.0f, bounds->x/2.0f); // From left to right
+				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f); // From base to top
+				posz = Ogre::Math::RangeRandom(0, -bounds->y/2.0f + 10.0f); // From gap front to room back
+			    o->getSceneNode()->setPosition(0, 0, 0);
 			    gameMusic->playCollisionSound("Disk", "Target");
+			    cout << o->getGameObjectName() << "'s new position position is " << "(" << posx << ", " << posy << ", " << posz << ")\n";
 		    }
 			o->addToSimulator();
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding())  // HARD CODE PLAYER FLAG
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding() && playerList[1] != NULL)  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 

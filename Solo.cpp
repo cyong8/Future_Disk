@@ -43,12 +43,12 @@ void Solo::createScene()
     gameRoom = new Room(sceneMgr, gameSimulator, 2);
 
 
-    // for (int i=0; i < NUM_OF_TARGETS; i++)
-    // {
-    //     Target *target = new Target("Target_" + i, sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());
-    //     target->addToSimulator();
-    //     target_list.push_back(target);
-    // }
+    for (int i = 0; i < NUM_OF_TARGETS; i++)
+    {
+        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom->getBounds());
+        target->addToSimulator();
+        target_list.push_back(target);
+    }
     // These actually don't belong - initialize target list instead
     /*
     Power = new Target("Power", sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f), gameRoom->getBounds());
