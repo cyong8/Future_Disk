@@ -41,10 +41,11 @@ private:
 	int numPlayers;
 	Player* opponent;
 		/* Power Ups */
-	Target *Power;
-	Target *Speed;
-	Target *JumpPower;
-	Target *Restore;
+	vector<Target*> explosiveList;
+	vector<Target*> speedList;
+	vector<Target*> jumpList;
+	vector<Target*> restoreList;
+	vector<Target*> activePowerUps;
 		/* Disk */
 	Disk* gameDisk;
 

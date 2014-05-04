@@ -39,13 +39,6 @@ void Server::createScene()
     twoPlayerGameRoom = new Room(sSceneMgr, gameSimulator, 2);
     fourPlayerGameRoom = new Room(sSceneMgr, gameSimulator, 4);
 
-
-    /********************  POWER UPS  ********************/
-    // Power = new Target("Power", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
-    // Speed = new Target("Speed", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
-    // JumpPower = new Target("Jump", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
-    // Restore = new Target("Restore", sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), Ogre::Vector3(1.0f, 0.0f, -19.0f));
-
     sSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     sSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
     
@@ -57,6 +50,27 @@ void Server::createScene()
 
     twoPlayerGameRoom->activateRoom();
     activeRoom = twoPlayerGameRoom;
+    
+    /********************  POWER UPS  ********************/
+    Target* Power;
+    Target* Speed;
+    Target* JumpPower;
+    Target* Restore;
+    for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        explosiveList.push_back(Power);
+
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        speedList.push_back(Speed);
+
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        jumpList.push_back(JumpPower);
+
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        restoreList.push_back(Restore);
+    }
+    
     sSceneMgr->getCamera("PlayerCam")->lookAt(activeRoom->getWall(Ceiling)->getSceneNode()->getPosition());
 
     updateClock = clock();
@@ -407,6 +421,7 @@ bool Server::interpretClientPacket(int playerID)
                 pseudoHostStartGame = true;
 
                 switchRooms();
+                activatePowerUps();
             }
 
             indexIntoBuff += sizeof(GAMESTATE_packet);
@@ -514,10 +529,53 @@ void Server::switchRooms()
     }
 }
 //-------------------------------------------------------------------------------------
+void Server::activatePowerUps()
+{
+    activePowerUpTypes = vector<int>(NUM_OF_POWERUP_TYPES, 0);
+    for (int i = 0; i < activePowerUps.size(); i++)
+    {
+        gameSimulator->removeObject(activePowerUps[i]->getGameObjectName());
+        if (i == activePowerUps.size() - 1)
+            activePowerUps.clear();
+    }
+    int ranPType;
+    int indexIntoPowers;
+    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        if (playerList[i] != NULL)
+        {
+            ranPType = rand() % 4;
+
+            indexIntoPowers = activePowerUpTypes[ranPType];
+            activePowerUpTypes[ranPType] += 1;
+
+            if (ranPType == 0)  // EXPLOSIVE
+            {
+                explosiveList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(explosiveList[indexIntoPowers]);
+            }
+            if (ranPType == 1)  // SPEED
+            {
+                speedList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(speedList[indexIntoPowers]);
+            }
+            if (ranPType == 2)  // JUMP
+            {
+                jumpList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(jumpList[indexIntoPowers]);
+            }
+            if (ranPType == 3)  // RESTORE
+            {
+                restoreList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(restoreList[indexIntoPowers]);
+            }
+        }
+    }
+}
+//-------------------------------------------------------------------------------------
 void Server::restartRound()
 {
 
 }
-//-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

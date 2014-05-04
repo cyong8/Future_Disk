@@ -2,10 +2,11 @@
 #include "Simulator.h"
 #include "Room.h"
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm)
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm, powerUpType ptype)
 	: GameObject(nym, mgr, sim)
 {
-	bool powerUpFlag = false;
+	powerType = ptype;
+    typeName = "Target";
 	/* 
 		Explosion Particle System from Ogre Website:
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Explosion&structure=Cookbook
@@ -24,47 +25,32 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	Ogre::Real posx, posy, posz;
 
-	posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
-	posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
-	posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, -rm->getHeight()/2.0f);
 
-	rootNode->setPosition(posx, posy, posz);
-
-    typeName = "Target";
-
-	if (nym == "Power") 
-	{
+	if (ptype == EXPLOSIVE) 
 	    ent->setMaterialName("Examples/RedChrome");
-	    powerUpFlag = true;
-    }
-    else if (nym == "Speed") 
-    {
+    else if (ptype == SPEED) 
         ent->setMaterialName("Examples/GreenChrome");
-        powerUpFlag = true;
-    }
-    else if (nym == "Jump") 
-    {
+    else if (ptype == JUMPBOOST) 
         ent->setMaterialName("Examples/CyanChrome");
-        powerUpFlag = true;
-    }
-    else if (nym == "Restore") 
-    {
+    else if (ptype == RESTORE) 
         ent->setMaterialName("Examples/WhiteChrome");
-        powerUpFlag = true;
-    }
     else 
-    {
         ent->setMaterialName("Examples/BlueChrome");
-        powerUpFlag = true;
-    }
-    if (powerUpFlag)
+    if (powerType != TARGET)
     {
     	posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
 		posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
 		posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
 
 		rootNode->setPosition(posx, posy, posz);
+		rootNode->setVisible(false);
     }
+
+    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
+	posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
+	posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, -rm->getHeight()/2.0f);
+
+	rootNode->setPosition(posx, posy, posz);
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
 	mass = 0.1f;

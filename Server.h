@@ -42,10 +42,12 @@ private:
 	/* Players */
 	vector<Player*> playerList;
 	/* Power Ups */
-	Target *Power;
-	Target *Speed;
-	Target *JumpPower;
-	Target *Restore;
+	vector<Target*> explosiveList;
+	vector<Target*> speedList;
+	vector<Target*> jumpList;
+	vector<Target*> restoreList;
+	vector<Target*> activePowerUps;
+	vector<int> activePowerUpTypes;
 	/* Disk */
 	Disk* gameDisk;
 
@@ -68,6 +70,7 @@ private:
 	void processClientInput(int playerIndex, char inputType);
 	void removePlayer(int playerIndex);
 	void switchRooms();
+	void activatePowerUps();
 	void restartRound(void);
 };
 

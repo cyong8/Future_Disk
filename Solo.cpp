@@ -43,7 +43,7 @@ void Solo::createScene()
 
     for (int i = 0; i < NUM_OF_TARGETS; i++)
     {
-        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom);
+        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom, TARGET);
         target->addToSimulator();
         target_list.push_back(target);
     }

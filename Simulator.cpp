@@ -131,7 +131,7 @@ void Simulator::removeObject(Ogre::String name)
 		Ogre::String localName = objList[i]->getGameObjectName();
 		if (Ogre::StringUtil::match(localName, name, true))
 		{		
-			if (objList[i]->typeName == "Target" && (localName != "Power" || localName != "Speed" || localName != "Jump" || localName != "Restore")) 
+			if (objList[i]->typeName == "Target" && ((Target*)objList[i])->getPowerUpType() == TARGET)
 			    score = 10;
 
 			dynamicsWorld->removeRigidBody(getGameObject(name)->getBody());
