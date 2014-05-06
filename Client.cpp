@@ -261,12 +261,11 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
     {
+        clientPlayer->animateCharacter("jump");
         pack.key = 'j';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
-
-        clientPlayer->animateCharacter("jump");
     }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
@@ -307,6 +306,8 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkState(HOLDING))
     {
         /* Using Disk packet to send position of player's sight node (i.e. Direction of throw) */
+        clientPlayer->animateCharacter("throw");
+
         DISK_packet dPack;
         char* dBuff = new char[sizeof(DISK_packet)];
 
@@ -389,7 +390,10 @@ void Client::interpretServerPacket(char* packList)
                 gameDisk->particleNode->setVisible(true);
             }
             if (d.playID == (char)(((int)'0') + playerID))
+            {
+                clientPlayer->animateCharacter("catch");
                 clientPlayer->setState(HOLDING, true);
+            }
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
             gameDisk->getSceneNode()->_setDerivedOrientation(d.orientation);
