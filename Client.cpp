@@ -32,25 +32,6 @@ void Client::createScene()
     twoPlayerGameRoom = new Room(cSceneMgr, NULL, 2);
     fourPlayerGameRoom = new Room(cSceneMgr, NULL, 4);
     
-    /********************  POWER UPS  ********************/
-    Target* Power;
-    Target* Speed;
-    Target* JumpPower;
-    Target* Restore;
-    for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
-    {
-        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
-        explosiveList.push_back(Power);
-        
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
-        speedList.push_back(Speed);
-        
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
-        jumpList.push_back(JumpPower);
-        
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
-        restoreList.push_back(Restore);
-    }
 
     cSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     cSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -71,6 +52,25 @@ void Client::createScene()
     {
         twoPlayerGameRoom->activateRoom();
         activeRoom = twoPlayerGameRoom;
+    }
+    /********************  POWER UPS  ********************/
+    Target* Power;
+    Target* Speed;
+    Target* JumpPower;
+    Target* Restore;
+    for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        explosiveList.push_back(Power);
+        
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        speedList.push_back(Speed);
+        
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        jumpList.push_back(JumpPower);
+        
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        restoreList.push_back(Restore);
     }
 
     printf("\n\nPlayer ID: %d\n\n", playerID);
@@ -108,6 +108,9 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
     updateCamera(); 
    
     processUnbufferedInput(mKeyboard, mMouse);
+
+    if(clientPlayer->getCustomAnimationState() != NULL)
+        clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
 }
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
@@ -160,6 +163,26 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         gameNetwork->sendPacket(iBuff, playerID);
         return;
     }
+
+    /*WALKING ANIMATION*/
+    if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
+    && !mKeyboard->isKeyDown(OIS::KC_S) && !mKeyboard->isKeyDown(OIS::KC_D)) 
+    {
+        if(clientPlayer->moving)
+        {
+            clientPlayer->nullAnimationState();
+        }
+        clientPlayer->moving = false;
+    }
+    else
+    {
+        if(!clientPlayer->moving)
+            clientPlayer->animateCharacter("walk");
+        clientPlayer->moving = true;
+    }
+
+
+
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
@@ -242,6 +265,8 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
+
+        clientPlayer->animateCharacter("jump");
     }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {

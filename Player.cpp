@@ -18,6 +18,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	playerID = playID;
 	playerCanCatch = true;
 	customAnimationState = NULL;
+	moving = false;
 
 	setPlayerStartingPosition(false);
 
@@ -29,7 +30,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 	customPlayerEnt = mgr->createEntity(nym, "Waddlelly.mesh"); // Create entity;apply mesh
 	rootNode->attachObject(customPlayerEnt); 	// Attach player to a scene node
-	rootNode->scale(dimensions.x/25.0, dimensions.y/25.0, dimensions.z/25.0);
+	rootNode->scale(dimensions.x/20.0, dimensions.y/20.0, dimensions.z/20.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(startingPosition); // Set the startingPosition of the player
 	customPlayerEnt->setMaterialName("w_texture_1Material");
@@ -99,6 +100,7 @@ void Player::attachDisk(Disk* d)
 	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
 	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
 	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+	animateCharacter("catch");
 }
 //-------------------------------------------------------------------------------------
 void Player::setMovementRestriction(bool x)
@@ -181,7 +183,13 @@ void Player::animateCharacter(Ogre::String stateName)
 {
 	customAnimationState = customPlayerEnt->getAnimationState(stateName);
 	customAnimationState->setEnabled(true);
-    customAnimationState->setLoop(false);
+
+	if(stateName == "walk")
+    	customAnimationState->setLoop(true);
+    else
+    	customAnimationState->setLoop(false);
+
+    customAnimationState->setTimePosition(0);
 }
 //-------------------------------------------------------------------------------------
 void Player::setPlayerSpace()

@@ -55,6 +55,25 @@ material Examples/TEST
 		}
 	}
 }
+
+
+material Examples/floor_texture
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_square_green.jpg
+			}
+		}
+	}
+}
+
  
 material explosionMaterial
 {
