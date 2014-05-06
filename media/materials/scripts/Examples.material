@@ -68,7 +68,7 @@ material Examples/floor_texture_green
 			
 			texture_unit
 			{
-				texture floor_square_green.jpg
+				texture floor_texture_green.jpg
 			}
 		}
 	}
@@ -85,7 +85,7 @@ material Examples/floor_texture_blue
 			
 			texture_unit
 			{
-				texture floor_square_blue.jpg
+				texture floor_texture_blue.jpg
 			}
 		}
 	}
@@ -101,7 +101,7 @@ material Examples/floor_texture_red
 			
 			texture_unit
 			{
-				texture floor_square_red.jpg
+				texture floor_texture_red.jpg
 			}
 		}
 	}
@@ -117,7 +117,7 @@ material Examples/floor_texture_purple
 			
 			texture_unit
 			{
-				texture floor_square_purple.jpg
+				texture floor_texture_purple.jpg
 			}
 		}
 	}

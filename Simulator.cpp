@@ -362,17 +362,18 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			removeObject(o->getGameObjectName());
 			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
-				// Ogre::Real posx, posy, posz;
-			 //    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
-				// posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
-				// posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
+		        Ogre::Real posx, posy, posz;
+		        Ogre::Vector3 dimensions = ((Target*)o)->getDimensions();
+			    posx = Ogre::Math::RangeRandom(-gameRoom->getWidth()/2.0f + dimensions.x, gameRoom->getWidth()/2.0f - dimensions.x);
+				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f + dimensions.y, -gameRoom->getFloorPositionY()/2.0f - dimensions.y);
+				posz = Ogre::Math::RangeRandom(-gameRoom->getGapSize()/2.0f, gameRoom->getGapSize()/2.0f);
 
-			 //    o->getSceneNode()->setPosition(posx, posy, posz);
-			 //    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
-			 //        // restoreTile();
-    //             gameMusic->playCollisionSound("Disk", "Target");
-    //             if (disk->powerUp == "Speed")
-    //                 gameMusic->playMusic("SpeedUp");
+			    o->getSceneNode()->setPosition(posx, posy, posz);
+			    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
+			        restoreTile();
+                gameMusic->playCollisionSound("Disk", "Target");
+                if (disk->powerUp == "Speed")
+                    gameMusic->playMusic("SpeedUp");
 			}
 			else
 			{		  
