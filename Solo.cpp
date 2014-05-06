@@ -215,6 +215,7 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
             gameMusic->playMusic("Throw");
             gameSimulator->setThrowFlag();
             p->getPlayerDisk()->getSceneNode()->setVisible(true, true);
+            player->animateCharacter("throw");
         }
         mMouseDown = currMouse; // Set that the mouse WAS pressed
         
@@ -238,6 +239,22 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
         {
+            if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
+            && !mKeyboard->isKeyDown(OIS::KC_S) && !mKeyboard->isKeyDown(OIS::KC_D)) 
+            {
+                if(player->moving)
+                {
+                    player->nullAnimationState();
+                }
+                player->moving = false;
+            }
+            else
+            {
+                if(!player->moving)
+                    player->animateCharacter("walk");
+                player->moving = true;
+            }
+
              // Move the player
             if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
             {
@@ -245,25 +262,31 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
             }
+
+
             if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
             {
                 fz -= mMove;
                 velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
                 keyWasPressed = true;
-            }
+            } 
+
 
             if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
             {
                 fx += mMove; // Strafe left
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
-            }
+            } 
+
             if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
             {
                 fx -= mMove; // Strafe right
                 velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
                 keyWasPressed = true;
-            }
+            } 
+
+
             if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast)// && !p->groundConstantSet && !spacePressedLast) 
             {
                 if(p->performJump())
@@ -272,6 +295,10 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
                         gameMusic->playMusic("SuperJump");
                     else
                         gameMusic->playMusic("Jump");
+
+                    spacePressedLast = false;
+                    player->animateCharacter("jump");
+
                     spacePressedLast = true;
                     gameSimulator->soundedJump = true;
                 }
@@ -279,10 +306,6 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
             if (!mKeyboard->isKeyDown(OIS::KC_SPACE) && spacePressedLast)
             {
                 spacePressedLast = false;
-                player->animateCharacter("jump");
-                // player->getCustomAnimationState() = player->getMeshEntity()->getAnimationState("jump");
-                // player->getCustomAnimationState()->setEnabled(true);
-                // player->getCustomAnimationState()->setLoop(false);
             }
             if(keyWasPressed && !p->checkMovementRestriction())
             {   // Rotate the velocity vector by the orientation of the player
