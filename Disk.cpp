@@ -26,7 +26,6 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	// if (dropToPlayer == 1.0f)
 	// 	initialPlayer = "Player2";
 
-		
 	powerUp = "";
 
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);

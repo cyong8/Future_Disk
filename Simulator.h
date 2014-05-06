@@ -84,6 +84,7 @@ class Simulator
 		void setGameRoom(Room* rm);
 		void removeTiles(vector<Tile*>& rt);
 		bool checkDiskSet() { return diskSet; };
+		void predictedHit(void);
 
 		bool soundedJump;
 };
