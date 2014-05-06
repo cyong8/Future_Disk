@@ -302,6 +302,9 @@ bool Server::updatePowerUps()
         activePowerUpTypes[removedPowerUps[i]->getPowerUpType()] -= 1;
         removedPowerUps[i]->setActive(false);
     }
+    if (removedPowerUps.size() == 0)
+        return false;
+
     for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
     {
         if (!activePowerUps[i]->checkActive())
@@ -374,11 +377,8 @@ bool Server::updatePowerUps()
             }
         }
     }
-
     if (removedPowerUps.size() > 0)
         return true;
-    else
-        return false;
 }
 //-------------------------------------------------------------------------------------
 void Server::restrictPlayerMovement(Player* p)

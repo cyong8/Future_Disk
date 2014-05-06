@@ -11,9 +11,10 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
-	gameNetwork = new Network(CLIENT, IP);
-	gameMusic = new Music();
+    gameNetwork = new Network(CLIENT, IP);
+    gameMusic = new Music();
 
+    printf("\n\n\nIP: %s\n\n\n", IP);
     playerID = gameNetwork->establishConnection();  
     
     createScene();
@@ -105,11 +106,21 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
         updateScene();
 
     updateCamera(); 
-   
-    processUnbufferedInput(mKeyboard, mMouse);
 
     if(clientPlayer->getCustomAnimationState() != NULL)
         clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
+   
+    processUnbufferedInput(mKeyboard, mMouse);
+    if(clientPlayer->checkState(HOLDING))
+    {
+        if(!clientPlayer->catchAnimation)
+            clientPlayer->animateCharacter("catch");
+        clientPlayer->catchAnimation = true;
+    }
+    else
+    {
+        clientPlayer->catchAnimation = false;
+    }
 }
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
@@ -386,7 +397,6 @@ void Client::interpretServerPacket(char* packList)
             }
             if (d.playID == (char)(((int)'0') + playerID))
             {
-                clientPlayer->animateCharacter("catch");
                 clientPlayer->setState(HOLDING, true);
             }
 
@@ -414,7 +424,6 @@ void Client::interpretServerPacket(char* packList)
                 playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, activeRoom);
                 playerList[playerIndex]->setPlayerSpace();
                 numPlayers++;
-                printf("Number of Players = %d\n", numPlayers);
             }
             if (newPlayerID != playerID)
             {

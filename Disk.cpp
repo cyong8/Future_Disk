@@ -28,7 +28,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	// 	initialPlayer = "Player2";
 
 		
-	powerUp = "";
+	powerUp = TARGET;
 
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);
 	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);

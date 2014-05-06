@@ -2,9 +2,9 @@
 #define __Disk_h_
 
 #include "GameObject.h"
+#include "Target.h"
 
 class Player;
-class Target;
 
 class Disk : public GameObject
 {

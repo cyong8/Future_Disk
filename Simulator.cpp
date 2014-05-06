@@ -183,7 +183,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		if (gameDisk != NULL)
 		{
 	        btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-            if (gameDisk->powerUp == "Speed")
+            if (gameDisk->checkActivePowerUp() == SPEED)
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
             else    
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
@@ -365,9 +365,10 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
 				Ogre::Real posx, posy, posz;
-			    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
-				posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
-				posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
+			    Ogre::Vector3 dimensions = ((Target*)o)->getDimensions();
+			    posx = Ogre::Math::RangeRandom(-gameRoom->getWidth()/2.0f + dimensions.x, gameRoom->getWidth()/2.0f - dimensions.x);
+				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f + dimensions.y, -gameRoom->getFloorPositionY()/2.0f - dimensions.y);
+				posz = Ogre::Math::RangeRandom(-gameRoom->getGapSize()/2.0f, gameRoom->getGapSize()/2.0f);
 
 			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    if (disk->activatePowerUp(((Target*)o)->getPowerUpType(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
@@ -378,7 +379,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
                 
                 gameMusic->playCollisionSound("Disk", "Target");
 
-                ((Target*)o)->setPlayer(disk->getPlayerLastThrew()->getGameObjectName());
+                ((Target*)o)->setPlayer(disk->getPlayerLastThrew()->getPlayerID());
                 removedPowerUps.push_back((Target*)o);
 			}
 			else
@@ -472,7 +473,7 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
 
 
     /* When removing from client - add to clientRemoveIndexes */
-    if (gameDisk->checkActivePowerUp() == POWER)
+    if (gameDisk->checkActivePowerUp() == EXPLOSIVE)
     {
         int tPerRow = tPerRow;
         int tPerCol = gameRoom->getTilesPerColumn();
@@ -600,7 +601,7 @@ void Simulator::removeHitPowerUps(vector<Target*>& pt)
 	for (int i = 0; i < removedPowerUps.size(); i++)
 	{
 		pt.push_back(removedPowerUps[i]);
-		removedPowerUps[i]->setVisible(false);
+		removedPowerUps[i]->getSceneNode()->setVisible(false);
 		removeObject(removedPowerUps[i]->getGameObjectName());
 	}
 	removedPowerUps.clear();
