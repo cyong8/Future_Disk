@@ -24,6 +24,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->pitch(Ogre::Degree(90));
 
 	Ogre::Real posx, posy, posz;
+    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
+	posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
 
 
 	if (ptype == EXPLOSIVE) 
@@ -38,17 +40,11 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
         ent->setMaterialName("Examples/BlueChrome");
     if (powerType != TARGET)
     {
-    	posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
-		posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
 		posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
-
-		rootNode->setPosition(posx, posy, posz);
 		rootNode->setVisible(false);
     }
-
-    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
-	posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
-	posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, -rm->getHeight()/2.0f);
+    else
+		posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, -rm->getHeight()/2.0f);
 
 	rootNode->setPosition(posx, posy, posz);
 

@@ -190,6 +190,17 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
 			{
+				int lowestTileCountPlayer;
+				int numberTiles = 0;
+				
+				for (int i = 0; i < playerTileIdentities.size(); i++)
+				{	
+					if (playerTileIdentities.size() > numberTiles)
+					{
+						
+					}
+				}
+
 				((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk(gameDisk);
 			}
 		}
@@ -349,18 +360,19 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			//printf("COLLIDED WITH TILE!\n\n\n");
 		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());
-			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
+			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
-			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("client111")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
-			    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
-			        // restoreTile();
-                gameMusic->playCollisionSound("Disk", "Target");
-                if (disk->powerUp == "Speed")
-                    gameMusic->playMusic("SpeedUp");
+				// Ogre::Real posx, posy, posz;
+			 //    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
+				// posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
+				// posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
+
+			 //    o->getSceneNode()->setPosition(posx, posy, posz);
+			 //    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
+			 //        // restoreTile();
+    //             gameMusic->playCollisionSound("Disk", "Target");
+    //             if (disk->powerUp == "Speed")
+    //                 gameMusic->playMusic("SpeedUp");
 			}
 			else
 			{		  
