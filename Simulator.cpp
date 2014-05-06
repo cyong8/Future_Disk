@@ -190,6 +190,17 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
 			{
+				int lowestTileCountPlayer;
+				int numberTiles = 0;
+				
+				for (int i = 0; i < playerTileIdentities.size(); i++)
+				{	
+					if (playerTileIdentities.size() > numberTiles)
+					{
+						
+					}
+				}
+
 				((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk(gameDisk);
 			}
 		}

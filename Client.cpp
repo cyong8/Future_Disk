@@ -31,26 +31,6 @@ void Client::createScene()
     /* GAME ROOM */
     twoPlayerGameRoom = new Room(cSceneMgr, NULL, 2);
     fourPlayerGameRoom = new Room(cSceneMgr, NULL, 4);
-    
-    /********************  POWER UPS  ********************/
-    Target* Power;
-    Target* Speed;
-    Target* JumpPower;
-    Target* Restore;
-    for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
-    {
-        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
-        explosiveList.push_back(Power);
-        
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
-        speedList.push_back(Speed);
-        
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
-        jumpList.push_back(JumpPower);
-        
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
-        restoreList.push_back(Restore);
-    }
 
     cSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     cSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -71,6 +51,26 @@ void Client::createScene()
     {
         twoPlayerGameRoom->activateRoom();
         activeRoom = twoPlayerGameRoom;
+    }
+
+    /********************  POWER UPS  ********************/
+    Target* Explosive;
+    Target* Speed;
+    Target* JumpPower;
+    Target* Restore;
+    for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        Explosive = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        explosiveList.push_back(Explosive);
+        
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        speedList.push_back(Speed);
+        
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        jumpList.push_back(JumpPower);
+        
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        restoreList.push_back(Restore);
     }
 
     printf("\n\nPlayer ID: %d\n\n", playerID);
@@ -112,7 +112,7 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1)
+    if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1 && numPlayers >= 2)
     {
         char* gBuff = new char[sizeof(GAMESTATE_packet)];
         

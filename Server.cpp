@@ -52,14 +52,14 @@ void Server::createScene()
     activeRoom = twoPlayerGameRoom;
     
     /********************  POWER UPS  ********************/
-    Target* Power;
+    Target* Explosive;
     Target* Speed;
     Target* JumpPower;
     Target* Restore;
     for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
     {
-        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
-        explosiveList.push_back(Power);
+        Explosive = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        explosiveList.push_back(Explosive);
 
         Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
         speedList.push_back(Speed);
