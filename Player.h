@@ -56,6 +56,7 @@ public:
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
 	bool moving;
+	bool catchAnimation;
 
 
 protected:

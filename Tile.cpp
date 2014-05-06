@@ -13,7 +13,7 @@ Tile::Tile(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vect
 	Ogre::Entity* ent = mgr->createEntity(nym+"Entity", "cube.mesh");
 	rootNode->attachObject(ent);
 	rootNode->scale(tile_dimensions.x/100.0f, tile_dimensions.y/100.0f, tile_dimensions.z/100.0f);
-	ent->setMaterialName("Examples/floor_texture");
+	ent->setMaterialName("Examples/floor_texture_green");
 	ent->setCastShadows(false);
 	rootNode->setPosition(position);
 	rootNode->setVisible(false);

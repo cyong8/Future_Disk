@@ -57,7 +57,7 @@ material Examples/TEST
 }
 
 
-material Examples/floor_texture
+material Examples/floor_texture_green
 {
 	technique
 	{
@@ -74,7 +74,55 @@ material Examples/floor_texture
 	}
 }
 
- 
+material Examples/floor_texture_blue
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_square_blue.jpg
+			}
+		}
+	}
+}
+material Examples/floor_texture_red
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_square_red.jpg
+			}
+		}
+	}
+} 
+material Examples/floor_texture_purple
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_square_purple.jpg
+			}
+		}
+	}
+}
+
 material explosionMaterial
 {
 	technique

@@ -19,6 +19,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	playerCanCatch = true;
 	customAnimationState = NULL;
 	moving = false;
+	catchAnimation = false;
 
 	setPlayerStartingPosition(false);
 
