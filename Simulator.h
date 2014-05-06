@@ -86,6 +86,7 @@ class Simulator
 		void removeTiles(vector<Tile*>& rt);
 		void removeHitPowerUps(vector<Target*>& pt);
 		bool checkDiskSet() { return diskSet; };
+		void predictedHit(void);
 
 		bool soundedJump;
 };

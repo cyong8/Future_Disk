@@ -295,6 +295,7 @@ void Simulator::performThrow(Player* p)
 
 		gameDisk->setPlayerLastThrew(p);
     	p->setHolding(false);
+    	predictedHit();
     }
     else // Update position relative to the Player
     {
@@ -411,6 +412,13 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 
 		newRemovedTile = true;
 	}
+	if(sceneMgr->hasManualObject("Circle"))
+	{
+		sceneMgr->destroyManualObject("Circle");
+		sceneMgr->destroySceneNode("CircleNode");
+		predictedHit();
+	}
+
 }
 
 //-------------------------------------------------------------------------------------
@@ -607,3 +615,62 @@ void Simulator::removeHitPowerUps(vector<Target*>& pt)
 	removedPowerUps.clear();
 }
 //-------------------------------------------------------------------------------------
+void Simulator::predictedHit()
+{
+	// Get the velocity vector of the disk
+	btVector3 diskVector = gameDisk->getBody()->getLinearVelocity();
+	Ogre::Vector3 normalOfWall = Ogre::Vector3(0,0,0); // Initialize to 0
+	Ogre::Vector3 pointOnWall = Ogre::Vector3(0,0,0); // Initialize to 0
+	Ogre::Vector3 originalPosition = gameDisk->getSceneNode()->getPosition();
+	Ogre::Vector3 intersectionPoint;
+	bool intersectionFound = false;
+	float t;
+	int i;
+	// Find where it intersects with the next surface
+	while(!intersectionFound)
+	{
+		// For each wall - cycle through
+		for(i = 0; i < 8; i++)
+		{
+			// Get wall
+			Wall *wall = gameRoom->getWall(i);
+			// Normal of the wall
+			normalOfWall = wall->getNormal();
+			// Point on the wall
+			pointOnWall = wall->getCenter();
+
+			t = (normalOfWall.x * (pointOnWall.x - originalPosition.x) + normalOfWall.y * (pointOnWall.y - originalPosition.y) + normalOfWall.z * (pointOnWall.z - originalPosition.z)) / (normalOfWall.x * diskVector.getX() + normalOfWall.y * diskVector.getY() + normalOfWall.z * diskVector.getZ());
+
+			// There is an intersection if t > 0
+			if(t > 0)
+			{
+				// Calculate the position
+				intersectionPoint = Ogre::Vector3(originalPosition.x + diskVector.getX() * t, originalPosition.y + diskVector.getY() * t, originalPosition.z + diskVector.getZ() * t);
+				// When you find an intersection, break
+				intersectionFound = true;
+				printf("intersection found at x = %f y = %f z= %f", intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+				// Draw circle at point
+				Ogre::ManualObject* Circle=sceneMgr->createManualObject("Circle");
+				Ogre::SceneNode* CircleNode=sceneMgr->getRootSceneNode()->createChildSceneNode("CircleNode");
+				Circle->begin("BaseWhite", Ogre::RenderOperation::OT_LINE_STRIP);
+				 
+				const float accuracy = 30;
+				const float radius = 5/100.0f;
+				unsigned int index = 0;
+				for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / accuracy)
+				{
+				Circle->position(cos(theta)*radius, 0, sin(theta)*radius);
+				Circle->index(index++);
+				}
+				 
+				Circle->end();
+				CircleNode->attachObject(Circle);
+				break;
+			}
+		// If we've gotten here then an intersection hasn't been found - which actually means something went wrong.
+		if(i == 7)
+			printf("We got to 7 and didn't break. Oops. \n\n\n");
+		}
+	}
+	// Draw a circle on the ground at the point of intersection
+}

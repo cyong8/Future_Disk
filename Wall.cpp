@@ -6,6 +6,7 @@ Wall::Wall(Ogre::String nym, Ogre::String planeNym, Ogre::SceneManager *mgr, Sim
 	typeName = "Wall";
 	dims = dimensions;
 	pos = position;
+	normal = norm;
 
 	//create entity for plane
 	Ogre::Entity* ent = mgr->createEntity(planeNym+"Entity", planeNym);
@@ -25,4 +26,10 @@ Wall::Wall(Ogre::String nym, Ogre::String planeNym, Ogre::SceneManager *mgr, Sim
 	rootNode->setVisible(false);
 	mass = 0.0f;
 	shape = new btBoxShape(btVector3(dimensions.x/2.0f, dimensions.y/2.0f, dimensions.z/2.0f));
+}
+Ogre::Vector3 Wall::getNormal(){
+	return normal;
+}
+Ogre::Vector3 Wall::getCenter(){
+	return pos;
 }
