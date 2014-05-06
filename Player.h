@@ -49,12 +49,13 @@ public:
 	
 	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
 	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
-
+	void nullAnimationState() { customAnimationState = NULL; }
 
 	int jumpTimer;
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
 	Ogre::SceneNode* particleNode;
+	bool moving;
 
 
 protected:

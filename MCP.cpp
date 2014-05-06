@@ -217,9 +217,10 @@ bool MCP::activateMainMenuSolo(const CEGUI::EventArgs &e)
 {   
     gui->removePanel(scorePanel);
     gui->removePanel(gameOverPanel);
+    gui->removeLabel(pauseLabel);
     
     //gui->addPanel(instructPanel, OgreBites::TL_RIGHT);
-    gui->addPanel(objectivePanel, OgreBites::TL_BOTTOM);
+    //gui->addPanel(objectivePanel, OgreBites::TL_BOTTOM);
     gui->createMainMenu();
     return true;
 }

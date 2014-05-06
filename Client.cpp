@@ -52,6 +52,25 @@ void Client::createScene()
         twoPlayerGameRoom->activateRoom();
         activeRoom = twoPlayerGameRoom;
     }
+    /********************  POWER UPS  ********************/
+    Target* Power;
+    Target* Speed;
+    Target* JumpPower;
+    Target* Restore;
+    for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        explosiveList.push_back(Power);
+        
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        speedList.push_back(Speed);
+        
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        jumpList.push_back(JumpPower);
+        
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        restoreList.push_back(Restore);
+    }
 
     /********************  POWER UPS  ********************/
     Target* Explosive;
@@ -108,6 +127,9 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
     updateCamera(); 
    
     processUnbufferedInput(mKeyboard, mMouse);
+
+    if(clientPlayer->getCustomAnimationState() != NULL)
+        clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
 }
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
@@ -160,6 +182,26 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         gameNetwork->sendPacket(iBuff, playerID);
         return;
     }
+
+    /*WALKING ANIMATION*/
+    if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
+    && !mKeyboard->isKeyDown(OIS::KC_S) && !mKeyboard->isKeyDown(OIS::KC_D)) 
+    {
+        if(clientPlayer->moving)
+        {
+            clientPlayer->nullAnimationState();
+        }
+        clientPlayer->moving = false;
+    }
+    else
+    {
+        if(!clientPlayer->moving)
+            clientPlayer->animateCharacter("walk");
+        clientPlayer->moving = true;
+    }
+
+
+
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
@@ -238,6 +280,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
     {
+        clientPlayer->animateCharacter("jump");
         pack.key = 'j';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
@@ -282,6 +325,8 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkState(HOLDING))
     {
         /* Using Disk packet to send position of player's sight node (i.e. Direction of throw) */
+        clientPlayer->animateCharacter("throw");
+
         DISK_packet dPack;
         char* dBuff = new char[sizeof(DISK_packet)];
 
@@ -364,7 +409,10 @@ void Client::interpretServerPacket(char* packList)
                 gameDisk->particleNode->setVisible(true);
             }
             if (d.playID == (char)(((int)'0') + playerID))
+            {
+                clientPlayer->animateCharacter("catch");
                 clientPlayer->setState(HOLDING, true);
+            }
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
             gameDisk->getSceneNode()->_setDerivedOrientation(d.orientation);
