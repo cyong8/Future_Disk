@@ -34,7 +34,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/20.0, dimensions.y/20.0, dimensions.z/20.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(startingPosition); // Set the startingPosition of the player
-	customPlayerEnt->setMaterialName("w_texture_1Material");
+	// customPlayerEnt->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
 	mass = 0.5f; // Set mass of player
@@ -42,6 +42,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	// initialize Cameras
 	if (playerID == 1)
 	{
+		customPlayerEnt->setMaterialName("w_green");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, -15.00));
@@ -49,6 +51,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 2)
 	{	
+		customPlayerEnt->setMaterialName("w_blue");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
@@ -56,6 +60,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 3)
 	{
+		customPlayerEnt->setMaterialName("w_purple");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
@@ -63,6 +69,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 4)		
 	{
+		customPlayerEnt->setMaterialName("w_red");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
