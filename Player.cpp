@@ -46,8 +46,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
-		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, -5.0f, -20.00));
-		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 8.0f, 20.00));
+		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, -15.00));
+		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, 15.00));
 	}
 	else if (playerID == 2)
 	{	
