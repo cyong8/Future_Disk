@@ -1,5 +1,6 @@
 #include "Disk.h"
 #include "Player.h"
+#include "Target.h"
 
 Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer) 
 	: GameObject(nym, mgr, sim)
@@ -83,21 +84,21 @@ void Disk::createNewParticleSystem(int index)
 	this->previousParticleSystem = index;
 }
 //-------------------------------------------------------------------------------------
-bool Disk::activatePowerUp(Ogre::String name, Player* p)
+bool Disk::activatePowerUp(powerUpType pType, Player* p)
 {
-    if (name == "Power" || name == "Speed") 
+    if (pType == EXPLOSIVE || pType == SPEED) 
     {
-        powerUp = name;
-        if (powerUp == "Power" && previousParticleSystem != 1)
+        powerUp = pType;
+        if (powerUp == EXPLOSIVE && previousParticleSystem != 1)
             createNewParticleSystem(1);
-        else if (powerUp == "Speed" && previousParticleSystem != 2)
+        else if (powerUp == SPEED && previousParticleSystem != 2)
             createNewParticleSystem(2);
     }
-    else if (name == "Jump" && p != NULL) 
+    else if (pType == JUMPBOOST && p != NULL) 
     {
         p->increaseJump();
     }
-    else if (name == "Restore") {
+    else if (pType == RESTORE) {
         return true;
     }
     return false;
@@ -105,7 +106,7 @@ bool Disk::activatePowerUp(Ogre::String name, Player* p)
 //-------------------------------------------------------------------------------------
 void Disk::resetPowerUp()
 {
-    powerUp = "";
+    powerUp = TARGET;
     if (previousParticleSystem != 0)
         createNewParticleSystem(0);
 }

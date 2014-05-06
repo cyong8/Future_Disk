@@ -48,6 +48,7 @@ private:
 	vector<Target*> restoreList;
 	vector<Target*> activePowerUps;
 	vector<int> activePowerUpTypes;
+	vector<Target*> removedPowerUps;
 	/* Disk */
 	Disk* gameDisk;
 
@@ -65,6 +66,7 @@ private:
 	void updateClientVelocity(Player* p);
 	bool constructAndSendGameState(void);
 	bool updateRemovedTiles(void);
+	bool updatePowerUps(void);
 	void restrictPlayerMovement(Player* p);
 	bool interpretClientPacket(int playerID);
 	void processClientInput(int playerIndex, char inputType);

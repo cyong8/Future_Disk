@@ -7,6 +7,8 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 {
 	powerType = ptype;
     typeName = "Target";
+    active = false;
+    playerID = -1;
 	/* 
 		Explosion Particle System from Ogre Website:
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Explosion&structure=Cookbook
@@ -51,3 +53,19 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
 	mass = 0.1f;
 }
+//-------------------------------------------------------------------------------------
+void Target::setActive(bool v)
+{
+	if (v)
+		rootNode->setVisible(true);
+	else 
+		rootNode->setVisible(false);
+
+	active = v;
+}
+//-------------------------------------------------------------------------------------
+void Target::setPlayer(int pID)
+{
+	playerID = pID;
+}
+//-------------------------------------------------------------------------------------

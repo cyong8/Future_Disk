@@ -97,7 +97,10 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 			((Target*)o)->toggleHitFlag();
 		else
-			targetList.push_back((Target*)o);
+		{
+			if (((Target*)o)->getPowerUpType() == TARGET) 
+				targetList.push_back((Target*)o);
+		}
 	}
 	if(o->typeName == "Wall" || o->typeName == "Tile")
 	{
@@ -357,26 +360,29 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 	{
 		if (((Target*)o)->checkHitFlag() == false)
 		{
-			//printf("COLLIDED WITH TILE!\n\n\n");
 		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());
 			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
-				// Ogre::Real posx, posy, posz;
-			 //    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
-				// posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
-				// posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
+				Ogre::Real posx, posy, posz;
+			    posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
+				posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
+				posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
 
-			 //    o->getSceneNode()->setPosition(posx, posy, posz);
-			 //    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
-			 //        // restoreTile();
-    //             gameMusic->playCollisionSound("Disk", "Target");
-    //             if (disk->powerUp == "Speed")
-    //                 gameMusic->playMusic("SpeedUp");
+			    o->getSceneNode()->setPosition(posx, posy, posz);
+			    if (disk->activatePowerUp(((Target*)o)->getPowerUpType(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
+			        restoreTile();
+
+                if (disk->checkActivePowerUp() == SPEED)
+                    gameMusic->playMusic("SpeedUp");
+                
+                gameMusic->playCollisionSound("Disk", "Target");
+
+                ((Target*)o)->setPlayer(disk->getPlayerLastThrew()->getGameObjectName());
+                removedPowerUps.push_back((Target*)o);
 			}
 			else
-			{		  
-				// This is hardcoded right now  
+			{
 				Ogre::Real width, height, gap;
 			    Ogre::Real posx, posy, posz;
 
@@ -385,8 +391,8 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				gap = gameRoom->getGapSize();
 
 				posx = Ogre::Math::RangeRandom(-width/2.0f, width/2.0f);
-				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f); 
-				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f); 
+				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f);
+				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f);
 			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
 		    }
@@ -441,8 +447,6 @@ bool Simulator::checkGameStart()
 //---------------------------------------------------------------------------------------
 void Simulator::restoreTile() // TILE UPDATE FLAG
 { 
-	// if (playerTileIdenttites)
-
     // if (playerList[0] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && hostRemoveIndexes.size() > 0) {
     //     hostTileList[hostRemoveIndexes.back()]->addToSimulator();
     //     hostRemoveIndexes.pop_back();
@@ -468,7 +472,7 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
 
 
     /* When removing from client - add to clientRemoveIndexes */
-    if (gameDisk->powerUp == "Power")
+    if (gameDisk->checkActivePowerUp() == POWER)
     {
         int tPerRow = tPerRow;
         int tPerCol = gameRoom->getTilesPerColumn();
@@ -589,5 +593,16 @@ void Simulator::removeTiles(vector<Tile*>& rt)
 			localIdentity->removedTileIndices.clear();
 		}
 	}
+}
+//-------------------------------------------------------------------------------------
+void Simulator::removeHitPowerUps(vector<Target*>& pt)
+{
+	for (int i = 0; i < removedPowerUps.size(); i++)
+	{
+		pt.push_back(removedPowerUps[i]);
+		removedPowerUps[i]->setVisible(false);
+		removeObject(removedPowerUps[i]->getGameObjectName());
+	}
+	removedPowerUps.clear();
 }
 //-------------------------------------------------------------------------------------

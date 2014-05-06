@@ -26,10 +26,16 @@ public:
 	bool isHit(); 
 	Ogre::Vector3 getDimensions() { return dims; }
 	powerUpType getPowerUpType() { return powerType; }
+	void setActive(bool v);
+	bool checkActive() { return active; }
+	void setPlayer(int pID);
+	int getPlayerID() { return playerID; }
 
 protected:
 	Ogre::Vector3 dims;
 	powerUpType powerType;
+	bool active;
+	int playerID;
 };
 
 #endif // #ifndef __Target_h_

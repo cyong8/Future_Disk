@@ -142,14 +142,17 @@ bool Server::constructAndSendGameState()
     char* sBuff;
     char* dBuff;
     char* tBuff;
+    char* puBuff;
     char* gBuff = NULL;
     int totalBytesSent = 0;
 
     vector<S_PLAYER_packet> playerPackList; 
     vector<TILE_packet> tilePackList;
+    vector<POWERUP_packet> powerUpPackList;
     DISK_packet dPack;
     
     sBuff = new char[sizeof(S_PLAYER_packet)];
+    puBuff = new char[sizeof(POWERUP_packet)];
 
     /* Sending each player's position to clients */
     for (int i = 0; i < numberOfClients; i++)   // might want to limit to players who have changed position
@@ -199,32 +202,39 @@ bool Server::constructAndSendGameState()
         tBuff = new char[sizeof(TILE_packet)];
         removedTiles.clear();
     }
-    /* UPDATE ACTIVE POWER UPS */
+    if (updatePowerUps())
+    {
+        for (int i = 0; i < removedPowerUps.size(); i++)
+        {
+            Target* localTarget = removedPowerUps[i];
+        
+            POWERUP_packet puPack;
 
-    // if ()
-    // pack.id = 'P';
-    // pack.x_coordinate = Power->getSceneNode()->_getDerivedPosition().x;
-    // pack.y_coordinate = Power->getSceneNode()->_getDerivedPosition().y;
-    // pack.z_coordinate = Power->getSceneNode()->_getDerivedPosition().z;
-    // packList.push_back(pack);
+            puPack.packetID = (char)(((int)'0') + POWERUP);
+            puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
+            puPack.playID = (char)(((int)'0') + localTarget->getPlayerID()); // 1-4 means apply to player 
+            puPack.x = localTarget->getSceneNode()->getPosition().x;
+            puPack.y = localTarget->getSceneNode()->getPosition().y;
+            puPack.z = localTarget->getSceneNode()->getPosition().z;
 
-    // pack.id = 'S';
-    // pack.x_coordinate = Speed->getSceneNode()->_getDerivedPosition().x;
-    // pack.y_coordinate = Speed->getSceneNode()->_getDerivedPosition().y;
-    // pack.z_coordinate = Speed->getSceneNode()->_getDerivedPosition().z;
-    // packList.push_back(pack);
+            powerUpPackList.push_back(puPack);
+        }
+    }
+    for (int i = 0; i < activePowerUps.size(); i++)
+    {
+        Target* localTarget = activePowerUps[i];
+        
+        POWERUP_packet puPack;
 
-    // pack.id = 'J';
-    // pack.x_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().x;
-    // pack.y_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().y;
-    // pack.z_coordinate = JumpPower->getSceneNode()->_getDerivedPosition().z;
-    // packList.push_back(pack);
+        puPack.packetID = (char)(((int)'0') + POWERUP);
+        puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
+        puPack.playID = (char)(((int)'0') + 0); // 0 indicates update position
+        puPack.x = localTarget->getSceneNode()->getPosition().x;
+        puPack.y = localTarget->getSceneNode()->getPosition().y;
+        puPack.z = localTarget->getSceneNode()->getPosition().z;
 
-    // pack.id = 'R';
-    // pack.x_coordinate = Restore->getSceneNode()->_getDerivedPosition().x;
-    // pack.y_coordinate = Restore->getSceneNode()->_getDerivedPosition().y;
-    // pack.z_coordinate = Restore->getSceneNode()->_getDerivedPosition().z;
-    // packList.push_back(pack);
+        powerUpPackList.push_back(puPack);
+    }
     if (gameDisk != NULL)
     {
         memset(&dPack, 0, sizeof(DISK_packet));
@@ -259,6 +269,11 @@ bool Server::constructAndSendGameState()
             // printf("\tTile Number: %d\t Tile Owner ID: %c\n\n", tilePackList[j].tileNumber, tilePackList[j].playID);
             gameNetwork->sendPacket(tBuff, i);
         }
+        for (int j = 0; j < powerUpPackList.size(); j++)
+        {
+            memcpy(puBuff, &powerUpPackList[j], sizeof(POWERUP_packet));
+            gameNetwork->sendPacket(puBuff, i);
+        }
         if (gBuff != NULL)
             gameNetwork->sendPacket(gBuff, i);
         /* All Disk Packets */
@@ -274,6 +289,95 @@ bool Server::updateRemovedTiles()
     if (removedTiles.size() > 0)
         return true;
     else 
+        return false;
+}
+//-------------------------------------------------------------------------------------
+bool Server::updatePowerUps()
+{
+    int ranPType, indexIntoPowers;
+    gameSimulator->removeHitPowerUps(removedPowerUps);
+    
+    for (int i = 0; i < removedPowerUps.size(); i++)
+    {
+        activePowerUpTypes[removedPowerUps[i]->getPowerUpType()] -= 1;
+        removedPowerUps[i]->setActive(false);
+    }
+    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+    {
+        if (!activePowerUps[i]->checkActive())
+        {
+            ranPType = rand() % 4;
+
+            if (activePowerUpTypes[ranPType] == 4)
+            {
+                if (ranPType == 3)
+                    ranPType--;
+                if (ranPType == 0)
+                    ranPType++;
+            }
+
+            if (ranPType == 0)  // EXPLOSIVE
+            {
+                for (int i = 0; i < explosiveList.size(); i++)
+                {
+                    if (!explosiveList[indexIntoPowers]->checkActive())
+                    {
+                        indexIntoPowers = i;
+                        break;
+                    }
+                }
+                explosiveList[indexIntoPowers]->setActive(true);
+                explosiveList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(explosiveList[indexIntoPowers]);
+            }
+            else if (ranPType == 1)  // SPEED
+            {
+                for (int i = 0; i < speedList.size(); i++)
+                {
+                    if (!speedList[indexIntoPowers]->checkActive())
+                    {
+                        indexIntoPowers = i;
+                        break;
+                    }
+                }
+                speedList[indexIntoPowers]->setActive(true);
+                speedList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(speedList[indexIntoPowers]);
+            }
+            else if (ranPType == 2)  // JUMP
+            {
+                for (int i = 0; i < jumpList.size(); i++)
+                {
+                    if (!jumpList[indexIntoPowers]->checkActive())
+                    {
+                        indexIntoPowers = i;
+                        break;
+                    }
+                }
+                jumpList[indexIntoPowers]->setActive(true);
+                jumpList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(jumpList[indexIntoPowers]);
+            }
+            else if (ranPType == 3)  // RESTORE
+            {
+                for (int i = 0; i < restoreList.size(); i++)
+                {
+                    if (!restoreList[indexIntoPowers]->checkActive())
+                    {
+                        indexIntoPowers = i;
+                        break;
+                    }
+                }
+                restoreList[indexIntoPowers]->setActive(true);
+                restoreList[indexIntoPowers]->addToSimulator();
+                activePowerUps.push_back(restoreList[indexIntoPowers]);
+            }
+        }
+    }
+
+    if (removedPowerUps.size() > 0)
+        return true;
+    else
         return false;
 }
 //-------------------------------------------------------------------------------------
@@ -551,21 +655,25 @@ void Server::activatePowerUps()
 
             if (ranPType == 0)  // EXPLOSIVE
             {
+                explosiveList[indexIntoPowers]->setActive(true);
                 explosiveList[indexIntoPowers]->addToSimulator();
                 activePowerUps.push_back(explosiveList[indexIntoPowers]);
             }
-            if (ranPType == 1)  // SPEED
+            else if (ranPType == 1)  // SPEED
             {
+                speedList[indexIntoPowers]->setActive(true);
                 speedList[indexIntoPowers]->addToSimulator();
                 activePowerUps.push_back(speedList[indexIntoPowers]);
             }
-            if (ranPType == 2)  // JUMP
+            else if (ranPType == 2)  // JUMP
             {
+                jumpList[indexIntoPowers]->setActive(true);
                 jumpList[indexIntoPowers]->addToSimulator();
                 activePowerUps.push_back(jumpList[indexIntoPowers]);
             }
-            if (ranPType == 3)  // RESTORE
+            else if (ranPType == 3)  // RESTORE
             {
+                restoreList[indexIntoPowers]->setActive(true);
                 restoreList[indexIntoPowers]->addToSimulator();
                 activePowerUps.push_back(restoreList[indexIntoPowers]);
             }

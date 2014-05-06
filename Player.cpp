@@ -222,13 +222,13 @@ void Player::setPlayerStartingPosition(bool changeRoomFlag)
 	else if (playerID == 2)
 	{
 		if (numberOfPlayers > 2)
-			startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
+			startingPosition = Ogre::Vector3(-(roomWidth/numberOfPlayers), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		else 
 			startingPosition = Ogre::Vector3(0.0f, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 	}
 	else if (playerID == 3)
 	{
-		startingPosition = Ogre::Vector3(-(roomWidth/numberOfPlayers), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
+		startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		
 		if (!changeRoomFlag)
 			rootNode->yaw(Ogre::Radian(Ogre::Math::PI));

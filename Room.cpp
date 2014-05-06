@@ -56,16 +56,6 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *gameSimulator, int numPlaye
 	plane.d = 0;
 	Ogre::Vector3 position;
 
-	/* Tile Placement */
-	Ogre::Real tilePosX = -width/2.0f + tileSize/2.0f;
-	Ogre::Real tilePosY = -(width*heightScalingFactor)/2.0f; 
-	Ogre::Real tilePosZ = height/2.0f + width/3.0f - tileSize/2.0f;
-	Ogre::Real nTilePosZ = (-height/2.0f - width/3.0f) + tileSize/2.0f;
-	
-	Ogre::Vector3 tilePosition = Ogre::Vector3(tilePosX, tilePosY, tilePosZ);
-	Ogre::Vector3 nTilePosition = Ogre::Vector3(tilePosX, tilePosY, nTilePosZ);
-
-	floorPositionY = tilePosY;
 
 	/* Create Gap Planes for each Player */
 	Ogre::SceneNode* clientGapNode;
@@ -161,6 +151,17 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *gameSimulator, int numPlaye
 
 		playerRoomSpaces[player - 1] = gp;
 	}
+
+	/* Tile Placement */
+	Ogre::Real tilePosX = -width/2.0f + tileSize/2.0f;
+	Ogre::Real tilePosY = -(width*heightScalingFactor)/2.0f; 
+	Ogre::Real tilePosZ = height/2.0f + width/3.0f - tileSize/2.0f;
+	Ogre::Real nTilePosZ = (-height/2.0f - width/3.0f) + tileSize/2.0f;
+	
+	Ogre::Vector3 tilePosition = Ogre::Vector3(tilePosX, tilePosY, tilePosZ);
+	Ogre::Vector3 nTilePosition = Ogre::Vector3(tilePosX, tilePosY, nTilePosZ);
+
+	floorPositionY = tilePosY;
 
 	Tile* localTile;
 	Ogre::Vector3 localPosition;

@@ -39,6 +39,7 @@ class Simulator
 		vector<GameObject*> objList;
 		vector<Target*> targetList;
 		vector<Player*> playerList;
+		vector<Target*> removedPowerUps;
 		Disk* gameDisk;
 		Room* gameRoom;
 	
@@ -83,6 +84,7 @@ class Simulator
 		void removePlayer(int playerIndex);
 		void setGameRoom(Room* rm);
 		void removeTiles(vector<Tile*>& rt);
+		void removeHitPowerUps(vector<Target*>& pt);
 		bool checkDiskSet() { return diskSet; };
 
 		bool soundedJump;
