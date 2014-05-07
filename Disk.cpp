@@ -31,27 +31,28 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	powerUp = TARGET;
 
 	Ogre::Vector3 position = Ogre::Vector3(0.0f, 0.0f, 0.0f);
-	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 0.02f, 1.0f);
+	Ogre::Vector3 disk_dimensions = Ogre::Vector3(1.0f, 1.0f, 1.0f);
 
 	particleNode->setVisible(true);
 	
 	typeName = "Disk";
 
 	//BALL: Ogre::Entity* ent = mgr->createEntity(nym, "sphere.mesh"); // Create Entity; apply mesh
-	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
-	rootNode->attachObject(ent); // Attach disk to a scene node
+	diskEnt = mgr->createEntity(nym, "disk_mesh.mesh");
+	rootNode->attachObject(diskEnt); // Attach disk to a scene node
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
-	rootNode->scale(disk_dimensions.x/47.0f, disk_dimensions.y/442.0f, disk_dimensions.z/47.0f); //FOR DISK
+	rootNode->scale(disk_dimensions.x/5, disk_dimensions.y/5, disk_dimensions.z/5); //FOR DISK
 	//rootNode->scale(disk_dimensions.x/200.0f, disk_dimensions.y/200.0f, disk_dimensions.z/200.0f);
 	rootNode->setPosition(position.x, position.y, position.z); // Set the position of the disk
 	
-	ent->setMaterialName("Examples/Chrome"); // apply a material to the mesh
+	diskEnt->setMaterialName("disk_texture"); // apply a material to the mesh
 
 	shape = new btSphereShape(disk_dimensions.x/2.0f);
 	mass = 0.1f;
 	offWallRotation = false;
 	
 	playerLastThrew = NULL;
+	diskAnimationState = NULL;
 }
 //-------------------------------------------------------------------------------------
 void Disk::setThrownVelocity(btVector3 v)

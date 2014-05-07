@@ -76,6 +76,10 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
 		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, -15.00));
 	}
+	
+	remainingTime = 4.0f;
+	newTime = clock();
+	oldTime = clock();
 
  	// DEBUGGING 
 	// Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
@@ -204,6 +208,31 @@ void Player::animateCharacter(Ogre::String stateName)
 void Player::setPlayerSpace()
 {
 	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
+}
+//-------------------------------------------------------------------------------------
+void Player::updateBoost(bool pressed)
+{
+    newTime = clock();
+    if (pressed)
+    {
+        if (remainingTime > 0.0f) {
+            remainingTime -= (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
+            setState(BOOST, true);
+        }
+        else {
+            remainingTime = 0.0f;
+            setState(BOOST, false);
+        }
+    }
+    else
+    {
+        if (remainingTime < 4.0f)
+            remainingTime += (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
+        else
+            remainingTime = 4.0f;
+        setState(BOOST, false);
+    }
+    oldTime = newTime;
 }
 //-------------------------------------------------------------------------------------
 void Player::changeGameRoom(Room* newGameRoom)
