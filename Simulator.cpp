@@ -365,15 +365,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			removeObject(o->getGameObjectName());
 			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
-				Ogre::Real posx, posy, posz;
-				powerUpType puType = ((Target*)o)->getPowerUpType();
-			    Ogre::Vector3 dimensions = ((Target*)o)->getDimensions();
-			    
-			    posx = Ogre::Math::RangeRandom(-gameRoom->getWidth()/2.0f + dimensions.x, gameRoom->getWidth()/2.0f - dimensions.x);
-				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f + dimensions.y, -gameRoom->getFloorPositionY()/2.0f - dimensions.y);
-				posz = Ogre::Math::RangeRandom(-gameRoom->getGapSize()/2.0f, gameRoom->getGapSize()/2.0f);
-
-			    o->getSceneNode()->setPosition(posx, posy, posz);
+				powerUpType puType = ((Target*)o)->getPowerUpType();		
 
 			    if (disk->activatePowerUp(puType, disk->getPlayerLastThrew()))
 			        restoreTile();
@@ -401,8 +393,8 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f);
 			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
+				o->addToSimulator();
 		    }
-			o->addToSimulator();
 		}
 	}
 	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding() && playerList[1] != NULL)  // HARD CODE PLAYER FLAG

@@ -81,6 +81,8 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     if(player->getCustomAnimationState() != NULL)
         player->getCustomAnimationState()->addTime(tSinceLastFrame);
 
+    player->updateBoost();
+
     if(!gameStart && !gameOver) // Game not started
     {
         MasterControl->gui->removeLabel(MasterControl->getLabel(PAUSE));

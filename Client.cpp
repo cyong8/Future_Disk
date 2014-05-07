@@ -102,7 +102,6 @@ void Client::createScene()
 //-------------------------------------------------------------------------------------
 bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    printf("RENDERING!\n");
     if (gameNetwork->checkSockets(0))
         updateScene();
 
@@ -117,6 +116,7 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
     {
         if(!clientPlayer->catchAnimation)
             clientPlayer->animateCharacter("catch");
+        
         clientPlayer->catchAnimation = true;
     }
     else
