@@ -38,8 +38,7 @@ fragment_program explodeFragmentProgram unified
 	delegate explodeFragmentProgramHLSL
 	delegate explodeFragmentProgramGLSL
 }
-
-material Examples/TEST
+material Examples/floor_texture_green
 {
 	technique
 	{
@@ -50,12 +49,75 @@ material Examples/TEST
 			
 			texture_unit
 			{
+				texture floor_texture_green.jpg
+			}
+		}
+	}
+}
+material Examples/TEST
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+
+			texture_unit
+			{
 				texture test2.jpg
 			}
 		}
 	}
 }
- 
+material Examples/floor_texture_blue
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_texture_blue.jpg
+			}
+		}
+	}
+}
+material Examples/floor_texture_red
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_texture_red.jpg
+			}
+		}
+	}
+} 
+material Examples/floor_texture_purple
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+			texture_unit
+			{
+				texture floor_texture_purple.jpg
+			}
+		}
+	}
+}
 material explosionMaterial
 {
 	technique
@@ -85,103 +147,24 @@ material explosionMaterial
 		}
 	}
 }
-
-
-
-material Examples/SphereMappedRustySteel
+material brown_1Material
 {
 	technique
 	{
 		pass
 		{
-			texture_unit
-			{
-				texture RustySteel.jpg
-			}
+			ambient 0 0 0 1
+			diffuse 0 0 0 1
 
 			texture_unit
 			{
-				texture spheremap.png
-				colour_op_ex add src_texture src_current
-				colour_op_multipass_fallback one one
-				env_map spherical
+				texture brown.png
 			}
 		}
+
 	}
+
 }
-
-material Examples/tdg
-{
-	technique
-	{
-		pass
-		{
-			texture_unit
-			{
-				texture RustySteel.jpg
-			}
-			
-			texture_unit
-			{
-				texture terr_dirt-grass.jpg
-				colour_op_ex add src_texture src_current
-				colour_op_multipass_fallback one one
-				env_map spherical	
-			}
-		}
-	}
-}
-
-material Examples/OgreLogo
-{
-	technique
-	{
-		pass
-		{
-			ambient 0.8 0.8 0.8
-
-			texture_unit
-			{
-				texture ogrelogo.png
-			}
-		}
-	}
-}
-
-material Examples/BeachStones
-{
-	technique
-	{
-		pass
-		{
-			ambient 0.1 0.1 0.1
-
-			texture_unit
-			{
-				texture BeachStones.jpg
-			}
-		}
-	}
-}
-
-material Examples/TrippySkyBox
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture nm.png separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
 material Examples/SpaceSkyBox
 {
 	technique
@@ -199,25 +182,6 @@ material Examples/SpaceSkyBox
 		}
 	}
 }
-
-material Examples/SceneSkyBox1
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture cubemap_fr.jpg cubemap_bk.jpg cubemap_lf.jpg cubemap_rt.jpg cubemap_up.jpg cubemap_dn.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
 material Examples/SceneCubeMap1
 {
 	technique
@@ -253,7 +217,6 @@ material Examples/SceneSkyBox2
 		}
 	}
 }
-
 material Examples/SceneCubeMap2
 {
 	technique
@@ -271,228 +234,6 @@ material Examples/SceneCubeMap2
 		}
 	}
 }
-
-material Examples/CloudyNoonSkyBox
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture cloudy_noon.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-material Examples/StormySkyBox
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture stormy.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-material Examples/EarlyMorningSkyBox
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture early_morning.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-
-fragment_program Examples/MorningSkyBoxHDRfp cg
-{
-	source hdr.cg
-	entry_point morningskybox_fp
-	profiles ps_2_0 arbfp1
-
-}
-
-material Examples/MorningSkyBox
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture morning.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-
-	// HDR technique (fake)
-	technique
-	{
-		scheme HDR
-
-		pass
-		{
-			lighting off
-			depth_write off
-
-			vertex_program_ref Ogre/BasicVertexPrograms/AmbientOneTexture
-			{
-				param_named_auto worldViewProj worldviewproj_matrix
-				param_named ambient float4 1 1 1 1
-			}
-			fragment_program_ref Examples/MorningSkyBoxHDRfp
-			{
-			}
-
-			texture_unit
-			{
-				cubic_texture morning.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-fragment_program Examples/MorningCubeMapHDRfp cg
-{
-	source hdr.cg
-	entry_point morningcubemap_fp
-	profiles ps_2_0 arbfp1
-
-}
-
-material Examples/MorningCubeMap
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-
-			texture_unit
-			{
-				cubic_texture morning.jpg combinedUVW
-				tex_address_mode clamp
-				env_map cubic_reflection
-			}
-		}
-	}
-	// HDR technique (fake)
-	technique
-	{
-		scheme HDR
-
-		pass
-		{
-			lighting off
-
-			fragment_program_ref Examples/MorningCubeMapHDRfp
-			{
-			}
-			texture_unit
-			{
-				cubic_texture morning.jpg combinedUVW
-				tex_address_mode clamp
-				env_map cubic_reflection
-			}
-		}
-	}
-}
-
-material Examples/EveningSkyBox
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				cubic_texture evening.jpg separateUV
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-material Examples/DynamicCubeMap
-{
-	technique
-	{
-		pass
-		{
-			texture_unit
-			{
-				// will be filled in at runtime
-				cubic_texture dyncubemap combinedUVW
-				tex_address_mode clamp
-				env_map cubic_reflection
-			}
-		}
-	}
-}
-
-material Examples/CloudySky
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			depth_write off
-
-			texture_unit
-			{
-				texture clouds.jpg
-				scroll_anim 0.15 0
-			}
-		}
-	}
-}
-
-material Examples/RustySteel
-{
-	technique
-	{
-		pass
-		{
-			texture_unit
-			{
-				texture RustySteel.jpg
-			}
-		}
-	}
-}
-
 material Examples/Chrome
 {
 	technique
@@ -507,7 +248,6 @@ material Examples/Chrome
 		}
 	}
 }
-
 material Examples/RedChrome
 {
 	technique
@@ -526,7 +266,6 @@ material Examples/RedChrome
 		}
 	}
 }
-
 material Examples/GreenChrome
 {
 	technique
@@ -545,7 +284,6 @@ material Examples/GreenChrome
 		}
 	}
 }
-
 material Examples/BlueChrome
 {
 	technique
@@ -564,7 +302,6 @@ material Examples/BlueChrome
 		}
 	}
 }
-
 material Examples/YellowChrome
 {
 	technique
@@ -583,7 +320,6 @@ material Examples/YellowChrome
 		}
 	}
 }
-
 material Examples/MagentaChrome
 {
 	technique
@@ -602,7 +338,6 @@ material Examples/MagentaChrome
 		}
 	}
 }
-
 material Examples/CyanChrome
 {
 	technique
@@ -621,7 +356,6 @@ material Examples/CyanChrome
 		}
 	}
 }
-
 material Examples/WhiteChrome
 {
 	technique
@@ -640,7 +374,6 @@ material Examples/WhiteChrome
 		}
 	}
 }
-
 material Examples/BlackChrome
 {
 	technique
@@ -659,7 +392,6 @@ material Examples/BlackChrome
 		}
 	}
 }
-
 material Examples/SpaceSkyPlane
 {
 	technique
@@ -676,92 +408,6 @@ material Examples/SpaceSkyPlane
 		}
 	}
 }
-
-material Examples/OgreDance
-{
-	technique
-	{
-		pass
-		{
-			lighting off
-			scene_blend alpha_blend
-			cull_hardware none
-			cull_software none
-
-			texture_unit
-			{
-				anim_texture ogredance.png 8 2
-				filtering none
-			}
-		}
-	}
-}
-
-material Examples/OgreParade : Examples/OgreDance
-{
-	technique
-	{
-		pass
-		{
-			texture_unit
-			{
-				scroll 0.5 0
-				scale 0.5 0.5
-				scroll_anim 0 0.5
-			}
-		}
-	}
-}
-
-material Examples/OgreSpin : Examples/OgreDance
-{
-	technique
-	{
-		pass
-		{
-			texture_unit
-			{
-				texture ogredance_1.png
-				rotate_anim 0.25
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-material Examples/OgreWobble : Examples/OgreDance
-{
-	technique
-	{
-		pass
-		{
-			texture_unit
-			{
-				texture ogredance_6.png
-				wave_xform scale_x sine 1 1.2 0 0.35
-				wave_xform scale_y sine 1 1 0.5 0.25
-				tex_address_mode clamp
-			}
-		}
-	}
-}
-
-material Examples/BumpyMetal
-{
-	technique
-	{
-		pass
-		{
-			ambient 0.75 0.75 0.75
-
-			texture_unit
-			{
-				texture BumpyMetal.jpg
-			}
-		}
-	}
-}
-
 material Examples/WaterStream
 {
 	technique
@@ -788,7 +434,6 @@ material Examples/WaterStream
 		}
 	}
 }
-
 material Examples/Flare
 {
 	technique
@@ -865,7 +510,6 @@ material Examples/FlarePointSprite
 		}
 	}
 }
-
 material Examples/Droplet
 {
 	technique
@@ -894,35 +538,6 @@ material Examples/Hilite/Yellow
 			texture_unit
 			{
 				texture dkyellow.png
-			}
-		}
-	}
-}
-material Examples/Rocky
-{
-	technique
-	{
-		pass
-		{
-			ambient 0.2 0.2 0.2
-
-			texture_unit
-			{
-				texture egyptrockyfull.jpg
-			}
-		}
-	}
-}
-material Examples/10PointBlock
-{
-	technique
-	{
-		pass
-		{
-
-			texture_unit
-			{
-				texture 10points.png
 			}
 		}
 	}

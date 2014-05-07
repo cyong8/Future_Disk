@@ -2,13 +2,15 @@
 #include "Simulator.h"
 #include "Room.h"
 
-Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm, powerUpType ptype)
+Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm, powerUpType ptype, int powerUpNumber)
 	: GameObject(nym, mgr, sim)
 {
 	powerType = ptype;
     typeName = "Target";
     active = false;
-    playerID = -1;
+    receiverID = -1;
+    index = powerUpNumber;
+
 	/* 
 		Explosion Particle System from Ogre Website:
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=Explosion&structure=Cookbook
@@ -17,6 +19,7 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	particleSystem->fastForward(1.0); 	// fast forward 1 second  to the point where the particle has been emitted
 	sceneNode->attachObject(particleSystem); // attach the particle system to a scene node
 	*/
+
 	Ogre::Entity* ent = mgr->createEntity(nym, "column.mesh");
 
 	rootNode->attachObject(ent);
@@ -29,25 +32,43 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     posx = Ogre::Math::RangeRandom(-rm->getWidth()/2.0f + dimensions.x, rm->getWidth()/2.0f - dimensions.x);
 	posy = Ogre::Math::RangeRandom(rm->getFloorPositionY()/2.0f + dimensions.y, -rm->getFloorPositionY()/2.0f - dimensions.y);
 
-
 	if (ptype == EXPLOSIVE) 
+	{
+		// particleSystem = mgr->createParticleSystem(nym + Ogre::StringConverter::toString("_particle"), "");	
 	    ent->setMaterialName("Examples/RedChrome");
+	}
     else if (ptype == SPEED) 
+    {
+    	// particleSystem = mgr->createParticleSystem(nym + Ogre::StringConverter::toString("_particle"), "");	
         ent->setMaterialName("Examples/GreenChrome");
+    }
     else if (ptype == JUMPBOOST) 
+    {
+    	// particleSystem = mgr->createParticleSystem(nym + Ogre::StringConverter::toString("_particle"), "");	
         ent->setMaterialName("Examples/CyanChrome");
+    }
     else if (ptype == RESTORE) 
+    {
+    	// particleSystem = mgr->createParticleSystem(nym + Ogre::StringConverter::toString("_particle"), "");	
         ent->setMaterialName("Examples/WhiteChrome");
+    }
     else 
+    {
+    	// particleSystem = mgr->createParticleSystem(nym + Ogre::StringConverter::toString("_particle"), "");	
         ent->setMaterialName("Examples/BlueChrome");
+    }
     if (powerType != TARGET)
     {
 		posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, rm->getGapSize()/2.0f);
 		rootNode->setVisible(false);
     }
     else
+    {
+    	// particleSystem = mgr->createParticleSystem(nym + Ogre::StringConverter::toString("_particle"), "Examples/Swarm");	
 		posz = Ogre::Math::RangeRandom(-rm->getGapSize()/2.0f, -rm->getHeight()/2.0f);
+	}
 
+	// rootNode->attachObject(particleSystem);
 	rootNode->setPosition(posx, posy, posz);
 
 	shape = new btCylinderShape(btVector3(dimensions.x/2, dimensions.y/10, dimensions.z/2));
@@ -56,16 +77,12 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 //-------------------------------------------------------------------------------------
 void Target::setActive(bool v)
 {
-	if (v)
-		rootNode->setVisible(true);
-	else 
-		rootNode->setVisible(false);
-
+	rootNode->setVisible(v);
 	active = v;
 }
 //-------------------------------------------------------------------------------------
-void Target::setPlayer(int pID)
+void Target::setReceiverID(int pID)
 {
-	playerID = pID;
+	receiverID = pID;
 }
 //-------------------------------------------------------------------------------------

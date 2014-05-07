@@ -60,16 +60,16 @@ void Client::createScene()
     Target* Restore;
     for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
     {
-        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i);
         explosiveList.push_back(Power);
         
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i);
         speedList.push_back(Speed);
         
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i);
         jumpList.push_back(JumpPower);
         
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i);
         restoreList.push_back(Restore);
     }
 
@@ -102,6 +102,7 @@ void Client::createScene()
 //-------------------------------------------------------------------------------------
 bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
+    printf("RENDERING!\n");
     if (gameNetwork->checkSockets(0))
         updateScene();
 
@@ -111,6 +112,7 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
         clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
    
     processUnbufferedInput(mKeyboard, mMouse);
+
     if(clientPlayer->checkState(HOLDING))
     {
         if(!clientPlayer->catchAnimation)
@@ -392,7 +394,7 @@ void Client::interpretServerPacket(char* packList)
 
             if (gameDisk == NULL)
             {
-                gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
+                gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f, 1);
                 gameDisk->particleNode->setVisible(true);
             }
             if (d.playID == (char)(((int)'0') + playerID))
@@ -451,6 +453,55 @@ void Client::interpretServerPacket(char* packList)
             // printf("Tile Removal Packet: \n");
             // printf("\tTile Number: %d\t Tile Owner ID: %d\n\n", t.tileNumber, newPlayerID);
             indexIntoBuff += sizeof(TILE_packet);
+        }
+        /* UPDATE POWERUP */
+        else if (packType == (char)(((int)'0') + POWERUP))
+        {
+            POWERUP_packet pu;
+            memcpy(&pu, packList+indexIntoBuff, sizeof(POWERUP_packet));
+
+            int typeOfPowerUp = (pu.powerID - '0');
+            int powerUpIndex = (pu.index - '0');
+            int receiver = (pu.receiverID - '0');
+
+            Target* localTarget;
+
+            if (typeOfPowerUp == EXPLOSIVE)
+                localTarget = explosiveList[powerUpIndex];
+            else if (typeOfPowerUp == SPEED)
+                localTarget = speedList[powerUpIndex];
+            else if (typeOfPowerUp == JUMPBOOST)
+                localTarget = jumpList[powerUpIndex];
+            else if (typeOfPowerUp == RESTORE)
+                localTarget = restoreList[powerUpIndex];
+           
+           if (receiver == 0)                       // updating a target's position
+           {
+                if (!localTarget->checkActive())
+                {
+                    localTarget->setActive(true);
+                    localTarget->getSceneNode()->setVisible(true);
+                }
+                localTarget->getSceneNode()->setPosition(pu.x, pu.y, pu.z);
+            }
+            else
+            {
+                localTarget->setActive(false);
+                localTarget->getSceneNode()->setVisible(false);
+                
+                if (typeOfPowerUp == EXPLOSIVE || typeOfPowerUp == SPEED)
+                {
+                    if (receiver <= 4)
+                    {
+                        // change so that receiver indexes into array of disks
+                        gameDisk->activatePowerUp(localTarget->getPowerUpType(), NULL);
+                    }
+                }
+                else if (typeOfPowerUp == JUMPBOOST)
+                    playerList[receiver - 1]->increaseJump();
+            }
+
+            indexIntoBuff += sizeof(POWERUP_packet);
         }
         else if(packType == (char)(((int)'0') + GAMESTATE))
         {

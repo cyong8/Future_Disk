@@ -58,16 +58,16 @@ void Server::createScene()
     Target* Restore;
     for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
     {
-        Explosive = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        Explosive = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i);
         explosiveList.push_back(Explosive);
 
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i);
         speedList.push_back(Speed);
 
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i);
         jumpList.push_back(JumpPower);
 
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i);
         restoreList.push_back(Restore);
     }
     
@@ -119,7 +119,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
     
     if (gameSimulator->checkDiskSet() && gameDisk == NULL && numberOfClients > 1)
     {
-        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/);
+        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/, 1);
         gameDisk->addToSimulator();
     }    
 }
@@ -212,7 +212,7 @@ bool Server::constructAndSendGameState()
 
             puPack.packetID = (char)(((int)'0') + POWERUP);
             puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
-            puPack.playID = (char)(((int)'0') + localTarget->getPlayerID()); // 1-4 means apply to player 
+            puPack.receiverID = (char)(((int)'0') + localTarget->getReceiverID()); // 1-4 means apply to player 
             puPack.x = localTarget->getSceneNode()->getPosition().x;
             puPack.y = localTarget->getSceneNode()->getPosition().y;
             puPack.z = localTarget->getSceneNode()->getPosition().z;
@@ -228,7 +228,8 @@ bool Server::constructAndSendGameState()
 
         puPack.packetID = (char)(((int)'0') + POWERUP);
         puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
-        puPack.playID = (char)(((int)'0') + 0); // 0 indicates update position
+        puPack.receiverID = (char)(((int)'0') + 0); // 0 indicates update position
+        puPack.index = (char)(((int)'0') + localTarget->getIndex());
         puPack.x = localTarget->getSceneNode()->getPosition().x;
         puPack.y = localTarget->getSceneNode()->getPosition().y;
         puPack.z = localTarget->getSceneNode()->getPosition().z;

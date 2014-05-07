@@ -20,22 +20,27 @@ class Room;
 class Target : public GameObject
 {
 public:
-	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm, powerUpType ptype);
-	void targetHit();
-	void resetHit();
-	bool isHit(); 
+	Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, Room* rm, powerUpType ptype, int powerUpNumber);
+
 	Ogre::Vector3 getDimensions() { return dims; }
 	powerUpType getPowerUpType() { return powerType; }
+	
 	void setActive(bool v);
 	bool checkActive() { return active; }
-	void setPlayer(int pID);
-	int getPlayerID() { return playerID; }
+
+	void setReceiverID(int pID);
+	int getReceiverID() { return receiverID; }
+	int getIndex() { return index; }
 
 protected:
 	Ogre::Vector3 dims;
+	Ogre::ParticleSystem* particleSystem;
 	powerUpType powerType;
+
+
 	bool active;
-	int playerID;
+	int receiverID;
+	int index;
 };
 
 #endif // #ifndef __Target_h_
