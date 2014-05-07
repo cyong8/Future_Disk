@@ -322,11 +322,11 @@ bool Server::updatePowerUps()
 
             if (ranPType == 0)  // EXPLOSIVE
             {
-                for (int i = 0; i < explosiveList.size(); i++)
+                for (int j = 0; j < explosiveList.size(); j++)
                 {
                     if (!explosiveList[indexIntoPowers]->checkActive())
                     {
-                        indexIntoPowers = i;
+                        indexIntoPowers = j;
                         break;
                     }
                 }
@@ -336,11 +336,11 @@ bool Server::updatePowerUps()
             }
             else if (ranPType == 1)  // SPEED
             {
-                for (int i = 0; i < speedList.size(); i++)
+                for (int j = 0; j < speedList.size(); j++)
                 {
                     if (!speedList[indexIntoPowers]->checkActive())
                     {
-                        indexIntoPowers = i;
+                        indexIntoPowers = j;
                         break;
                     }
                 }
@@ -350,11 +350,11 @@ bool Server::updatePowerUps()
             }
             else if (ranPType == 2)  // JUMP
             {
-                for (int i = 0; i < jumpList.size(); i++)
+                for (int j = 0; j < jumpList.size(); j++)
                 {
                     if (!jumpList[indexIntoPowers]->checkActive())
                     {
-                        indexIntoPowers = i;
+                        indexIntoPowers = j;
                         break;
                     }
                 }
@@ -364,7 +364,7 @@ bool Server::updatePowerUps()
             }
             else if (ranPType == 3)  // RESTORE
             {
-                for (int i = 0; i < restoreList.size(); i++)
+                for (int j = 0; j < restoreList.size(); j++)
                 {
                     if (!restoreList[indexIntoPowers]->checkActive())
                     {
@@ -374,7 +374,7 @@ bool Server::updatePowerUps()
                 }
                 restoreList[indexIntoPowers]->setActive(true);
                 restoreList[indexIntoPowers]->addToSimulator();
-                aactivePowerUps[i] = restoreList[indexIntoPowers];
+                activePowerUps[i] = restoreList[indexIntoPowers];
             }
         }
     }
