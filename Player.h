@@ -47,6 +47,8 @@ public:
 	struct RoomSpace* getPlayerSpace() { return playerSpace; }
 	Ogre::Vector3 getStartingPosition() { return startingPosition; }
 	
+	void updateBoost(bool pressed);
+	
 	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
 	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
 	void nullAnimationState() { customAnimationState = NULL; }
@@ -81,6 +83,10 @@ protected:
 	Disk* playerDisk;
 	Room* playerRoom;
 	struct RoomSpace* playerSpace;
+	
+	float remainingTime;
+    clock_t oldTime;
+    clock_t newTime;
 };
 
 #endif // #ifndef __Player_h_

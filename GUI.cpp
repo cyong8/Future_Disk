@@ -174,8 +174,8 @@ void GUI::pauseMenu(bool pause)
         pauseIMG->setProperty("Image", "set:PauseImageset image:full_image");
         pauseIMG->setProperty("BackgroundEnabled", "false");
         pauseIMG->setProperty("FrameEnabled", "false");
-        pauseIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.40, 0), CEGUI::UDim(0.2, 0)));
-        pauseIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.45, 0)));
+        pauseIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.3, 0), CEGUI::UDim(0.1, 0)));
+        pauseIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.35, 0), CEGUI::UDim(0.45, 0)));
         
         sheet->addChildWindow(quitGameIMG);
         sheet->addChildWindow(quit);
@@ -267,7 +267,7 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim(0.0, 0)));
     back->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    CEGUI::ImagesetManager::getSingleton().createFromImageFile("EnterImageset", "joingamebutton.png");
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("EnterImageset", "playbutton.png");
     CEGUI::Window *enterIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/ClientMenu/EnterButtonIMG");
     enterIMG->setProperty("Image", "set:EnterImageset image:full_image");
     enterIMG->setProperty("BackgroundEnabled", "false");
