@@ -43,7 +43,7 @@ void Solo::createScene()
 
     for (int i = 0; i < NUM_OF_TARGETS; i++)
     {
-        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom, TARGET);
+        Target *target = new Target("Target_" + Ogre::StringConverter::toString(i), sceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), gameRoom, TARGET, i);
         target->addToSimulator();
         target_list.push_back(target);
     }
@@ -80,6 +80,9 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     //bool ret = BaseApplication::frameRenderingQueued(evt);
     if(player->getCustomAnimationState() != NULL)
         player->getCustomAnimationState()->addTime(tSinceLastFrame);
+    
+    if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
+        gameDisk->diskAnimationState->addTime(tSinceLastFrame*2);
 
     if(!gameStart && !gameOver) // Game not started
     {
@@ -127,8 +130,13 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     if (gameSimulator->checkDiskSet() && !diskAdded)
     {
         if (gameDisk == NULL) 
-            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/);
-            
+        {
+            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/, 1);
+            gameDisk->diskAnimationState = gameDisk->diskEnt->getAnimationState("spin");
+            gameDisk->diskAnimationState->setEnabled(true);
+            gameDisk->diskAnimationState->setLoop(true);
+            gameDisk->diskAnimationState->setTimePosition(0);
+        }
         gameDisk->addToSimulator();
         diskAdded = true;
     }
@@ -197,12 +205,6 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
 
     static bool vKeyDown = false;
 
-    Player *p = (Player *)gameSimulator->getGameObject("Player1");     // Get the player object from the simulator
-
-    float fx = 0.0f;                                                   // Force x-component
-    float fz = 0.0f;                                                   // Force z-component
-    btVector3 velocityVector = btVector3(0.0f, 0.0f, 0.0f);            // Initial velocity vector
-
     timeSinceLastJump += tSinceLastFrame;
 
     /********************     MOVEMENT   ********************/
@@ -210,11 +212,11 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
     if(!gamePause && gameSimulator->checkGameStart())
     {
         // If the mouse button was not pressed in the last frame, the mouse is pressed in the current frame, and the player is holding the disk then they are trying to throw
-        if(!mMouseDown && currMouse && p->checkHolding() && vKeyDown) 
+        if(!mMouseDown && currMouse && player->checkHolding() && vKeyDown) 
         {
             gameMusic->playMusic("Throw");
             gameSimulator->setThrowFlag();
-            p->getPlayerDisk()->getSceneNode()->setVisible(true, true);
+            player->getPlayerDisk()->getSceneNode()->setVisible(true, true);
             player->animateCharacter("throw");
         }
         mMouseDown = currMouse; // Set that the mouse WAS pressed
@@ -232,10 +234,36 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
             //mSceneMgr->getRootSceneNode()->detachObject(trajectory);
             //trajectory->clear();
         }
+        /*newTime = clock();
         if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)) // Move into Boost mode
         {
-            turboMode = true;
+            if (player->getRemainingTime() > 0.0f) {
+                clock_t t = clock();
+                remainingTime 
+                player->setState(BOOST, true);
+            }
+            else 
+                player->setState(BOOST, false);
         }
+        else
+        {
+            if (player->getRemainingTime() < 4.0f)
+                remainingTime += (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
+            else
+                remainingTime = 4.0f;
+            player->setState(BOOST, false);
+        }
+        oldTime = newTime;*/
+        
+        if (mKeyboard->isKeyDown(OIS::KC_LSHIFT))
+        {
+            player->updateBoost(true);
+        }
+        else
+        {
+            player->updateBoost(false);
+        }
+        
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
         {
@@ -258,40 +286,38 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
              // Move the player
             if (mKeyboard->isKeyDown(OIS::KC_W)) // Forward
             {
-                fz += mMove;
-                velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-                keyWasPressed = true;
+                player->setState(FORWARD, true);
             }
+            else
+                player->setState(FORWARD, false);
 
 
             if (mKeyboard->isKeyDown(OIS::KC_S)) // Backward
             {
-                fz -= mMove;
-                velocityVector = velocityVector + btVector3(0.0f, 0.0f, fz);
-                keyWasPressed = true;
+                player->setState(BACK, true);
             } 
-
+            else
+                player->setState(BACK, false);
 
             if (mKeyboard->isKeyDown(OIS::KC_A)) // Left - yaw or strafe
             {
-                fx += mMove; // Strafe left
-                velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-                keyWasPressed = true;
+                player->setState(LEFT, true);              
             } 
+            else
+                player->setState(LEFT, false);
 
             if (mKeyboard->isKeyDown(OIS::KC_D)) // Right - yaw or strafe
             {
-                fx -= mMove; // Strafe right
-                velocityVector = velocityVector + btVector3(fx, 0.0f, 0.0f);
-                keyWasPressed = true;
+                player->setState(RIGHT, true);
             } 
-
+            else
+                player->setState(RIGHT, false);
 
             if (mKeyboard->isKeyDown(OIS::KC_SPACE) && !spacePressedLast)// && !p->groundConstantSet && !spacePressedLast) 
             {
-                if(p->performJump())
+                if(player->performJump())
                 {
-                    if (p->jumpPowerActive)
+                    if (player->jumpPowerActive)
                         gameMusic->playMusic("SuperJump");
                     else
                         gameMusic->playMusic("Jump");
@@ -307,17 +333,13 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
             {
                 spacePressedLast = false;
             }
-            if(keyWasPressed && !p->checkMovementRestriction())
+            if(!player->checkMovementRestriction())
             {   // Rotate the velocity vector by the orientation of the player
                 
-                Ogre::Vector3 trueVelocity = Ogre::Vector3(velocityVector.getX(), velocityVector.getY(), velocityVector.getZ());
-                trueVelocity = p->getSceneNode()->_getDerivedOrientation() * trueVelocity; 
-                btVector3 btTrueVelocity = btVector3(trueVelocity.x, trueVelocity.y, trueVelocity.z);
-
-                if (turboMode)
-                        p->getBody()->setLinearVelocity((btTrueVelocity * sprintFactor) + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
-                else
-                        p->getBody()->setLinearVelocity(btTrueVelocity + btVector3(0.0f, p->getBody()->getLinearVelocity().getY(), 0.0f));
+                Ogre::Vector3 velocityVector =  player->getSceneNode()->_getDerivedOrientation() * player->fillVelocityVector(mMove, sprintFactor);
+                
+                btVector3 btTrueVelocity = btVector3(velocityVector.x, velocityVector.y, velocityVector.z);            
+                player->getBody()->setLinearVelocity(btTrueVelocity + (btVector3(0.0f, player->getBody()->getLinearVelocity().getY(), 0.0f)));
             }
         }
     }
@@ -338,8 +360,8 @@ void Solo::togglePause()
     else //entering Pause
     {        
         gameMusic->playMusic("Start");
-        MasterControl->getLabel(PAUSE)->setCaption("GAME PAUSED!");
-        MasterControl->gui->addLabel(MasterControl->getLabel(PAUSE), OgreBites::TL_CENTER);
+        //MasterControl->getLabel(PAUSE)->setCaption("GAME PAUSED!");
+        //MasterControl->gui->addLabel(MasterControl->getLabel(PAUSE), OgreBites::TL_CENTER);
         //MasterControl->gui->addPanel(MasterControl->getPanel(OBJECTIVE), OgreBites::TL_BOTTOM);
         //MasterControl->gui->addPanel(MasterControl->getPanel(INSTRUCT), OgreBites::TL_RIGHT);
         gamePause = true;

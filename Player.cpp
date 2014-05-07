@@ -19,6 +19,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	playerCanCatch = true;
 	customAnimationState = NULL;
 	moving = false;
+	catchAnimation = false;
 
 	setPlayerStartingPosition(false);
 
@@ -33,7 +34,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->scale(dimensions.x/20.0, dimensions.y/20.0, dimensions.z/20.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
 	rootNode->setPosition(startingPosition); // Set the startingPosition of the player
-	customPlayerEnt->setMaterialName("w_texture_1Material");
+	// customPlayerEnt->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
 	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
 	mass = 0.5f; // Set mass of player
@@ -41,6 +42,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	// initialize Cameras
 	if (playerID == 1)
 	{
+		customPlayerEnt->setMaterialName("w_green");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, -15.00));
@@ -48,6 +51,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 2)
 	{	
+		customPlayerEnt->setMaterialName("w_blue");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
@@ -55,6 +60,8 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 3)
 	{
+		customPlayerEnt->setMaterialName("w_purple");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
@@ -62,11 +69,17 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	}
 	else if (playerID == 4)		
 	{
+		customPlayerEnt->setMaterialName("w_red");
+
 		this->pSightNode = rootNode->createChildSceneNode(nym + "_sight");
 		this->pCamNode = rootNode->createChildSceneNode(nym + "_camera");
 		this->pSightNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 0.0f, 15.00));
 		this->pCamNode->_setDerivedPosition(rootNode->_getDerivedPosition() + Ogre::Vector3(0.0f, 2.0f, -15.00));
 	}
+	
+	remainingTime = 4.0f;
+	newTime = clock();
+	oldTime = clock();
 
  	// DEBUGGING 
 	// Ogre::Entity* camEnt = mgr->createEntity(nym+"_camMesh", "cube.mesh");
@@ -197,6 +210,31 @@ void Player::setPlayerSpace()
 	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
 }
 //-------------------------------------------------------------------------------------
+void Player::updateBoost(bool pressed)
+{
+    newTime = clock();
+    if (pressed)
+    {
+        if (remainingTime > 0.0f) {
+            remainingTime -= (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
+            setState(BOOST, true);
+        }
+        else {
+            remainingTime = 0.0f;
+            setState(BOOST, false);
+        }
+    }
+    else
+    {
+        if (remainingTime < 4.0f)
+            remainingTime += (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
+        else
+            remainingTime = 4.0f;
+        setState(BOOST, false);
+    }
+    oldTime = newTime;
+}
+//-------------------------------------------------------------------------------------
 void Player::changeGameRoom(Room* newGameRoom)
 {
 	playerRoom = newGameRoom;
@@ -222,13 +260,13 @@ void Player::setPlayerStartingPosition(bool changeRoomFlag)
 	else if (playerID == 2)
 	{
 		if (numberOfPlayers > 2)
-			startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
+			startingPosition = Ogre::Vector3(-(roomWidth/numberOfPlayers), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		else 
 			startingPosition = Ogre::Vector3(0.0f, 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
 	}
 	else if (playerID == 3)
 	{
-		startingPosition = Ogre::Vector3(-(roomWidth/numberOfPlayers), 0.0f, -(roomWidth/3.0f + roomHeight)/numberOfPlayers);
+		startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		
 		if (!changeRoomFlag)
 			rootNode->yaw(Ogre::Radian(Ogre::Math::PI));

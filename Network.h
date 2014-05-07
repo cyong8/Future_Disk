@@ -28,7 +28,6 @@ enum gameStates
 	SOUND,
 	ENDROUND
 };
-
 enum keyID
 {
 	W,
@@ -53,14 +52,6 @@ enum packID
 	TILE = 6,
 	GAMESTATE = 7,
 	EXPANSION = 8
-};
-
-enum powerUpID
-{
-	nPOWER,
-	nSPEED,
-	nJUMP,
-	nRESTORE
 };
 struct C_PLAYER_packet
 {
@@ -102,8 +93,9 @@ struct INPUT_packet
 struct POWERUP_packet 
 {
 	char packetID;
-	powerUpID powerID;
-	char playID;
+	char powerID;
+	char receiverID;
+	char index;
 	// positions of each power-up
 	float x;
 	float y;

@@ -21,6 +21,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	diskSet = false;
+	safeToSpawnPowerUps = false;
 
 	playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
@@ -97,7 +98,10 @@ void Simulator::addObject (GameObject* o)
 		if (o->checkReAddFlag())
 			((Target*)o)->toggleHitFlag();
 		else
-			targetList.push_back((Target*)o);
+		{
+			if (((Target*)o)->getPowerUpType() == TARGET) 
+				targetList.push_back((Target*)o);
+		}
 	}
 	if(o->typeName == "Wall" || o->typeName == "Tile")
 	{
@@ -180,7 +184,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 		if (gameDisk != NULL)
 		{
 	        btVector3 currentDirection = gameDisk->getBody()->getLinearVelocity().normalized();
-            if (gameDisk->powerUp == "Speed")
+            if (gameDisk->checkActivePowerUp() == SPEED)
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor*2.0f, diskSpeedFactor*2.0f, diskSpeedFactor*2.0f));
             else    
                 gameDisk->getBody()->setLinearVelocity(currentDirection * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
@@ -190,6 +194,17 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
 			{
+				int lowestTileCountPlayer;
+				int numberTiles = 0;
+				
+				for (int i = 0; i < playerTileIdentities.size(); i++)
+				{	
+					if (playerTileIdentities.size() > numberTiles)
+					{
+						
+					}
+				}
+
 				((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk(gameDisk);
 			}
 		}
@@ -281,6 +296,7 @@ void Simulator::performThrow(Player* p)
 
 		gameDisk->setPlayerLastThrew(p);
     	p->setHolding(false);
+    	predictedHit();
     }
     else // Update position relative to the Player
     {
@@ -335,6 +351,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				((Player*)o)->attachDisk((Disk*)disk);
 				disk->setHolder(((Player*)o)->getPlayerID());
 				gameMusic->playCollisionSound("Disk", "Player");
+				safeToSpawnPowerUps = true;
 			}
 			gameStart = true;
 			gameState = STARTED;
@@ -346,25 +363,26 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 	{
 		if (((Target*)o)->checkHitFlag() == false)
 		{
-			//printf("COLLIDED WITH TILE!\n\n\n");
 		    ((Target*)o)->toggleHitFlag();
 			removeObject(o->getGameObjectName());
-			if (o->getGameObjectName() == "Power" || o->getGameObjectName() == "Speed" || o->getGameObjectName() == "Jump" || o->getGameObjectName() == "Restore") 
+			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
-			    o->getSceneNode()->setPosition(Ogre::Math::RangeRandom(getGameObject("LeftWall")->getSceneNode()->getPosition().x + (1.0f/2.0f)
-								    ,getGameObject("RightWall")->getSceneNode()->getPosition().x - (1.0f/2.0f)), 
-							       Ogre::Math::RangeRandom(getGameObject("client111")->getSceneNode()->getPosition().y + (2.0f/3.0f)
-								    ,getGameObject("Ceiling")->getSceneNode()->getPosition().y - (2.0f/3.0f)), 
-							       Ogre::Math::RangeRandom(-5.0f, 5.0f));
-			    if (disk->activatePowerUp(o->getGameObjectName(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
-			        // restoreTile();
+				powerUpType puType = ((Target*)o)->getPowerUpType();		
+
+			    if (disk->activatePowerUp(puType, disk->getPlayerLastThrew()))
+			        restoreTile();
+                
                 gameMusic->playCollisionSound("Disk", "Target");
-                if (disk->powerUp == "Speed")
-                    gameMusic->playMusic("SpeedUp");
+
+             	if (puType == EXPLOSIVE || puType == SPEED)
+             		((Target*)o)->setReceiverID(disk->getDiskID());
+             	else
+                	((Target*)o)->setReceiverID(disk->getPlayerLastThrew()->getPlayerID());
+                
+                removedPowerUps.push_back((Target*)o);
 			}
 			else
-			{		  
-				// This is hardcoded right now  
+			{
 				Ogre::Real width, height, gap;
 			    Ogre::Real posx, posy, posz;
 
@@ -373,12 +391,12 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				gap = gameRoom->getGapSize();
 
 				posx = Ogre::Math::RangeRandom(-width/2.0f, width/2.0f);
-				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f); 
-				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f); 
+				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f, -gameRoom->getFloorPositionY()/2.0f);
+				posz = Ogre::Math::RangeRandom(-gap/2.0f, -height/2.0f);
 			    o->getSceneNode()->setPosition(posx, posy, posz);
 			    gameMusic->playCollisionSound("Disk", "Target");
+				o->addToSimulator();
 		    }
-			o->addToSimulator();
 		}
 	}
 	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding() && playerList[1] != NULL)  // HARD CODE PLAYER FLAG
@@ -392,6 +410,13 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 
 		newRemovedTile = true;
 	}
+	if(sceneMgr->hasManualObject("Circle"))
+	{
+		sceneMgr->destroyManualObject("Circle");
+		sceneMgr->destroySceneNode("CircleNode");
+		predictedHit();
+	}
+
 }
 
 //-------------------------------------------------------------------------------------
@@ -429,8 +454,6 @@ bool Simulator::checkGameStart()
 //---------------------------------------------------------------------------------------
 void Simulator::restoreTile() // TILE UPDATE FLAG
 { 
-	// if (playerTileIdenttites)
-
     // if (playerList[0] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && hostRemoveIndexes.size() > 0) {
     //     hostTileList[hostRemoveIndexes.back()]->addToSimulator();
     //     hostRemoveIndexes.pop_back();
@@ -456,16 +479,16 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
 
 
     /* When removing from client - add to clientRemoveIndexes */
-    if (gameDisk->powerUp == "Power")
+    if (gameDisk->checkActivePowerUp() == EXPLOSIVE)
     {
-        int tPerRow = tPerRow;
+        int tPerRow = gameRoom->getTilesPerRow();
         int tPerCol = gameRoom->getTilesPerColumn();
 
         int col = tileIndex % tPerRow;
 
         if (col != 0) // remove left - not in far left column
         { 
-            if (!(playerTileIdentities[playerID]->tileList[tileIndex]->checkHitFlag()))
+            if (!(playerTileIdentities[playerID]->tileList[tileIndex - 1]->checkHitFlag()))
             {
                 playerTileIdentities[playerID]->tileList[tileIndex - 1]->toggleHitFlag();
 
@@ -487,7 +510,7 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
                 removeObject(playerTileIdentities[playerID]->tileList[tileIndex + 1]->getGameObjectName());
             }
         }
-        if (tileIndex > tPerRow) // remove top - not in top row
+        if (tileIndex > tPerRow) // Can remove bottom
         { 
             if (!(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->checkHitFlag()))
             {
@@ -499,7 +522,7 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
                 removeObject(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->getGameObjectName());
             }
         }
-        if (tileIndex < (tPerRow * (tPerCol - 1))) // remove bottom - not in bottom row
+        if (tileIndex < (tPerRow * (tPerCol - 1))) // Can remove top one
         { 
             if (!(playerTileIdentities[playerID]->tileList[tileIndex + tPerRow]->checkHitFlag()))
             {
@@ -579,3 +602,73 @@ void Simulator::removeTiles(vector<Tile*>& rt)
 	}
 }
 //-------------------------------------------------------------------------------------
+void Simulator::removeHitPowerUps(vector<Target*>& pt)
+{
+	for (int i = 0; i < removedPowerUps.size(); i++)
+	{
+		pt.push_back(removedPowerUps[i]);
+		removedPowerUps[i]->getSceneNode()->setVisible(false);
+		// removeObject(removedPowerUps[i]->getGameObjectName());
+	}
+	removedPowerUps.clear();
+}
+//-------------------------------------------------------------------------------------
+void Simulator::predictedHit()
+{
+	// Get the velocity vector of the disk
+	// btVector3 diskVector = gameDisk->getBody()->getLinearVelocity();
+	// Ogre::Vector3 normalOfWall = Ogre::Vector3(0,0,0); // Initialize to 0
+	// Ogre::Vector3 pointOnWall = Ogre::Vector3(0,0,0); // Initialize to 0
+	// Ogre::Vector3 originalPosition = gameDisk->getSceneNode()->getPosition();
+	// Ogre::Vector3 intersectionPoint;
+	// bool intersectionFound = false;
+	// float t;
+	// int i;
+	// // Find where it intersects with the next surface
+	// while(!intersectionFound)
+	// {
+	// 	// For each wall - cycle through
+	// 	for(i = 0; i < 8; i++)
+	// 	{
+	// 		// Get wall
+	// 		Wall *wall = gameRoom->getWall(i);
+	// 		// Normal of the wall
+	// 		normalOfWall = wall->getNormal();
+	// 		// Point on the wall
+	// 		pointOnWall = wall->getCenter();
+
+	// 		t = (normalOfWall.x * (pointOnWall.x - originalPosition.x) + normalOfWall.y * (pointOnWall.y - originalPosition.y) + normalOfWall.z * (pointOnWall.z - originalPosition.z)) / (normalOfWall.x * diskVector.getX() + normalOfWall.y * diskVector.getY() + normalOfWall.z * diskVector.getZ());
+
+	// 		// There is an intersection if t > 0
+	// 		if(t > 0)
+	// 		{
+	// 			// Calculate the position
+	// 			intersectionPoint = Ogre::Vector3(originalPosition.x + diskVector.getX() * t, originalPosition.y + diskVector.getY() * t, originalPosition.z + diskVector.getZ() * t);
+	// 			// When you find an intersection, break
+	// 			intersectionFound = true;
+	// 			printf("intersection found at x = %f y = %f z= %f\n", intersectionPoint.x, intersectionPoint.y, intersectionPoint.z);
+	// 			// Draw circle at point
+	// 			Ogre::ManualObject* Circle=sceneMgr->createManualObject("Circle");
+	// 			Ogre::SceneNode* CircleNode=sceneMgr->getRootSceneNode()->createChildSceneNode("CircleNode");
+	// 			Circle->begin("BaseWhite", Ogre::RenderOperation::OT_LINE_STRIP);
+				 
+	// 			const float accuracy = 30;
+	// 			const float radius = 5/100.0f;
+	// 			unsigned int index = 0;
+	// 			for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / accuracy)
+	// 			{
+	// 			Circle->position(cos(theta)*radius, 0, sin(theta)*radius);
+	// 			Circle->index(index++);
+	// 			}
+				 
+	// 			Circle->end();
+	// 			CircleNode->attachObject(Circle);
+	// 			break;
+	// 		}
+	// 	// If we've gotten here then an intersection hasn't been found - which actually means something went wrong.
+	// 	if(i == 7)
+	// 		printf("We got to 7 and didn't break. Oops. \n\n\n");
+	// 	}
+	// }
+	// Draw a circle on the ground at the point of intersection
+}

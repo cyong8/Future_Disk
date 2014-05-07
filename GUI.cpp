@@ -143,29 +143,47 @@ void GUI::pauseMenu(bool pause)
     	quit->setAlpha(0.1f);
     	quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
 
+        CEGUI::ImagesetManager::getSingleton().createFromImageFile("RestartGameImageset", "restartgamebutton.png");
+        CEGUI::Window *restartIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/Pause/RestartGameButtonIMG");
+        restartIMG->setProperty("Image", "set:RestartGameImageset image:full_image");
+        restartIMG->setProperty("BackgroundEnabled", "false");
+        restartIMG->setProperty("FrameEnabled", "false");
+        restartIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
+        restartIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+
         CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/Pause/RestartGameButton");
-        restart->setText("Restart Game");
-        restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+        restart->setAlpha(0.1f);
+        restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
         restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
-        
-	CEGUI::ImagesetManager::getSingleton().createFromImageFile("BackImageset", "backbutton.png");
+            
+	    CEGUI::ImagesetManager::getSingleton().createFromImageFile("BackImageset", "backbutton.png");
         CEGUI::Window *backIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/Pause/BackButtonIMG");
         backIMG->setProperty("Image", "set:BackImageset image:full_image");
         backIMG->setProperty("BackgroundEnabled", "false");
         backIMG->setProperty("FrameEnabled", "false");
         backIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-        backIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+        backIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.7, 0)));
 
         CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/BackButton");
         back->setAlpha(0.1f);
         back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-        back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+        back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.7, 0)));
+        
+        CEGUI::ImagesetManager::getSingleton().createFromImageFile("PauseImageset", "gamepaused.png");
+        CEGUI::Window *pauseIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/Pause/PauseIMG");
+        pauseIMG->setProperty("Image", "set:PauseImageset image:full_image");
+        pauseIMG->setProperty("BackgroundEnabled", "false");
+        pauseIMG->setProperty("FrameEnabled", "false");
+        pauseIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.3, 0), CEGUI::UDim(0.1, 0)));
+        pauseIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.35, 0), CEGUI::UDim(0.45, 0)));
         
         sheet->addChildWindow(quitGameIMG);
         sheet->addChildWindow(quit);
+        sheet->addChildWindow(restartIMG);
         sheet->addChildWindow(restart);
-	sheet->addChildWindow(backIMG);
+	    sheet->addChildWindow(backIMG);
         sheet->addChildWindow(back);
+        sheet->addChildWindow(pauseIMG);
         
         CEGUI::System::getSingleton().setGUISheet(sheet);
     
@@ -227,6 +245,7 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     quitGameIMG->setProperty("BackgroundEnabled", "false");
     quitGameIMG->setProperty("FrameEnabled", "false");
     quitGameIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    quitGameIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
     CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/QuitButton");
     quit->setAlpha(0.1f);
@@ -240,29 +259,42 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     backIMG->setProperty("FrameEnabled", "false");
     backIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     backIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim(0, 0)));
+    backIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
     CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/BackButton");
     back->setAlpha(0.1f);
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim(0.0, 0)));
+    back->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    CEGUI::ImagesetManager::getSingleton().createFromImageFile("EnterImageset", "joingamebutton.png");
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("EnterImageset", "playbutton.png");
     CEGUI::Window *enterIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/ClientMenu/EnterButtonIMG");
     enterIMG->setProperty("Image", "set:EnterImageset image:full_image");
     enterIMG->setProperty("BackgroundEnabled", "false");
     enterIMG->setProperty("FrameEnabled", "false");
-    enterIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    enterIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.05, 0)));
     enterIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
-
-    CEGUI::Window *enter = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/EnterButton");
-    enter->setAlpha(0.1f);
-    enter->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    enter->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
+    enterIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
     CEGUI::Window *ip = wmgr.createWindow("OgreTray/Editbox", "TronGame/ClientMenu/IPEditbox");
-    ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.05, 0)));
     ip->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
     ip->setUserString("TronGame/ClientMenu/IPEditbox", "TronGame/ClientMenu/IPEditbox");
+    
+    CEGUI::Window *enter = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/EnterButton");
+    enter->setAlpha(0.1f);
+    enter->setSize(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.05, 0)));
+    enter->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
+    enter->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
+    
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("ObjectiveImageset", "multiplayerobjective.png");
+    CEGUI::Window *objectiveIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/Client/ObjectiveIMG");
+    objectiveIMG->setProperty("Image", "set:ObjectiveImageset image:full_image");
+    objectiveIMG->setProperty("BackgroundEnabled", "false");
+    objectiveIMG->setProperty("FrameEnabled", "false");
+    objectiveIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.20, 0)));
+    objectiveIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.65, 0)));
+    objectiveIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
     sheet->addChildWindow(quitGameIMG);
     sheet->addChildWindow(quit);
@@ -271,6 +303,7 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     sheet->addChildWindow(enterIMG);
     sheet->addChildWindow(enter);
     sheet->addChildWindow(ip);
+    sheet->addChildWindow(objectiveIMG);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
@@ -295,9 +328,17 @@ void GUI::gameOverScreen()
     CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/QuitButton");
     quit->setAlpha(0.1f);
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-        
+    
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("RestartGameImageset", "restartgamebutton.png");
+    CEGUI::Window *restartIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/GameOver1/RestartGameButtonIMG");
+    restartIMG->setProperty("Image", "set:RestartGameImageset image:full_image");
+    restartIMG->setProperty("BackgroundEnabled", "false");
+    restartIMG->setProperty("FrameEnabled", "false");
+    restartIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
+    restartIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
+
     CEGUI::Window *restart = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/RestartGameButton");
-    restart->setText("Restart Game");
+    restart->setAlpha(0.1f);
     restart->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     restart->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.6, 0)));
     
@@ -307,15 +348,16 @@ void GUI::gameOverScreen()
     backIMG->setProperty("BackgroundEnabled", "false");
     backIMG->setProperty("FrameEnabled", "false");
     backIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    backIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+    backIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.7, 0)));
 
-    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/MainMenu/BackButton");
+    CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/GameOver1/BackButton");
     back->setAlpha(0.1f);
     back->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.05, 0)));
-    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.38, 0), CEGUI::UDim(0.7, 0)));
+    back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.7, 0)));
     
     sheet->addChildWindow(quitGameIMG);
     sheet->addChildWindow(quit);
+    sheet->addChildWindow(restartIMG);
     sheet->addChildWindow(restart);
     sheet->addChildWindow(backIMG);
     sheet->addChildWindow(back);

@@ -11,9 +11,10 @@ Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
-	gameNetwork = new Network(CLIENT, IP);
-	gameMusic = new Music();
+    gameNetwork = new Network(CLIENT, IP);
+    gameMusic = new Music();
 
+    printf("\n\n\nIP: %s\n\n\n", IP);
     playerID = gameNetwork->establishConnection();  
     
     createScene();
@@ -31,7 +32,6 @@ void Client::createScene()
     /* GAME ROOM */
     twoPlayerGameRoom = new Room(cSceneMgr, NULL, 2);
     fourPlayerGameRoom = new Room(cSceneMgr, NULL, 4);
-    
 
     cSceneMgr->setAmbientLight(Ogre::ColourValue(0.5f,0.5f,0.5f));  // Ambient light
     cSceneMgr->setShadowTechnique(Ogre::SHADOWTYPE_STENCIL_ADDITIVE);
@@ -60,16 +60,16 @@ void Client::createScene()
     Target* Restore;
     for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
     {
-        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE);
+        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i-1);
         explosiveList.push_back(Power);
         
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED);
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i-1);
         speedList.push_back(Speed);
         
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST);
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i-1);
         jumpList.push_back(JumpPower);
         
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE);
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i-1);
         restoreList.push_back(Restore);
     }
 
@@ -106,16 +106,31 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
         updateScene();
 
     updateCamera(); 
-   
-    processUnbufferedInput(mKeyboard, mMouse);
 
     if(clientPlayer->getCustomAnimationState() != NULL)
         clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
+
+    if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
+        gameDisk->diskAnimationState->addTime(tSinceLastFrame*2);
+   
+    processUnbufferedInput(mKeyboard, mMouse);
+
+    if(clientPlayer->checkState(HOLDING))
+    {
+        if(!clientPlayer->catchAnimation)
+            clientPlayer->animateCharacter("catch");
+        
+        clientPlayer->catchAnimation = true;
+    }
+    else
+    {
+        clientPlayer->catchAnimation = false;
+    }
 }
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
-    if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1)
+    if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1) //&& numPlayers >= 2)
     {
         char* gBuff = new char[sizeof(GAMESTATE_packet)];
         
@@ -163,26 +178,22 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         gameNetwork->sendPacket(iBuff, playerID);
         return;
     }
-
     /*WALKING ANIMATION*/
     if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
     && !mKeyboard->isKeyDown(OIS::KC_S) && !mKeyboard->isKeyDown(OIS::KC_D)) 
     {
         if(clientPlayer->moving)
-        {
             clientPlayer->nullAnimationState();
-        }
+
         clientPlayer->moving = false;
     }
     else
     {
         if(!clientPlayer->moving)
             clientPlayer->animateCharacter("walk");
+
         clientPlayer->moving = true;
     }
-
-
-
     /* MOVE FORWARD */
     if (mKeyboard->isKeyDown(OIS::KC_W) && !clientPlayer->checkState(FORWARD))
     {
@@ -261,12 +272,11 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     }
     if (mKeyboard->isKeyDown(OIS::KC_SPACE)) //&& !clientPlayer->checkState(JUMP))     // SET BACK TO FALSE W/ GAMESTATE PACKET (when player hits ground) 
     {
+        clientPlayer->animateCharacter("jump");
         pack.key = 'j';
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
-
-        clientPlayer->animateCharacter("jump");
     }
     if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
@@ -307,6 +317,8 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     if (mMouse->getMouseState().buttonDown(OIS::MB_Left) && clientPlayer->checkState(VIEWMODE) && clientPlayer->checkState(HOLDING))
     {
         /* Using Disk packet to send position of player's sight node (i.e. Direction of throw) */
+        clientPlayer->animateCharacter("throw");
+
         DISK_packet dPack;
         char* dBuff = new char[sizeof(DISK_packet)];
 
@@ -385,11 +397,18 @@ void Client::interpretServerPacket(char* packList)
 
             if (gameDisk == NULL)
             {
-                gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f);
+                gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f, 1);
                 gameDisk->particleNode->setVisible(true);
+                gameDisk->diskAnimationState = gameDisk->diskEnt->getAnimationState("spin");
+                gameDisk->diskAnimationState->setEnabled(true);
+                gameDisk->diskAnimationState->setLoop(true);
+                gameDisk->diskAnimationState->setTimePosition(0);
             }
             if (d.playID == (char)(((int)'0') + playerID))
+            {
                 clientPlayer->setState(HOLDING, true);
+                gameStart = true;
+            }
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
             gameDisk->getSceneNode()->_setDerivedOrientation(d.orientation);
@@ -438,10 +457,60 @@ void Client::interpretServerPacket(char* packList)
             if (t.removed == (char)(((int)'0') + 1))
             {
                 localTile->getSceneNode()->setVisible(false);
+                gameDisk->resetPowerUp();
             }
             // printf("Tile Removal Packet: \n");
             // printf("\tTile Number: %d\t Tile Owner ID: %d\n\n", t.tileNumber, newPlayerID);
             indexIntoBuff += sizeof(TILE_packet);
+        }
+        /* UPDATE POWERUP */
+        else if (packType == (char)(((int)'0') + POWERUP))
+        {
+            POWERUP_packet pu;
+            memcpy(&pu, packList+indexIntoBuff, sizeof(POWERUP_packet));
+
+            int typeOfPowerUp = (pu.powerID - '0');
+            int powerUpIndex = (pu.index - '0');
+            int receiver = (pu.receiverID - '0');
+
+            Target* localTarget;
+
+            if (typeOfPowerUp == EXPLOSIVE)
+                localTarget = explosiveList[powerUpIndex];
+            else if (typeOfPowerUp == SPEED)
+                localTarget = speedList[powerUpIndex];
+            else if (typeOfPowerUp == JUMPBOOST)
+                localTarget = jumpList[powerUpIndex];
+            else if (typeOfPowerUp == RESTORE)
+                localTarget = restoreList[powerUpIndex];
+           
+           if (receiver == 0)                       // updating a target's position
+           {
+                if (!localTarget->checkActive())
+                {
+                    localTarget->setActive(true);
+                    // localTarget->getSceneNode()->setVisible(true);
+                }
+                localTarget->getSceneNode()->setPosition(pu.x, pu.y, pu.z);
+            }
+            else
+            {
+                localTarget->setActive(false);
+                // localTarget->getSceneNode()->setVisible(false);
+                
+                if (typeOfPowerUp == EXPLOSIVE || typeOfPowerUp == SPEED)
+                {
+                    if (receiver <= 4)
+                    {
+                        // change so that receiver indexes into array of disks
+                        gameDisk->activatePowerUp(localTarget->getPowerUpType(), NULL);
+                    }
+                }
+                else if (typeOfPowerUp == JUMPBOOST)
+                    playerList[receiver - 1]->increaseJump();
+            }
+
+            indexIntoBuff += sizeof(POWERUP_packet);
         }
         else if(packType == (char)(((int)'0') + GAMESTATE))
         {
@@ -453,8 +522,6 @@ void Client::interpretServerPacket(char* packList)
                 int playersInRoom = (g.stateAttribute - '0'); 
                 
                 switchRooms(playersInRoom);
-
-                gameStart = true;
             }
             else if (g.stateID == (char)(((int)'0') + QUIT))
             {

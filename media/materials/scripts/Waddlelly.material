@@ -1,4 +1,4 @@
-material w_texture_1Material
+material w_green
 {
 	technique
 	{
@@ -11,6 +11,66 @@ material w_texture_1Material
 			texture_unit
 			{
 				texture w_texture.png
+			}
+		}
+
+	}
+
+}
+
+material w_purple
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+
+			texture_unit
+			{
+				texture w_texture_purple.png
+			}
+		}
+
+	}
+
+}
+
+material w_blue
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+
+			texture_unit
+			{
+				texture w_texture_blue.png
+			}
+		}
+
+	}
+
+}
+
+material w_red
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			
+
+			texture_unit
+			{
+				texture w_texture_red.png
 			}
 		}
 
