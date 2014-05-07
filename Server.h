@@ -42,6 +42,7 @@ private:
 	/* Players */
 	vector<Player*> playerList;
 	/* Power Ups */
+	bool powerUpsSpawned;
 	vector<Target*> explosiveList;
 	vector<Target*> speedList;
 	vector<Target*> jumpList;

@@ -400,6 +400,7 @@ void Client::interpretServerPacket(char* packList)
             if (d.playID == (char)(((int)'0') + playerID))
             {
                 clientPlayer->setState(HOLDING, true);
+                gameStart = true;
             }
 
             gameDisk->getSceneNode()->_setDerivedPosition(Ogre::Vector3(d.x, d.y, d.z));
@@ -449,6 +450,7 @@ void Client::interpretServerPacket(char* packList)
             if (t.removed == (char)(((int)'0') + 1))
             {
                 localTile->getSceneNode()->setVisible(false);
+                gameDisk->resetPowerUp();
             }
             // printf("Tile Removal Packet: \n");
             // printf("\tTile Number: %d\t Tile Owner ID: %d\n\n", t.tileNumber, newPlayerID);
@@ -464,7 +466,6 @@ void Client::interpretServerPacket(char* packList)
             int powerUpIndex = (pu.index - '0');
             int receiver = (pu.receiverID - '0');
 
-            printf("PowerUps: Types = %d, Index = %d, Receiver = %d\n", typeOfPowerUp, powerUpIndex, receiver);
             Target* localTarget;
 
             if (typeOfPowerUp == EXPLOSIVE)
@@ -514,8 +515,6 @@ void Client::interpretServerPacket(char* packList)
                 int playersInRoom = (g.stateAttribute - '0'); 
                 
                 switchRooms(playersInRoom);
-
-                gameStart = true;
             }
             else if (g.stateID == (char)(((int)'0') + QUIT))
             {

@@ -21,6 +21,7 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	previousWallHit = "NULL";
 	gameDisk = NULL;
 	diskSet = false;
+	safeToSpawnPowerUps = false;
 
 	playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
@@ -350,6 +351,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				((Player*)o)->attachDisk((Disk*)disk);
 				disk->setHolder(((Player*)o)->getPlayerID());
 				gameMusic->playCollisionSound("Disk", "Player");
+				safeToSpawnPowerUps = true;
 			}
 			gameStart = true;
 			gameState = STARTED;

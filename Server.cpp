@@ -18,6 +18,7 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     sprintFactor = 2.0f;
     pseudoHostStartGame = false;
     gameRoomCreated = false;
+    powerUpsSpawned = false;
 
     gameDisk = NULL;
     numberOfClients = 0;
@@ -82,6 +83,9 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
     {
         gameSimulator->stepSimulation(tSinceLastFrame, 1, 1.0f/120.0f);
         gameSimulator->parseCollisions();
+        
+        if (!powerUpsSpawned && gameSimulator->checkSafeToSpawnPowerUps())
+            activatePowerUps();
     }
 
     if (gameNetwork->checkSockets(-1)) // CHECK FOR NEW PLAYERS
@@ -202,7 +206,7 @@ bool Server::constructAndSendGameState()
         tBuff = new char[sizeof(TILE_packet)];
         removedTiles.clear();
     }
-    if (updatePowerUps())
+    if (powerUpsSpawned && updatePowerUps())
     {
         for (int i = 0; i < removedPowerUps.size(); i++)
         {
@@ -274,7 +278,6 @@ bool Server::constructAndSendGameState()
         }
         for (int j = 0; j < powerUpPackList.size(); j++)
         {
-            printf("PowerUps: Types = %d, Index = %d, Receiver = %d\n", powerUpPackList[j].powerID, powerUpPackList[j].index, powerUpPackList[j].receiverID);
             memcpy(puBuff, &powerUpPackList[j], sizeof(POWERUP_packet));
             gameNetwork->sendPacket(puBuff, i);
         }
@@ -529,7 +532,6 @@ bool Server::interpretClientPacket(int playerID)
                 pseudoHostStartGame = true;
 
                 switchRooms();
-                activatePowerUps();
             }
 
             indexIntoBuff += sizeof(GAMESTATE_packet);
@@ -680,6 +682,7 @@ void Server::activatePowerUps()
             activePowerUps.push_back(restoreList[indexIntoPowers]);
         }
     }
+    powerUpsSpawned = true;
 }
 //-------------------------------------------------------------------------------------
 void Server::restartRound()

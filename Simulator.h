@@ -54,6 +54,7 @@ class Simulator
 		
 		bool gameStart;
 		bool diskSet;
+		bool safeToSpawnPowerUps;
 		enum gameState gameState;	// Not doing anything right now
 		
 		Ogre::String previousWallHit;
@@ -86,6 +87,7 @@ class Simulator
 		void removeTiles(vector<Tile*>& rt);
 		void removeHitPowerUps(vector<Target*>& pt);
 		bool checkDiskSet() { return diskSet; };
+		bool checkSafeToSpawnPowerUps() { return safeToSpawnPowerUps; }
 		void predictedHit(void);
 
 		bool soundedJump;
