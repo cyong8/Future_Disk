@@ -9,7 +9,7 @@ Target::Target(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
     typeName = "Target";
     active = false;
     receiverID = -1;
-    index = powerUpNumber;
+    powerIndex = powerUpNumber;
 
 	/* 
 		Explosion Particle System from Ogre Website:

@@ -479,14 +479,14 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
     /* When removing from client - add to clientRemoveIndexes */
     if (gameDisk->checkActivePowerUp() == EXPLOSIVE)
     {
-        int tPerRow = tPerRow;
+        int tPerRow = gameRoom->getTilesPerRow();
         int tPerCol = gameRoom->getTilesPerColumn();
 
         int col = tileIndex % tPerRow;
 
         if (col != 0) // remove left - not in far left column
         { 
-            if (!(playerTileIdentities[playerID]->tileList[tileIndex]->checkHitFlag()))
+            if (!(playerTileIdentities[playerID]->tileList[tileIndex - 1]->checkHitFlag()))
             {
                 playerTileIdentities[playerID]->tileList[tileIndex - 1]->toggleHitFlag();
 
@@ -508,7 +508,7 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
                 removeObject(playerTileIdentities[playerID]->tileList[tileIndex + 1]->getGameObjectName());
             }
         }
-        if (tileIndex > tPerRow) // remove top - not in top row
+        if (tileIndex > tPerRow) // Can remove bottom
         { 
             if (!(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->checkHitFlag()))
             {
@@ -520,7 +520,7 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
                 removeObject(playerTileIdentities[playerID]->tileList[tileIndex - tPerRow]->getGameObjectName());
             }
         }
-        if (tileIndex < (tPerRow * (tPerCol - 1))) // remove bottom - not in bottom row
+        if (tileIndex < (tPerRow * (tPerCol - 1))) // Can remove top one
         { 
             if (!(playerTileIdentities[playerID]->tileList[tileIndex + tPerRow]->checkHitFlag()))
             {

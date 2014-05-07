@@ -30,7 +30,7 @@ public:
 
 	void setReceiverID(int pID);
 	int getReceiverID() { return receiverID; }
-	int getIndex() { return index; }
+	int getIndex() { return powerIndex; }
 
 protected:
 	Ogre::Vector3 dims;
@@ -40,7 +40,7 @@ protected:
 
 	bool active;
 	int receiverID;
-	int index;
+	int powerIndex;
 };
 
 #endif // #ifndef __Target_h_

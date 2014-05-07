@@ -60,16 +60,16 @@ void Client::createScene()
     Target* Restore;
     for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
     {
-        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i);
+        Power = new Target("Explosive_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i-1);
         explosiveList.push_back(Power);
         
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i);
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i-1);
         speedList.push_back(Speed);
         
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i);
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), cSceneMgr,  NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i-1);
         jumpList.push_back(JumpPower);
         
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i);
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), cSceneMgr, NULL, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i-1);
         restoreList.push_back(Restore);
     }
 

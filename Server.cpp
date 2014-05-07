@@ -58,16 +58,16 @@ void Server::createScene()
     Target* Restore;
     for (int i = 1; i <= MAX_NUMBER_OF_PLAYERS; i++)
     {
-        Explosive = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i);
+        Explosive = new Target("Explosive_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, EXPLOSIVE, i-1);
         explosiveList.push_back(Explosive);
 
-        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i);
+        Speed = new Target("Speed_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, SPEED, i-1);
         speedList.push_back(Speed);
 
-        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i);
+        JumpPower = new Target("Jump_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, JUMPBOOST, i-1);
         jumpList.push_back(JumpPower);
 
-        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i);
+        Restore = new Target("Restore_" + Ogre::StringConverter::toString(i), sSceneMgr, gameSimulator, Ogre::Vector3(2.5f, 0.01f, 2.5f), activeRoom, RESTORE, i-1);
         restoreList.push_back(Restore);
     }
     
@@ -213,6 +213,7 @@ bool Server::constructAndSendGameState()
             puPack.packetID = (char)(((int)'0') + POWERUP);
             puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
             puPack.receiverID = (char)(((int)'0') + localTarget->getReceiverID()); // 1-4 means apply to player 
+            puPack.index = (char)(((int)'0') + localTarget->getIndex());
             puPack.x = localTarget->getSceneNode()->getPosition().x;
             puPack.y = localTarget->getSceneNode()->getPosition().y;
             puPack.z = localTarget->getSceneNode()->getPosition().z;
