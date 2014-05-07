@@ -82,7 +82,7 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
         player->getCustomAnimationState()->addTime(tSinceLastFrame);
     
     if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
-        gameDisk->diskAnimationState->addTime(tSinceLastFrame);
+        gameDisk->diskAnimationState->addTime(tSinceLastFrame*2);
 
     if(!gameStart && !gameOver) // Game not started
     {

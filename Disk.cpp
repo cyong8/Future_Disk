@@ -38,7 +38,7 @@ Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real
 	typeName = "Disk";
 
 	//BALL: Ogre::Entity* ent = mgr->createEntity(nym, "sphere.mesh"); // Create Entity; apply mesh
-	diskEnt = mgr->createEntity(nym, "disk_mesh.mesh");
+	diskEnt = mgr->createEntity(nym, "disk.mesh");
 	rootNode->attachObject(diskEnt); // Attach disk to a scene node
 	// Scale the disk to fit the world - we need the disk in the y-direction to be much smaller
 	rootNode->scale(disk_dimensions.x/5, disk_dimensions.y/5, disk_dimensions.z/5); //FOR DISK

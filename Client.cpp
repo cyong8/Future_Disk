@@ -109,6 +109,9 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
 
     if(clientPlayer->getCustomAnimationState() != NULL)
         clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
+
+    if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
+        gameDisk->diskAnimationState->addTime(tSinceLastFrame*2);
    
     processUnbufferedInput(mKeyboard, mMouse);
 
@@ -396,6 +399,10 @@ void Client::interpretServerPacket(char* packList)
             {
                 gameDisk = new Disk("Disk", cSceneMgr, NULL, -1.0f, 1);
                 gameDisk->particleNode->setVisible(true);
+                gameDisk->diskAnimationState = gameDisk->diskEnt->getAnimationState("spin");
+                gameDisk->diskAnimationState->setEnabled(true);
+                gameDisk->diskAnimationState->setLoop(true);
+                gameDisk->diskAnimationState->setTimePosition(0);
             }
             if (d.playID == (char)(((int)'0') + playerID))
             {
