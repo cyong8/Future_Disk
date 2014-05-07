@@ -92,6 +92,7 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
     CEGUI::WindowManager::WindowIterator wIterator = wmgr.getIterator();  
     wIterator++;
+    wIterator++;
 
     std::string ip_string = wIterator.getCurrentValue()->getText().c_str();
     char* ip = new char[ip_string.length()+1];

@@ -239,27 +239,27 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/ClientMenu/Sheet");
     sheet->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-/*    CEGUI::ImagesetManager::getSingleton().createFromImageFile("QuitGameImageset", "quitgamebutton.png");
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("QuitGameImageset", "quitgamebutton.png");
     CEGUI::Window *quitGameIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/ClientMenu/QuitGameButtonIMG");
     quitGameIMG->setProperty("Image", "set:QuitGameImageset image:full_image");
     quitGameIMG->setProperty("BackgroundEnabled", "false");
     quitGameIMG->setProperty("FrameEnabled", "false");
     quitGameIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
-    quitGameIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");*/
+    quitGameIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
     CEGUI::Window *quit = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/QuitButton");
     quit->setAlpha(0.1f);
     quit->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     quit->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    /*CEGUI::ImagesetManager::getSingleton().createFromImageFile("BackImageset", "backbutton.png");
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("BackImageset", "backbutton.png");
     CEGUI::Window *backIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/ClientMenu/BackButtonIMG");
     backIMG->setProperty("Image", "set:BackImageset image:full_image");
     backIMG->setProperty("BackgroundEnabled", "false");
     backIMG->setProperty("FrameEnabled", "false");
     backIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.15, 0), CEGUI::UDim(0.05, 0)));
     backIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim(0, 0)));
-    backIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");*/
+    backIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
     CEGUI::Window *back = wmgr.createWindow("OgreTray/Button", "TronGame/ClientMenu/BackButton");
     back->setAlpha(0.1f);
@@ -267,14 +267,14 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     back->setPosition(CEGUI::UVector2(CEGUI::UDim(0.85, 0), CEGUI::UDim(0.0, 0)));
     back->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    /*CEGUI::ImagesetManager::getSingleton().createFromImageFile("EnterImageset", "joingamebutton.png");
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("EnterImageset", "joingamebutton.png");
     CEGUI::Window *enterIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/ClientMenu/EnterButtonIMG");
     enterIMG->setProperty("Image", "set:EnterImageset image:full_image");
     enterIMG->setProperty("BackgroundEnabled", "false");
     enterIMG->setProperty("FrameEnabled", "false");
     enterIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.05, 0)));
     enterIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
-    enterIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");*/
+    enterIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
     CEGUI::Window *ip = wmgr.createWindow("OgreTray/Editbox", "TronGame/ClientMenu/IPEditbox");
     ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.05, 0)));
@@ -287,23 +287,23 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     enter->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
     enter->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    /*CEGUI::ImagesetManager::getSingleton().createFromImageFile("ObjectiveImageset", "multiplayerobjective.png");
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("ObjectiveImageset", "multiplayerobjective.png");
     CEGUI::Window *objectiveIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/Client/ObjectiveIMG");
     objectiveIMG->setProperty("Image", "set:ObjectiveImageset image:full_image");
     objectiveIMG->setProperty("BackgroundEnabled", "false");
     objectiveIMG->setProperty("FrameEnabled", "false");
     objectiveIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.20, 0), CEGUI::UDim(0.20, 0)));
     objectiveIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.65, 0)));
-    objectiveIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");*/
+    objectiveIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
     
-    // sheet->addChildWindow(quitGameIMG);
+    sheet->addChildWindow(quitGameIMG);
     sheet->addChildWindow(quit);
-    // sheet->addChildWindow(backIMG);
+    sheet->addChildWindow(backIMG);
     sheet->addChildWindow(back);
-    // sheet->addChildWindow(enterIMG);
+    sheet->addChildWindow(enterIMG);
     sheet->addChildWindow(enter);
     sheet->addChildWindow(ip);
-    // sheet->addChildWindow(objectiveIMG);
+    sheet->addChildWindow(objectiveIMG);
     
     CEGUI::System::getSingleton().setGUISheet(sheet);
     
