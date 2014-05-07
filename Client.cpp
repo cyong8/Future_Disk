@@ -464,7 +464,7 @@ void Client::interpretServerPacket(char* packList)
             int powerUpIndex = (pu.index - '0');
             int receiver = (pu.receiverID - '0');
 
-            printf("PowerUps: Types = %d, Index = %d, Receiver = %d\n");
+            printf("PowerUps: Types = %d, Index = %d, Receiver = %d\n", typeOfPowerUp, powerUpIndex, receiver);
             Target* localTarget;
 
             if (typeOfPowerUp == EXPLOSIVE)
@@ -481,14 +481,14 @@ void Client::interpretServerPacket(char* packList)
                 if (!localTarget->checkActive())
                 {
                     localTarget->setActive(true);
-                    localTarget->getSceneNode()->setVisible(true);
+                    // localTarget->getSceneNode()->setVisible(true);
                 }
                 localTarget->getSceneNode()->setPosition(pu.x, pu.y, pu.z);
             }
             else
             {
                 localTarget->setActive(false);
-                localTarget->getSceneNode()->setVisible(false);
+                // localTarget->getSceneNode()->setVisible(false);
                 
                 if (typeOfPowerUp == EXPLOSIVE || typeOfPowerUp == SPEED)
                 {
