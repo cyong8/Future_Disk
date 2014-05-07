@@ -80,6 +80,9 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     //bool ret = BaseApplication::frameRenderingQueued(evt);
     if(player->getCustomAnimationState() != NULL)
         player->getCustomAnimationState()->addTime(tSinceLastFrame);
+    
+    if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
+        gameDisk->diskAnimationState->addTime(tSinceLastFrame);
 
     if(!gameStart && !gameOver) // Game not started
     {
@@ -127,7 +130,13 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     if (gameSimulator->checkDiskSet() && !diskAdded)
     {
         if (gameDisk == NULL) 
+        {
             gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/);
+            gameDisk->diskAnimationState = gameDisk->diskEnt->getAnimationState("spin");
+            gameDisk->diskAnimationState->setEnabled(true);
+            gameDisk->diskAnimationState->setLoop(true);
+            gameDisk->diskAnimationState->setTimePosition(0);
+        }
             
         gameDisk->addToSimulator();
         diskAdded = true;

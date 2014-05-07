@@ -1,0 +1,19 @@
+material disk_texture
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.75 0.75 0.75
+			specular 1.0 1.0 1.0 10.0
+			specular 0.196582 0.196582 0.196582 1 89.6
+
+			texture_unit
+			{
+				texture disk_texture.png
+			}
+		}
+
+	}
+
+}

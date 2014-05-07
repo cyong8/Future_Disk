@@ -34,6 +34,10 @@ public:
 	bool needsOrientationUpdate;
 	Ogre::ParticleSystem* tailParticle[5];
 	Ogre::SceneNode* particleNode;
+
+
+	Ogre::Entity* diskEnt;
+	Ogre::AnimationState* diskAnimationState;
 };
 
 #endif // #ifndef __Disk_h_
