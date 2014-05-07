@@ -94,7 +94,8 @@ struct POWERUP_packet
 {
 	char packetID;
 	char powerID;
-	char playID;
+	char receiverID;
+	char index;
 	// positions of each power-up
 	float x;
 	float y;

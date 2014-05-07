@@ -14,6 +14,9 @@ private:
 	Ogre::Vector3 dims;
 	Ogre::Vector3 pos;
 
+	Ogre::ParticleSystem* explosionParticle;
+	Ogre::SceneNode* explosionNode;
+
 	int tileNumber;
 	int tileOwner;
 };

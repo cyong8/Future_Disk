@@ -366,21 +366,25 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			if (((Target*)o)->getPowerUpType() != TARGET)
 			{
 				Ogre::Real posx, posy, posz;
+				powerUpType puType = ((Target*)o)->getPowerUpType();
 			    Ogre::Vector3 dimensions = ((Target*)o)->getDimensions();
+			    
 			    posx = Ogre::Math::RangeRandom(-gameRoom->getWidth()/2.0f + dimensions.x, gameRoom->getWidth()/2.0f - dimensions.x);
 				posy = Ogre::Math::RangeRandom(gameRoom->getFloorPositionY()/2.0f + dimensions.y, -gameRoom->getFloorPositionY()/2.0f - dimensions.y);
 				posz = Ogre::Math::RangeRandom(-gameRoom->getGapSize()/2.0f, gameRoom->getGapSize()/2.0f);
 
 			    o->getSceneNode()->setPosition(posx, posy, posz);
-			    if (disk->activatePowerUp(((Target*)o)->getPowerUpType(), (Player*)getGameObject(disk->getPlayerLastThrew()->getGameObjectName())))
-			        restoreTile();
 
-                if (disk->checkActivePowerUp() == SPEED)
-                    gameMusic->playMusic("SpeedUp");
+			    if (disk->activatePowerUp(puType, disk->getPlayerLastThrew()))
+			        restoreTile();
                 
                 gameMusic->playCollisionSound("Disk", "Target");
 
-                ((Target*)o)->setPlayer(disk->getPlayerLastThrew()->getPlayerID());
+             	if (puType == EXPLOSIVE || puType == SPEED)
+             		((Target*)o)->setReceiverID(disk->getDiskID());
+             	else
+                	((Target*)o)->setReceiverID(disk->getPlayerLastThrew()->getPlayerID());
+                
                 removedPowerUps.push_back((Target*)o);
 			}
 			else

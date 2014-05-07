@@ -2,9 +2,10 @@
 #include "Player.h"
 #include "Target.h"
 
-Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer) 
+Disk::Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer, int num) 
 	: GameObject(nym, mgr, sim)
 {	
+	diskNumber = num;
 	/* 
 		Sun Particle System from Ogre website:
 			http://www.ogre3d.org/tikiwiki/tiki-index.php?page=ParticleExampleSun&structure=Cookbook
@@ -91,8 +92,12 @@ bool Disk::activatePowerUp(powerUpType pType, Player* p)
         powerUp = pType;
         if (powerUp == EXPLOSIVE && previousParticleSystem != 1)
             createNewParticleSystem(1);
-        else if (powerUp == SPEED && previousParticleSystem != 2)
-            createNewParticleSystem(2);
+        else if (powerUp == SPEED)
+        {
+        	// gameMusic->playMusic("SpeedUp")
+        	if (previousParticleSystem != 2)
+            	createNewParticleSystem(2);
+        }
     }
     else if (pType == JUMPBOOST && p != NULL) 
     {
@@ -130,3 +135,4 @@ Player* Disk::getPlayerLastThrew()
 {
     return playerLastThrew;
 }
+//-------------------------------------------------------------------------------------

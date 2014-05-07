@@ -14,9 +14,10 @@ protected:
 	int playerIDOfHolder;
 	Player* playerLastThrew;
 	powerUpType powerUp;
+	int diskNumber;
 
 public:
-	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer);
+	Disk(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Real dropToPlayer, int num);
 	void setThrownVelocity(btVector3 v);
 	btVector3 getThrownVelocity(void);
 	btVector3 getOldVelocity(void);
@@ -29,7 +30,8 @@ public:
 	void setPlayerLastThrew(Player* p);
 	Player* getPlayerLastThrew(void);
 	powerUpType checkActivePowerUp(void) { return powerUp; }
-	
+	int getDiskID(void) { return diskNumber; }
+
 	int previousParticleSystem;
 	bool needsOrientationUpdate;
 	Ogre::ParticleSystem* tailParticle[5];
