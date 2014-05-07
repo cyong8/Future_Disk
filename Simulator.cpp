@@ -606,7 +606,7 @@ void Simulator::removeHitPowerUps(vector<Target*>& pt)
 	{
 		pt.push_back(removedPowerUps[i]);
 		removedPowerUps[i]->getSceneNode()->setVisible(false);
-		removeObject(removedPowerUps[i]->getGameObjectName());
+		// removeObject(removedPowerUps[i]->getGameObjectName());
 	}
 	removedPowerUps.clear();
 }

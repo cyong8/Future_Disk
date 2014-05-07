@@ -306,7 +306,7 @@ bool Server::updatePowerUps()
     if (removedPowerUps.size() == 0)
         return false;
 
-    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+    for (int i = 0; i < numberOfClients; i++)
     {
         if (!activePowerUps[i]->checkActive())
         {
@@ -332,7 +332,7 @@ bool Server::updatePowerUps()
                 }
                 explosiveList[indexIntoPowers]->setActive(true);
                 explosiveList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(explosiveList[indexIntoPowers]);
+                activePowerUps[i] = explosiveList[indexIntoPowers];
             }
             else if (ranPType == 1)  // SPEED
             {
@@ -346,7 +346,7 @@ bool Server::updatePowerUps()
                 }
                 speedList[indexIntoPowers]->setActive(true);
                 speedList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(speedList[indexIntoPowers]);
+                activePowerUps[i] = speedList[indexIntoPowers];
             }
             else if (ranPType == 2)  // JUMP
             {
@@ -360,7 +360,7 @@ bool Server::updatePowerUps()
                 }
                 jumpList[indexIntoPowers]->setActive(true);
                 jumpList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(jumpList[indexIntoPowers]);
+                activePowerUps[i] = jumpList[indexIntoPowers];
             }
             else if (ranPType == 3)  // RESTORE
             {
@@ -374,7 +374,7 @@ bool Server::updatePowerUps()
                 }
                 restoreList[indexIntoPowers]->setActive(true);
                 restoreList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(restoreList[indexIntoPowers]);
+                aactivePowerUps[i] = restoreList[indexIntoPowers];
             }
         }
     }
@@ -645,39 +645,36 @@ void Server::activatePowerUps()
     }
     int ranPType;
     int indexIntoPowers;
-    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+    for (int i = 0; i < numberOfClients; i++)
     {
-        if (playerList[i] != NULL)
+        ranPType = rand() % 4;
+
+        indexIntoPowers = activePowerUpTypes[ranPType];
+        activePowerUpTypes[ranPType] += 1;
+
+        if (ranPType == 0)  // EXPLOSIVE
         {
-            ranPType = rand() % 4;
-
-            indexIntoPowers = activePowerUpTypes[ranPType];
-            activePowerUpTypes[ranPType] += 1;
-
-            if (ranPType == 0)  // EXPLOSIVE
-            {
-                explosiveList[indexIntoPowers]->setActive(true);
-                explosiveList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(explosiveList[indexIntoPowers]);
-            }
-            else if (ranPType == 1)  // SPEED
-            {
-                speedList[indexIntoPowers]->setActive(true);
-                speedList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(speedList[indexIntoPowers]);
-            }
-            else if (ranPType == 2)  // JUMP
-            {
-                jumpList[indexIntoPowers]->setActive(true);
-                jumpList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(jumpList[indexIntoPowers]);
-            }
-            else if (ranPType == 3)  // RESTORE
-            {
-                restoreList[indexIntoPowers]->setActive(true);
-                restoreList[indexIntoPowers]->addToSimulator();
-                activePowerUps.push_back(restoreList[indexIntoPowers]);
-            }
+            explosiveList[indexIntoPowers]->setActive(true);
+            explosiveList[indexIntoPowers]->addToSimulator();
+            activePowerUps.push_back(explosiveList[indexIntoPowers]);
+        }
+        else if (ranPType == 1)  // SPEED
+        {
+            speedList[indexIntoPowers]->setActive(true);
+            speedList[indexIntoPowers]->addToSimulator();
+            activePowerUps.push_back(speedList[indexIntoPowers]);
+        }
+        else if (ranPType == 2)  // JUMP
+        {
+            jumpList[indexIntoPowers]->setActive(true);
+            jumpList[indexIntoPowers]->addToSimulator();
+            activePowerUps.push_back(jumpList[indexIntoPowers]);
+        }
+        else if (ranPType == 3)  // RESTORE
+        {
+            restoreList[indexIntoPowers]->setActive(true);
+            restoreList[indexIntoPowers]->addToSimulator();
+            activePowerUps.push_back(restoreList[indexIntoPowers]);
         }
     }
 }
