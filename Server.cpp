@@ -219,6 +219,7 @@ bool Server::constructAndSendGameState()
 
             powerUpPackList.push_back(puPack);
         }
+        removedPowerUps.clear();
     }
     for (int i = 0; i < activePowerUps.size(); i++)
     {
@@ -272,6 +273,7 @@ bool Server::constructAndSendGameState()
         }
         for (int j = 0; j < powerUpPackList.size(); j++)
         {
+            printf("PowerUps: Types = %d, Index = %d, Receiver = %d\n", powerUpPackList[j].powerID, powerUpPackList[j].index, powerUpPackList[j].receiverID);
             memcpy(puBuff, &powerUpPackList[j], sizeof(POWERUP_packet));
             gameNetwork->sendPacket(puBuff, i);
         }
