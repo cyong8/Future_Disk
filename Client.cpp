@@ -464,6 +464,7 @@ void Client::interpretServerPacket(char* packList)
             int powerUpIndex = (pu.index - '0');
             int receiver = (pu.receiverID - '0');
 
+            printf("PowerUps: Types = %d, Index = %d, Receiver = %d\n");
             Target* localTarget;
 
             if (typeOfPowerUp == EXPLOSIVE)

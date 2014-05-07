@@ -306,7 +306,7 @@ bool Server::updatePowerUps()
     if (removedPowerUps.size() == 0)
         return false;
 
-    for (int i = 0; i < numberOfClients; i++)
+    for (int i = 0; i < activePowerUps.size(); i++) // check the active power ups for the one that is now inactive and replace it with a random type
     {
         if (!activePowerUps[i]->checkActive())
         {
@@ -324,7 +324,7 @@ bool Server::updatePowerUps()
             {
                 for (int j = 0; j < explosiveList.size(); j++)
                 {
-                    if (!explosiveList[indexIntoPowers]->checkActive())
+                    if (!explosiveList[j]->checkActive())
                     {
                         indexIntoPowers = j;
                         break;
@@ -338,7 +338,7 @@ bool Server::updatePowerUps()
             {
                 for (int j = 0; j < speedList.size(); j++)
                 {
-                    if (!speedList[indexIntoPowers]->checkActive())
+                    if (!speedList[j]->checkActive())
                     {
                         indexIntoPowers = j;
                         break;
@@ -352,7 +352,7 @@ bool Server::updatePowerUps()
             {
                 for (int j = 0; j < jumpList.size(); j++)
                 {
-                    if (!jumpList[indexIntoPowers]->checkActive())
+                    if (!jumpList[j]->checkActive())
                     {
                         indexIntoPowers = j;
                         break;
@@ -366,9 +366,9 @@ bool Server::updatePowerUps()
             {
                 for (int j = 0; j < restoreList.size(); j++)
                 {
-                    if (!restoreList[indexIntoPowers]->checkActive())
+                    if (!restoreList[j]->checkActive())
                     {
-                        indexIntoPowers = i;
+                        indexIntoPowers = j;
                         break;
                     }
                 }
