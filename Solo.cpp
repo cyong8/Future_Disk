@@ -131,7 +131,7 @@ bool Solo::frameRenderingQueued(const Ogre::Real tSinceLastFrame, OIS::Keyboard*
     {
         if (gameDisk == NULL) 
         {
-            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/);
+            gameDisk = new Disk("Disk", sceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/, 1);
             gameDisk->diskAnimationState = gameDisk->diskEnt->getAnimationState("spin");
             gameDisk->diskAnimationState->setEnabled(true);
             gameDisk->diskAnimationState->setLoop(true);
