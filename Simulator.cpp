@@ -85,14 +85,10 @@ void Simulator::addObject (GameObject* o)
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
 		//gameDisk->getSceneNode()->roll(90);
-		if(!o->checkReAddFlag())
-		{
-			// printf("READD IS TRUE\n\n");
-			Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
-			o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
-		}
+		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
 
+		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 	}
 	if(o->typeName == "Target")
 	{
@@ -199,7 +195,7 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 	}
 	if (gameDisk != NULL)
 	{
-		if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
+		if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY() - 5.0f)
 		{
 			int lowestTileCountPlayer = -1;
 			int lowestCount = 0;
@@ -221,8 +217,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 						lowestTileCountPlayer = i;
 				}
 			}
-
-			playerList[lowestTileCountPlayer]->attachDisk(gameDisk);
+			if (lowestTileCountPlayer == -1)
+				playerList[gameDisk->getPlayerLastThrew()->getPlayerID() - 1]->attachDisk(gameDisk);
 		}
 	}
 }
@@ -286,7 +282,6 @@ void Simulator::performThrow(Player* p)
 
 	if (throwFlag)
     {	
-    	gameDisk->addToSimulator();
     	wallHitAfterThrow = false;
         //resetPowerUps();
     	Ogre::Vector3 toParentPosition = gameDisk->getSceneNode()->_getDerivedPosition();
@@ -303,8 +298,8 @@ void Simulator::performThrow(Player* p)
 
 		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 
-		// p->getSceneNode()->removeChild(gameDisk->getSceneNode()); // detach disk from parent
-		// sceneMgr->getRootSceneNode()->addChild(gameDisk->getSceneNode()); // attach disk to world (root)
+		p->getSceneNode()->removeChild(gameDisk->getSceneNode()); // detach disk from parent
+		sceneMgr->getRootSceneNode()->addChild(gameDisk->getSceneNode()); // attach disk to world (root)
 		gameDisk->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
@@ -317,10 +312,10 @@ void Simulator::performThrow(Player* p)
     }
     else // Update position relative to the Player
     {
-    	 // Ogre::Vector3 dpos;
-    	// float newDiskZ = 0.0f; //p->getPlayerDimensions().z;
+    	// Ogre::Vector3 dpos;
+    	// float newDiskZ = p->getPlayerDimensions().z;
 
-    	 // dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 5.0f, 0.0f);
+    	// dpos = p->getSceneNode()->getOrientation() * Ogre::Vector3(0.0f, 0.0f, newDiskZ);
 		gameDisk->getSceneNode()->_setDerivedPosition(p->getSceneNode()->getPosition());
 
 		// Ogre::Vector3 dpos_derived = gameDisk->getSceneNode()->_getDerivedPosition();
@@ -366,6 +361,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 			if (((Player*)o)->checkPlayerCanCatch())
 			{
 				((Player*)o)->attachDisk((Disk*)disk);
+				disk->setHolder(((Player*)o)->getPlayerID());
 				gameMusic->playCollisionSound("Disk", "Player");
 				safeToSpawnPowerUps = true;
 			}
