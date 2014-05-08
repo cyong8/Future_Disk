@@ -79,7 +79,7 @@ void Client::createScene()
 
     /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
-    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, activeRoom);
+    clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, activeRoom, gui);
     clientPlayer->setPlayerGameState(PLAYING);
     clientPlayer->setPlayerSpace();
 
@@ -107,6 +107,11 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
 {
     if (gameNetwork->checkSockets(0))
         updateScene();
+        
+    if (clientPlayer->checkState(BOOST))
+        boostPenalty = clientPlayer->updateBoost(true);
+    else
+        boostPenalty = clientPlayer->updateBoost(false);
 
     processUnbufferedInput(mKeyboard, mMouse);
     
@@ -287,26 +292,20 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST) && !boostPenalty)
+    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
     {
         pack.key = 'b';
 
-        float remainingTime = clientPlayer->updateBoost(true);
-        gui->setProgress(remainingTime);
-        if (gui->getProgress() == 0.0f)
-            boostPenalty = true;
+        boostPenalty = clientPlayer->updateBoost(true);
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    else
+    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
     {
         pack.key = 'b';
 
-        float remainingTime = clientPlayer->updateBoost(false);
-        gui->setProgress(remainingTime);
-        if (gui->getProgress() == 1.0f)
-            boostPenalty = false;
+        boostPenalty = clientPlayer->updateBoost(false);
                 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
@@ -480,7 +479,7 @@ void Client::interpretServerPacket(char* packList)
                 char playerBuffer[25];
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
-                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, activeRoom);
+                playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, activeRoom, gui);
                 playerList[playerIndex]->setPlayerGameState(PLAYING);
                 playerList[playerIndex]->setPlayerSpace();
                 numPlayers++;
