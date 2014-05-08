@@ -670,9 +670,9 @@ void Client::switchRooms(int playersInRoom)
                 }
             }
 
-            if (playersInRoom == 3)
-                fourPlayerGameRoom->deactivateRoomSpace(4);
         }
+        if (playersInRoom == 3)
+            fourPlayerGameRoom->deactivateRoomSpace(4);
     }
     else 
     {
@@ -686,7 +686,7 @@ void Client::switchRooms(int playersInRoom)
             {
                 if (playerList[i] != NULL)
                 {
-                    playerList[i]->changeGameRoom();
+                    playerList[i]->changeGameRoom(activeRoom);
                     /* Adjust for any players that might have left */
                 }
             }

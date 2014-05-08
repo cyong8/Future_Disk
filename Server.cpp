@@ -166,7 +166,6 @@ bool Server::constructAndSendGameState()
     tBuff = new char[sizeof(TILE_packet)];
     dBuff = new char[sizeof(DISK_packet)];
     pgStateBuff = new char[sizeof(GAMESTATE_packet)];
-    gBuff = new char[sizeof(GAMESTATE_packet)];
 
 
     /* CREATE LIST OF PLAYER UPDATE PACKETS */
@@ -189,6 +188,7 @@ bool Server::constructAndSendGameState()
     /* START GAME PACKET */
     if (pseudoHostStartGame && !gameRoomCreated)
     {
+        gBuff = new char[sizeof(GAMESTATE_packet)];
         gameRoomCreated = true;
 
         GAMESTATE_packet gPack;
