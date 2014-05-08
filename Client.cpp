@@ -170,7 +170,10 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         return;
     }
     if (clientPlayer->getPlayerGameState() == LOSE)
+    {
+        printf("\n\n\n\nIS THIS HAPPENING!?!?!?!?\n\n\n\n\n");
         return; 
+    }
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
     {
         clientOrientationChange = false;
