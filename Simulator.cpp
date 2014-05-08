@@ -274,10 +274,12 @@ void Simulator::performThrow(Player* p)
 
 	if (throwFlag)
     {	
+    	Ogre::Vector3 toFrontOfPlayer = gameDisk->getSceneNode()->_getDerivedPosition();
+		gameDisk->getSceneNode()->setPosition(toFrontOfPlayer + btVector3(0.0f, p->getPlayerDimensions().y/1.5, p->getPlayerDimensions().z)); // retain the same global position
+
     	gameDisk->addToSimulator();
     	wallHitAfterThrow = false;
         //resetPowerUps();
-    	Ogre::Vector3 toParentPosition = gameDisk->getSceneNode()->_getDerivedPosition();
 
 		/* Set the disk direction vector to be the same as the player's sight node vector */
 		Ogre::Vector3 diskDirection = p->getPlayerSightNode()->getPosition().normalisedCopy();
@@ -293,7 +295,6 @@ void Simulator::performThrow(Player* p)
 
 		// p->getSceneNode()->removeChild(gameDisk->getSceneNode()); // detach disk from parent
 		// sceneMgr->getRootSceneNode()->addChild(gameDisk->getSceneNode()); // attach disk to world (root)
-		gameDisk->getSceneNode()->setPosition(toParentPosition); // retain the same global position
 
 		throwFlag = false;
 
