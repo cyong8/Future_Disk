@@ -20,6 +20,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	customAnimationState = NULL;
 	moving = false;
 	catchAnimation = false;
+	pGameState = PLAYING;
 
 	setPlayerStartingPosition(false);
 
@@ -156,7 +157,6 @@ void Player::initializeStates()
 		states.push_back(false);
 		i--;
 	}
-	states[PLAYING] = true;
 }
 //-------------------------------------------------------------------------------------
 bool Player::checkState(int index)
@@ -288,4 +288,5 @@ void Player::setPlayerStartingPosition(bool changeRoomFlag)
        	body->setCenterOfMassTransform(transform);
 	}
 }
+//-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

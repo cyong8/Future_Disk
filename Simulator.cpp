@@ -191,22 +191,34 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 
 			// if (gameDisk->needsOrientationUpdate)
 			// 	adjustDiskOrientation(gameDisk, gameDisk->getBody()->getLinearVelocity(), previousWallHit);
-
-			if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
-			{
-				int lowestTileCountPlayer;
-				int numberTiles = 0;
-				
-				for (int i = 0; i < playerTileIdentities.size(); i++)
-				{	
-					if (playerTileIdentities.size() > numberTiles)
+		}
+	}
+	if (gameDisk != NULL)
+	{
+		if(gameDisk->getSceneNode()->getPosition().y < gameRoom->getFloorPositionY())
+		{
+			int lowestTileCountPlayer = -1;
+			int lowestCount = 0;
+			int chooseGiveToNewLower;
+			
+			for (int i = 0; i < playerTileIdentities.size(); i++)
+			{	
+				if (playerList[i] != NULL && !playerList[i]->checkHolding() && gameDisk->getPlayerLastThrew()->getPlayerID() != i + 1 &&
+					playerTileIdentities[i]->removedTiles.size() >= lowestCount)
+				{
+					if (lowestTileCountPlayer != -1)
 					{
-						
-					}
-				}
+						chooseGiveToNewLower = rand() % 2 + 1;
 
-				((Player*)getGameObject(gameDisk->getPlayerLastThrew()->getGameObjectName()))->attachDisk(gameDisk);
+						if (chooseGiveToNewLower == 1)
+							lowestTileCountPlayer = i;
+					}
+					else
+						lowestTileCountPlayer = i;
+				}
 			}
+
+			playerList[lowestTileCountPlayer]->attachDisk(gameDisk);
 		}
 	}
 }
@@ -370,7 +382,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				powerUpType puType = ((Target*)o)->getPowerUpType();		
 
 			    if (disk->activatePowerUp(puType, disk->getPlayerLastThrew()))
-			        restoreTile();
+			        restoreTile(disk->getPlayerLastThrew()->getPlayerID());
                 
                 gameMusic->playCollisionSound("Disk", "Target");
 
@@ -452,18 +464,19 @@ bool Simulator::checkGameStart()
 	return gameStart;
 }
 //---------------------------------------------------------------------------------------
-void Simulator::restoreTile() // TILE UPDATE FLAG
-{ 
-    // if (playerList[0] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && hostRemoveIndexes.size() > 0) {
-    //     hostTileList[hostRemoveIndexes.back()]->addToSimulator();
-    //     hostRemoveIndexes.pop_back();
-    //     gameMusic->playMusic("Restore");
-    // }
-    // else if (playerList[1] != NULL && playerList[0]->getGameObjectName() == gameDisk->getPlayerLastThrew()->getGameObjectName() && clientRemoveIndexes.size() > 0) {
-    //     clientTileList[clientRemoveIndexes.back()]->addToSimulator();
-    //     clientRemoveIndexes.pop_back();
-    //     gameMusic->playMusic("Restore");
-    // }
+void Simulator::restoreTile(int playerID)
+{ 	
+	int numTilesRemoved = playerTileIdentities[playerID]->removedTiles.size();
+
+	if (playerTileIdentities[playerID]->removedTiles.size() > 0)
+	{
+		int ranTileToRestore = rand() % numTilesRemoved;
+		Tile* resTile = playerTileIdentities[playerID]->removedTiles[ranTileToRestore];
+
+		resTile->addToSimulator();
+		playerTileIdentities[playerID]->removedTiles.erase(playerTileIdentities[playerID]->removedTiles.begin() + ranTileToRestore);
+        gameMusic->playMusic("Restore");
+	}
 }
 //-------------------------------------------------------------------------------------
 void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
@@ -485,6 +498,8 @@ void Simulator::destroyTiles(Tile* t)  // TILE UPDATE FLAG
         int tPerCol = gameRoom->getTilesPerColumn();
 
         int col = tileIndex % tPerRow;
+
+        printf("Tiles: Per row = %d\t Per col = %d\n\n", tPerRow, tPerCol);
 
         if (col != 0) // remove left - not in far left column
         { 
@@ -588,7 +603,7 @@ void Simulator::removeTiles(vector<Tile*>& rt)
 {
 	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
 	{
-		if (playerList[i] != NULL && playerList[i]->checkState(PLAYING))
+		if (playerList[i] != NULL && playerList[i]->getPlayerGameState() == PLAYING)
 		{
 			PlayerTileIdentity* localIdentity = playerTileIdentities[i];
 			for (int j = 0; j < localIdentity->removedTileIndices.size(); j++)

@@ -64,6 +64,7 @@ private:
 	void interpretServerPacket(char* packList);
 	Ogre::Vector3 clientChangePosition(void);
 	void switchRooms(int playersInRoom);
+	void handlePlayerGameState(playerGameStates updatePlayerGameState);
 };
 
 #endif // #ifndef __Client_h_

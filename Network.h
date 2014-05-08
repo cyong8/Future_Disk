@@ -26,6 +26,7 @@ enum gameStates
 	START,
 	QUIT,
 	SOUND,
+	PLAYERGAMESTATE,
 	ENDROUND
 };
 enum keyID

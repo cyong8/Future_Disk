@@ -3,7 +3,8 @@
 
 #include "GameObject.h"
 
-enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, HOLDING, PLAYING, VIEWMODE};
+enum stateIndex{LEFT, RIGHT, BACK, FORWARD, BOOST, JUMP, HOLDING, VIEWMODE};
+enum playerGameStates{DISCONNECTED, PLAYING, WIN, LOSE};
 
 class Disk;
 class Room;
@@ -53,6 +54,9 @@ public:
 	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
 	void nullAnimationState() { customAnimationState = NULL; }
 
+	playerGameStates getPlayerGameState(void) { return pGameState; }
+	void setPlayerGameState(playerGameStates i) { pGameState = i; }
+
 	int jumpTimer;
 	bool jumpPowerActive;
     Ogre::ParticleSystem* tailParticle;	
@@ -77,6 +81,7 @@ protected:
 	int playerID;	
 	bool playerCanCatch;
 	Ogre::Vector3 startingPosition;
+	playerGameStates pGameState; 
 	
 	/* Game Attributes */ 
 	Ogre::Real jumpFactor;

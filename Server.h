@@ -41,6 +41,7 @@ private:
 	Room* activeRoom;
 	/* Players */
 	vector<Player*> playerList;
+	vector<playerGameStates> playerGameStatesList;
 	/* Power Ups */
 	bool powerUpsSpawned;
 	vector<Target*> explosiveList;
@@ -75,6 +76,7 @@ private:
 	void switchRooms();
 	void activatePowerUps();
 	void restartRound(void);
+	void endPlayerGame(int pIndex);
 };
 
 #endif // #ifndef __Server_h_
