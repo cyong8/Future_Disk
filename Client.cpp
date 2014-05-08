@@ -80,6 +80,7 @@ void Client::createScene()
     /* CLIENT PLAYER */
     sprintf(playerBuffer, "Player%d", playerID);
     clientPlayer = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), playerID, activeRoom);
+    clientPlayer->setPlayerGameState(PLAYING);
     clientPlayer->setPlayerSpace();
 
     // for (int i = 0; i < clientPlayer->getPlayerSpace()->tileList.size(); i++)
@@ -107,15 +108,17 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
     if (gameNetwork->checkSockets(0))
         updateScene();
 
-    updateCamera(); 
+    processUnbufferedInput(mKeyboard, mMouse);
+    
+    if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
+        gameDisk->diskAnimationState->addTime(tSinceLastFrame*2);
+   
+    if (clientPlayer->getPlayerGameState() != LOSE)
+        updateCamera(); 
 
     if(clientPlayer->getCustomAnimationState() != NULL)
         clientPlayer->getCustomAnimationState()->addTime(tSinceLastFrame);
 
-    if(gameDisk != NULL && gameDisk->diskAnimationState != NULL)
-        gameDisk->diskAnimationState->addTime(tSinceLastFrame*2);
-   
-    processUnbufferedInput(mKeyboard, mMouse);
 
     if(clientPlayer->checkState(HOLDING))
     {
@@ -128,10 +131,16 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
     {
         clientPlayer->catchAnimation = false;
     }
+
+    // end game player camera position = Ogre::Vector3(0.0f, 85.0f, 65.0f)
 }
 //-------------------------------------------------------------------------------------
 void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse)
 {
+    char* cpBuff;
+    static bool vKeydown = false;
+    INPUT_packet pack;
+    
     if (!gameStart && (mKeyboard->isKeyDown(OIS::KC_RETURN) || mKeyboard->isKeyDown(OIS::KC_NUMPADENTER)) && playerID == 1) //&& numPlayers >= 2)
     {
         char* gBuff = new char[sizeof(GAMESTATE_packet)];
@@ -147,14 +156,21 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
     else if (!gameStart)
         return;
 
-    char* cpBuff;
-    static bool vKeydown = false;
-    INPUT_packet pack;
     char* iBuff = new char[sizeof(INPUT_packet)];
-
     pack.packetID = (char)(((int)'0') + INPUT);
     pack.playID = (char)(((int)'0') + playerID);
 
+    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
+    {
+        /* Close player socket and allow for another player to take its place */
+        pack.key = 'q';
+
+        memcpy(iBuff, &pack, sizeof(INPUT_packet));
+        gameNetwork->sendPacket(iBuff, playerID);
+        return;
+    }
+    if (clientPlayer->getPlayerGameState() == LOSE)
+        return; 
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
     {
         clientOrientationChange = false;
@@ -170,15 +186,6 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
 
         gameNetwork->sendPacket(cpBuff, playerID);
         updateClock = clock();
-    }
-    if (mKeyboard->isKeyDown(OIS::KC_ESCAPE))
-    {
-        /* Close player socket and allow for another player to take its place */
-        pack.key = 'q';
-
-        memcpy(iBuff, &pack, sizeof(INPUT_packet));
-        gameNetwork->sendPacket(iBuff, playerID);
-        return;
     }
     /*WALKING ANIMATION*/
     if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
@@ -397,7 +404,41 @@ void Client::interpretServerPacket(char* packList)
         // printf("PACKET FOUND %d!\n", packetsFound);
 
         /* UPDATE DISK */
-        if (packType == (char)(((int)'0') + DISK))
+        if(packType == (char)(((int)'0') + GAMESTATE))
+        {
+            GAMESTATE_packet g;
+            memcpy(&g, packList+indexIntoBuff, sizeof(GAMESTATE_packet));
+
+            int updateStateAttribute;
+
+            if (g.stateID == (char)(((int)'0') + START))
+            {
+                updateStateAttribute = (g.stateAttribute - '0'); 
+                
+                switchRooms(updateStateAttribute);
+            }
+            else if (g.stateID == (char)(((int)'0') + QUIT))
+            {
+
+            }
+            else if (g.stateID == (char)(((int)'0') + SOUND))
+            {
+
+            }
+            else if (g.stateID == (char)(((int)'0') + PLAYERGAMESTATE))
+            {
+                updateStateAttribute = (g.stateAttribute - '0');
+                playerGameStates updatedPlayerState = (playerGameStates)updateStateAttribute;
+
+                handlePlayerGameState(updatedPlayerState);
+            }
+            else if (g.stateID == (char)(((int)'0') + ENDROUND))
+            {
+
+            }
+            indexIntoBuff += sizeof(GAMESTATE_packet);
+        }
+        else if (packType == (char)(((int)'0') + DISK))
         {
             // printf("updating disk\n");
             DISK_packet d;
@@ -440,6 +481,7 @@ void Client::interpretServerPacket(char* packList)
                 sprintf(playerBuffer, "Player%d", newPlayerID);
 
                 playerList[playerIndex] = new Player(playerBuffer, cSceneMgr, NULL, Ogre::Vector3(1.3f, 1.3f, 1.3f), newPlayerID, activeRoom);
+                playerList[playerIndex]->setPlayerGameState(PLAYING);
                 playerList[playerIndex]->setPlayerSpace();
                 numPlayers++;
             }
@@ -519,31 +561,6 @@ void Client::interpretServerPacket(char* packList)
             }
 
             indexIntoBuff += sizeof(POWERUP_packet);
-        }
-        else if(packType == (char)(((int)'0') + GAMESTATE))
-        {
-            GAMESTATE_packet g;
-            memcpy(&g, packList+indexIntoBuff, sizeof(GAMESTATE_packet));
-
-            if (g.stateID == (char)(((int)'0') + START))
-            {
-                int playersInRoom = (g.stateAttribute - '0'); 
-                
-                switchRooms(playersInRoom);
-            }
-            else if (g.stateID == (char)(((int)'0') + QUIT))
-            {
-
-            }
-            else if (g.stateID == (char)(((int)'0') + SOUND))
-            {
-
-            }
-            else if (g.stateID == (char)(((int)'0') + ENDROUND))
-            {
-
-            }
-            indexIntoBuff += sizeof(GAMESTATE_packet);
         }
     }
     // printf("ENDING INTERPRETING PACKETS\n\n\n");
@@ -669,6 +686,22 @@ void Client::switchRooms(int playersInRoom)
             //     }
             // }
         }
+    }
+}
+//-------------------------------------------------------------------------------------
+void Client::handlePlayerGameState(playerGameStates updatePlayerGameState)
+{
+    clientPlayer->setPlayerGameState(updatePlayerGameState);
+
+    if (updatePlayerGameState == LOSE)
+    {
+        pCam->getMCamera()->setAutoTracking(false);
+        pCam->getMCamera()->setPosition(Ogre::Vector3(0.0f, 85.0f, 65.0f)); 
+        pCam->getMCamera()->lookAt(activeRoom->getWall(Ceiling)->getSceneNode()->getPosition());
+    }
+    else if (updatePlayerGameState == WIN)
+    {
+
     }
 }
 //-------------------------------------------------------------------------------------

@@ -25,6 +25,7 @@ Server::Server(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     forceUpdate = false;
 
     playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
+    playerGameStatesList = vector<playerGameStates>(MAX_NUMBER_OF_PLAYERS, DISCONNECTED);
 
     printf("Create host scene!\n\n");
 
@@ -100,6 +101,7 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             sprintf(playerBuffer, "Player%d", numberOfClients);
 
             Player *newP = new Player(playerBuffer, sSceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), numberOfClients, activeRoom);
+            newP->setPlayerGameState(PLAYING);
             playerList[numberOfClients-1] = newP;
             playerList[numberOfClients-1]->addToSimulator();
         }
@@ -111,7 +113,9 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
             interpretClientPacket(i);
 
         updateClientVelocity(playerList[i]);
+        
         // restrictPlayerMovement(playerList[i]);
+        endPlayerGame(i);
     }
     
     if (pseudoHostStartGame && (((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.01f || forceUpdate))
@@ -148,6 +152,7 @@ bool Server::constructAndSendGameState()
     char* tBuff;
     char* puBuff;
     char* gBuff = NULL;
+    char* pgStateBuff;
     int totalBytesSent = 0;
 
     vector<S_PLAYER_packet> playerPackList; 
@@ -157,8 +162,9 @@ bool Server::constructAndSendGameState()
     
     sBuff = new char[sizeof(S_PLAYER_packet)];
     puBuff = new char[sizeof(POWERUP_packet)];
+    pgStateBuff = new char[sizeof(GAMESTATE_packet)];
 
-    /* Sending each player's position to clients */
+    /* CREATE LIST OF PLAYER UPDATE PACKETS */
     for (int i = 0; i < numberOfClients; i++)   // might want to limit to players who have changed position
     {
         S_PLAYER_packet sPack;
@@ -175,6 +181,7 @@ bool Server::constructAndSendGameState()
         sPack.orientation = playerList[i]->getSceneNode()->_getDerivedOrientation();
         playerPackList.push_back(sPack);
     }
+    /* START GAME PACKET */
     if (pseudoHostStartGame && !gameRoomCreated)
     {
         gameRoomCreated = true;
@@ -188,6 +195,7 @@ bool Server::constructAndSendGameState()
         gBuff = new char[sizeof(GAMESTATE_packet)];
         memcpy(gBuff, &gPack, sizeof(DISK_packet));
     }
+    /* CREATE LIST OF TILE UPDATE PACKETS */
     if (updateRemovedTiles())
     {
         for (int i = 0; i < removedTiles.size(); i++)
@@ -206,6 +214,7 @@ bool Server::constructAndSendGameState()
         tBuff = new char[sizeof(TILE_packet)];
         removedTiles.clear();
     }
+    /* CREATE LIST OF POWER UP UPDATE PACKETS */
     if (powerUpsSpawned && updatePowerUps())
     {
         for (int i = 0; i < removedPowerUps.size(); i++)
@@ -242,7 +251,8 @@ bool Server::constructAndSendGameState()
 
         powerUpPackList.push_back(puPack);
     }
-    if (gameDisk != NULL)
+    /* CREATE LIST OF DISK PACKETS */
+    if (gameDisk != NULL)   // HARD CODE DISK FLAG
     {
         memset(&dPack, 0, sizeof(DISK_packet));
 
@@ -259,33 +269,55 @@ bool Server::constructAndSendGameState()
         dBuff = new char[sizeof(DISK_packet)];
         memcpy(dBuff, &dPack, sizeof(DISK_packet));
     }
+
     /* Send all packets to each player */
-    for (int i = 0; i < numberOfClients; i++)
+    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
     {
-        /* All Player packets */
-        for (int j = 0; j < playerPackList.size(); j++)
+        if (playerList[i] != NULL)
         {
-            memcpy(sBuff, &playerPackList[j], sizeof(S_PLAYER_packet));
-            gameNetwork->sendPacket(sBuff, i);
+            playerGameStates localState = playerList[i]->getPlayerGameState();
+
+            if ((localState == WIN || localState == LOSE) && playerGameStatesList[i] == PLAYING)
+            {
+                pgStateBuff = new char[sizeof(GAMESTATE_packet)];
+                GAMESTATE_packet pgsPack;
+        
+                pgsPack.packetID = (char)(((int)'0') + GAMESTATE);
+                pgsPack.stateID = (char)(((int)'0') + PLAYERGAMESTATE);
+                pgsPack.stateAttribute = (char)(((int)'0') + localState);
+
+                printf("Server Sending state ID: %c\n", pgsPack.stateID);
+
+                memcpy(pgStateBuff, &pgsPack, sizeof(GAMESTATE_packet));
+                gameNetwork->sendPacket(pgStateBuff, i);
+                playerGameStatesList[i] = localState;
+            }
+            /* All Disk Packets */
+            if (gameDisk != NULL)
+                gameNetwork->sendPacket(dBuff, i);
+            /* Send game state packet */
+            if (gBuff != NULL)
+                gameNetwork->sendPacket(gBuff, i);
+            /* All Player packets */
+            for (int j = 0; j < playerPackList.size(); j++)
+            {
+                memcpy(sBuff, &playerPackList[j], sizeof(S_PLAYER_packet));
+                gameNetwork->sendPacket(sBuff, i);
+            }
+            /* All tile packets */
+            for (int j = 0; j < tilePackList.size(); j++)
+            {
+                memcpy(tBuff, &tilePackList[j], sizeof(TILE_packet));
+                // printf("Tile Removal Packet: \n");
+                // printf("\tTile Number: %d\t Tile Owner ID: %c\n\n", tilePackList[j].tileNumber, tilePackList[j].playID);
+                gameNetwork->sendPacket(tBuff, i);
+            }
+            for (int j = 0; j < powerUpPackList.size(); j++)
+            {
+                memcpy(puBuff, &powerUpPackList[j], sizeof(POWERUP_packet));
+                gameNetwork->sendPacket(puBuff, i);
+            }
         }
-        /* All tile packets */
-        for (int j = 0; j < tilePackList.size(); j++)
-        {
-            memcpy(tBuff, &tilePackList[j], sizeof(TILE_packet));
-            // printf("Tile Removal Packet: \n");
-            // printf("\tTile Number: %d\t Tile Owner ID: %c\n\n", tilePackList[j].tileNumber, tilePackList[j].playID);
-            gameNetwork->sendPacket(tBuff, i);
-        }
-        for (int j = 0; j < powerUpPackList.size(); j++)
-        {
-            memcpy(puBuff, &powerUpPackList[j], sizeof(POWERUP_packet));
-            gameNetwork->sendPacket(puBuff, i);
-        }
-        if (gBuff != NULL)
-            gameNetwork->sendPacket(gBuff, i);
-        /* All Disk Packets */
-        if (gameDisk != NULL)
-            gameNetwork->sendPacket(dBuff, i);
     }
 }
 //-------------------------------------------------------------------------------------
@@ -597,6 +629,8 @@ void Server::processClientInput(int playerIndex, char keyPressed)
 //-------------------------------------------------------------------------------------
 void Server::removePlayer(int playerIndex)
 {
+    playerList[playerIndex]->setPlayerGameState(DISCONNECTED);
+    playerGameStatesList[playerIndex] = DISCONNECTED;
     playerList[playerIndex]->getSceneNode()->setVisible(false);
     gameSimulator->removePlayer(playerIndex);
 }
@@ -683,6 +717,17 @@ void Server::activatePowerUps()
         }
     }
     powerUpsSpawned = true;
+}
+//-------------------------------------------------------------------------------------
+void Server::endPlayerGame(int pIndex)
+{
+    if (playerList[pIndex] != NULL && playerList[pIndex]->getPlayerGameState() == PLAYING &&
+            playerList[pIndex]->getSceneNode()->getPosition().y < activeRoom->getFloorPositionY() - 15.0f)
+    {
+        gameSimulator->removeObject(playerList[pIndex]->getGameObjectName());
+        playerList[pIndex]->getSceneNode()->setVisible(false);
+        playerList[pIndex]->setPlayerGameState(LOSE);
+    }
 }
 //-------------------------------------------------------------------------------------
 void Server::restartRound()

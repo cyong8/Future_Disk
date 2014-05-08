@@ -78,7 +78,7 @@ class Simulator
 		void adjustDiskOrientation(Disk *d, btVector3 currVelocity, Ogre::String wallName);
 		void handlePlayerCollisions(GameObject* cPlayer, GameObject* o);
 		bool checkGameStart(void);
-		void restoreTile(void);
+		void restoreTile(int playerID);
 		void destroyTiles(Tile* t);
 		void setFloorY(Ogre::Real);
 		void resetSimulator(void);

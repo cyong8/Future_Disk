@@ -23,6 +23,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	customAnimationState = NULL;
 	moving = false;
 	catchAnimation = false;
+	pGameState = PLAYING;
 
 	setPlayerStartingPosition(false);
 
@@ -39,7 +40,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	// rootNode->setPosition(startingPosition); // Set the startingPosition of the player
 	// customPlayerEnt->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
-	shape = new btBoxShape(btVector3(dimensions.x/2.0f, dimensions.y/10.0f, dimensions.z/2.0f)); 
+	shape = new btBoxShape(btVector3(dimensions.x/2.0f, dimensions.y/2.0f, dimensions.z/2.0f)); 
 	mass = 0.5f; // Set mass of player
 
 	// initialize Cameras
@@ -166,7 +167,6 @@ void Player::initializeStates()
 		states.push_back(false);
 		i--;
 	}
-	states[PLAYING] = true;
 }
 //-------------------------------------------------------------------------------------
 bool Player::checkState(int index)
@@ -300,4 +300,5 @@ void Player::setPlayerStartingPosition(bool changeRoomFlag)
        	body->setCenterOfMassTransform(transform);
 	}
 }
+//-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------
