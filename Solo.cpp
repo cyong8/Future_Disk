@@ -62,7 +62,7 @@ void Solo::createScene()
 
     gameRoom->activateRoom();
 
-    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, gameRoom);
+    player = new Player("Player1", sceneMgr, gameSimulator, Ogre::Vector3(1.3f, 1.3f, 1.3f), 1, gameRoom, MasterControl->gui);
     player->addToSimulator();
     
     pCam = new PlayerCamera("soloCamera", sceneMgr, sceneMgr->getCamera("PlayerCam"));/*need camera object*/
@@ -261,17 +261,11 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
         {
             if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !boostPenalty)
             {
-                float remainingTime = player->updateBoost(true);
-                MasterControl->gui->setProgress(remainingTime);
-                if (MasterControl->gui->getProgress() == 0.0f)
-                    boostPenalty = true;
+                boostPenalty = player->updateBoost(true);
             }
             else
             {
-                float remainingTime = player->updateBoost(false);
-                MasterControl->gui->setProgress(remainingTime);
-                if (MasterControl->gui->getProgress() == 1.0f)
-                    boostPenalty = false;
+                boostPenalty = player->updateBoost(false);
             }
             if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
             && !mKeyboard->isKeyDown(OIS::KC_S) && !mKeyboard->isKeyDown(OIS::KC_D)) 

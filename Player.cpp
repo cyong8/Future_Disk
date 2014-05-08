@@ -4,12 +4,13 @@
 #include "Simulator.h"
 #include "GUI.h"
 
-Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Room* gameRoom)//Ogre::Vector3 roomDims) 
+Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Room* gameRoom, GUI* g)//Ogre::Vector3 roomDims) 
 	: GameObject(nym, mgr, sim)
 {
 	initializeStates();
 	this->dimensions = dimensions;
 	playerRoom = gameRoom;
+	gui = g;
 	// Ogre::Vector3(room->width, room->height, numberOfPlayers)
 	typeName = "Player";
 	jumpFactor = 10.0f;
@@ -19,6 +20,7 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	isHolding = false; // Is the player holding the disk?
 	playerID = playID;
 	playerCanCatch = true;
+	boostPenalty = false;
 	playerDisk = NULL;
 	customAnimationState = NULL;
 	moving = false;
@@ -220,7 +222,7 @@ void Player::setPlayerSpace()
 	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
 }
 //-------------------------------------------------------------------------------------
-float Player::updateBoost(bool pressed)
+bool Player::updateBoost(bool pressed)
 {
     newTime = clock();
     if (pressed)
@@ -228,7 +230,9 @@ float Player::updateBoost(bool pressed)
         if (remainingTime > 0.0f) {
             remainingTime -= (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
             setState(BOOST, true);
-            
+            gui->setProgress(remainingTime);
+            if (gui->getProgress() == 0.0f)
+                boostPenalty = true;
         }
         else {
             remainingTime = 0.0f;
@@ -237,14 +241,18 @@ float Player::updateBoost(bool pressed)
     }
     else
     {
-        if (remainingTime < 4.0f)
+        if (remainingTime < 4.0f) {
             remainingTime += (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
+            gui->setProgress(remainingTime);
+            if (gui->getProgress() == 1.0f)
+                boostPenalty = false;
+        }
         else
             remainingTime = 4.0f;
         setState(BOOST, false);
     }
     oldTime = newTime;
-    return remainingTime;
+    return boostPenalty;
 }
 //-------------------------------------------------------------------------------------
 void Player::changeGameRoom(Room* newGameRoom)

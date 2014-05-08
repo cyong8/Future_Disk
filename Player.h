@@ -13,7 +13,7 @@ class GUI;
 class Player : public GameObject
 {
 public:
-	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID,  Room* gameRoom);//Ogre::Vector3 roomDims);
+	Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playerID,  Room* gameRoom, GUI* gui);//Ogre::Vector3 roomDims);
 	void setHolding(bool x); // Set whether the player is holding the disk
 	void attachDisk(Disk* d); // Attach the disk to the player
 	void setMovementRestriction(bool x);
@@ -49,7 +49,7 @@ public:
 	struct RoomSpace* getPlayerSpace() { return playerSpace; }
 	Ogre::Vector3 getStartingPosition() { return startingPosition; }
 	
-	float updateBoost(bool pressed);
+	bool updateBoost(bool pressed);
 	
 	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
 	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }
@@ -81,6 +81,7 @@ protected:
 	bool movementRestricted;	
 	int playerID;	
 	bool playerCanCatch;
+	bool boostPenalty;
 	Ogre::Vector3 startingPosition;
 	playerGameStates pGameState; 
 	
@@ -88,6 +89,7 @@ protected:
 	Ogre::Real jumpFactor;
 	Disk* playerDisk;
 	Room* playerRoom;
+	GUI* gui;
 	struct RoomSpace* playerSpace;
 	
 	float remainingTime;
