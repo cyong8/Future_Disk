@@ -6,11 +6,12 @@
 
 class Player;
 class Network;
+class GUI;
 
 class Client
 {
 public:
-	Client(char* IP, Ogre::SceneManager* mgr);
+	Client(char* IP, Ogre::SceneManager* mgr, GUI* g);
 	~Client();
 
 	void createScene(void);
@@ -22,6 +23,7 @@ public:
 
 private:
 	Ogre::SceneManager* cSceneMgr;
+	GUI* gui;
 
 	/* Client's controlled player */
 	Player* clientPlayer;
@@ -57,6 +59,7 @@ private:
 	Ogre::Real mRotate;
 	clock_t updateClock;
 	bool gameStart;
+	bool boostPenalty;
 
 	Ogre::Light* directLight;
 	void updateScene(void);

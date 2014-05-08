@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Disk.h"
 #include "Room.h"
+#include "GUI.h"
 
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Room* gameRoom)//Ogre::Vector3 roomDims) 
 	: GameObject(nym, mgr, sim)
@@ -210,7 +211,7 @@ void Player::setPlayerSpace()
 	playerSpace = playerRoom->getPlayerRoomSpace(playerID);
 }
 //-------------------------------------------------------------------------------------
-void Player::updateBoost(bool pressed)
+float Player::updateBoost(bool pressed)
 {
     newTime = clock();
     if (pressed)
@@ -218,6 +219,7 @@ void Player::updateBoost(bool pressed)
         if (remainingTime > 0.0f) {
             remainingTime -= (float)newTime/CLOCKS_PER_SEC - (float)oldTime/CLOCKS_PER_SEC;
             setState(BOOST, true);
+            
         }
         else {
             remainingTime = 0.0f;
@@ -233,6 +235,7 @@ void Player::updateBoost(bool pressed)
         setState(BOOST, false);
     }
     oldTime = newTime;
+    return remainingTime;
 }
 //-------------------------------------------------------------------------------------
 void Player::changeGameRoom(Room* newGameRoom)
