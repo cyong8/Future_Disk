@@ -413,7 +413,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 		    }
 		}
 	}
-	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->checkIDOfHolder() - 1]->checkHolding() && playerList[1] != NULL)  // HARD CODE PLAYER FLAG
+	else if (o->typeName == "Tile" && !((Tile *)o)->checkHitFlag() && wallHitAfterThrow && !playerList[((Disk*)disk)->getPlayerLastThrew()->getPlayerID() - 1]->checkHolding() && playerList[1] != NULL)  // HARD CODE PLAYER FLAG
 	{	
 		((Tile *)o)->toggleHitFlag(); // Mark that the tile has been hit
 

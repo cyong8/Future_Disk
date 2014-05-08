@@ -77,6 +77,7 @@ struct DISK_packet
 	char packetID;
 	char diskID;
 	char playID;
+	char caught;
 	// position of the disk
 	float x;
 	float y;
