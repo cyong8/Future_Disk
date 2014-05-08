@@ -415,7 +415,7 @@ void Client::interpretServerPacket(char* packList)
             if (g.stateID == (char)(((int)'0') + START))
             {
                 updateStateAttribute = (g.stateAttribute - '0'); 
-                
+                printf("number of players in resized room = %d\n", updateStateAttribute);
                 switchRooms(updateStateAttribute);
             }
             else if (g.stateID == (char)(((int)'0') + QUIT))
