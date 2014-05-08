@@ -638,6 +638,7 @@ Ogre::Vector3 Client::clientChangePosition()
 {
     Ogre::Vector3 currentPosition = clientPlayer->getSceneNode()->getPosition();
     Ogre::Vector3 diffVector = currentPosition - previousPosition;
+    diffVector = Ogre::Vector3(diffVector.x, diffVector.y, diffVector.z);
 
     if (previousPosition !=  currentPosition)
     {
