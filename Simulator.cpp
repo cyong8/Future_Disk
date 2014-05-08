@@ -25,12 +25,6 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 
 	playerList = vector<Player*>(MAX_NUMBER_OF_PLAYERS, NULL);
 
-	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
-	{
-		PlayerTileIdentity* ptID = new PlayerTileIdentity;
-		playerTileIdentities.push_back(ptID);
-	}
-
 	gameMusic = music;
 	sceneMgr = mSceneMgr;
 	// initialize random number generate
@@ -103,12 +97,14 @@ void Simulator::addObject (GameObject* o)
 				targetList.push_back((Target*)o);
 		}
 	}
-	if(o->typeName == "Wall" || o->typeName == "Tile")
+	if(o->typeName == "Wall")
 	{
 		o->getBody()->setRestitution(0.8f);
 	}
 	if(o->typeName == "Tile")
 	{
+		o->getBody()->setRestitution(0.8f);
+
 	    if (!(o->checkReAddFlag())) 
 	    	playerTileIdentities[((Tile*)o)->getTileOwner() - 1]->tileList.push_back((Tile*)o);
         else 
@@ -598,6 +594,12 @@ void Simulator::removePlayer(int playerIndex)
 //-------------------------------------------------------------------------------------
 void Simulator::setGameRoom(Room* rm)
 {
+	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+	{
+		PlayerTileIdentity* ptID = new PlayerTileIdentity;
+		playerTileIdentities.push_back(ptID);
+	}
+
 	gameRoom = rm;
 }
 //-------------------------------------------------------------------------------------

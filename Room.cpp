@@ -342,6 +342,8 @@ Wall* Room::getWall(int index)
 //-------------------------------------------------------------------------------------
 void Room::activateRoom()
 {
+	if (roomSimulator != NULL)
+		roomSimulator->setGameRoom(this);
 	// Add all player tiles to the simulator and/or make visible
 	for (int i = 0; i < playerRoomSpaces.size(); i++)
 	{
@@ -366,8 +368,6 @@ void Room::activateRoom()
 		wallList[i]->getSceneNode()->setVisible(true);
 	}
 	
-	if (roomSimulator != NULL)
-		roomSimulator->setGameRoom(this);
 	
 	rSceneMgr->getLight("roomLight")->setPosition(Ogre::Vector3(0.0f, -floorPositionY, 0.0f));
 	active = true;

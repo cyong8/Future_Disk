@@ -236,7 +236,7 @@ bool Player::updateBoost(bool pressed)
         }
         else {
             remainingTime = 0.0f;
-            setState(BOOST, false);
+            // setState(BOOST, false);
         }
     }
     else

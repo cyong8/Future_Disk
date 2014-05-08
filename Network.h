@@ -98,6 +98,7 @@ struct POWERUP_packet
 	char powerID;
 	char receiverID;
 	char index;
+	int tileNumber;
 	// positions of each power-up
 	float x;
 	float y;

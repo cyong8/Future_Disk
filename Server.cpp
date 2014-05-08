@@ -84,6 +84,12 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
     {
         gameSimulator->stepSimulation(tSinceLastFrame, 1, 1.0f/120.0f);
         gameSimulator->parseCollisions();
+
+        if (gameSimulator->checkDiskSet() && gameDisk == NULL)
+        {
+            gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/, 1);
+            gameDisk->addToSimulator();
+        }    
         
         if (!powerUpsSpawned && gameSimulator->checkSafeToSpawnPowerUps())
             activatePowerUps();
@@ -125,12 +131,6 @@ bool Server::frameRenderingQueued(Ogre::Real tSinceLastFrame) // listen only on 
         updateClock = clock();
         forceUpdate = false;
     }
-    
-    if (gameSimulator->checkDiskSet() && gameDisk == NULL && numberOfClients > 1)
-    {
-        gameDisk = new Disk("Disk", sSceneMgr, gameSimulator, 1.0f/*Ogre::Math::RangeRandom(0,2)*/, 1);
-        gameDisk->addToSimulator();
-    }    
 }
 //-------------------------------------------------------------------------------------
 void Server::updateClientVelocity(Player* p)
@@ -228,6 +228,7 @@ bool Server::constructAndSendGameState()
             puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
             puPack.receiverID = (char)(((int)'0') + localTarget->getReceiverID()); // 1-4 means apply to player 
             puPack.index = (char)(((int)'0') + localTarget->getIndex());
+
             puPack.x = localTarget->getSceneNode()->getPosition().x;
             puPack.y = localTarget->getSceneNode()->getPosition().y;
             puPack.z = localTarget->getSceneNode()->getPosition().z;
@@ -246,6 +247,7 @@ bool Server::constructAndSendGameState()
         puPack.powerID = (char)(((int)'0') + localTarget->getPowerUpType());
         puPack.receiverID = (char)(((int)'0') + 0); // 0 indicates update position
         puPack.index = (char)(((int)'0') + localTarget->getIndex());
+
         puPack.x = localTarget->getSceneNode()->getPosition().x;
         puPack.y = localTarget->getSceneNode()->getPosition().y;
         puPack.z = localTarget->getSceneNode()->getPosition().z;
