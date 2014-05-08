@@ -1,11 +1,13 @@
 #include "Client.h"
 
-Client::Client(char* IP, Ogre::SceneManager* mgr) // created in MCP
+Client::Client(char* IP, Ogre::SceneManager* mgr, GUI* g) // created in MCP
 {	// will most likely pass a GUI object on creation as well
 	cSceneMgr = mgr;
+	gui = g;
 	clientOrientationChange = false;
     mRotate = 0.1f;
     gameStart = false;
+    boostPenalty = false;
     gameDisk = NULL;
     numPlayers = 0;
 
@@ -278,21 +280,27 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST))
+    if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !clientPlayer->checkState(BOOST) && !boostPenalty)
     {
         pack.key = 'b';
 
-        clientPlayer->setState(BOOST, true);
+        float remainingTime = clientPlayer->updateBoost(true);
+        gui->setProgress(remainingTime);
+        if (gui->getProgress() == 0.0f)
+            boostPenalty = true;
 
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
+    else
     {
         pack.key = 'b';
 
-        clientPlayer->setState(BOOST, false);
-
+        float remainingTime = clientPlayer->updateBoost(false);
+        gui->setProgress(remainingTime);
+        if (gui->getProgress() == 1.0f)
+            boostPenalty = false;
+                
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }

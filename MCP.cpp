@@ -50,9 +50,7 @@ void MCP::createSoloModeScene()
 //-------------------------------------------------------------------------------------
 bool MCP::soloMode(const CEGUI::EventArgs &e)
 {
-    CEGUI::MouseCursor::getSingleton().hide();
-    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-    wmgr.destroyAllWindows();
+    gui->playScreen();
 
     // gui->removePanel(objectivePanel);
     //gui->removePanel(instructPanel);
@@ -106,9 +104,11 @@ bool MCP::joinGame(const CEGUI::EventArgs &e)
     // gui->removePanel(objectivePanel);
     //gui->removePanel(instructPanel);
     gui->removePanel(powerUpPanel);
+    
+    gui->playScreen();
 
     // Create Client Object
-    mainClient = new Client(ip, mSceneMgr);
+    mainClient = new Client(ip, mSceneMgr, gui);
 
     return true;
 }
