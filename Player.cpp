@@ -288,8 +288,8 @@ void Player::setPlayerStartingPosition(bool changeRoomFlag)
 	{
 		startingPosition = Ogre::Vector3(roomWidth/numberOfPlayers, 0.0f, (roomWidth/3.0f + roomHeight)/numberOfPlayers);
 		
-		if (!changeRoomFlag)
-			rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
+		// if (!changeRoomFlag)
+		// 	rootNode->yaw(Ogre::Radian(Ogre::Math::PI));
 	}
 	else if (playerID == 4)
 	{
