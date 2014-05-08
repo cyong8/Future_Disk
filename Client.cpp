@@ -175,7 +175,9 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         return;
     }
     if (clientPlayer->getPlayerGameState() == LOSE)
+    {
         return; 
+    }
     if (clientOrientationChange && ((float)(clock() - updateClock))/CLOCKS_PER_SEC  > 0.016f) 
     {
         clientOrientationChange = false;
@@ -455,6 +457,9 @@ void Client::interpretServerPacket(char* packList)
             if (d.playID == (char)(((int)'0') + playerID))
             {
                 clientPlayer->setState(HOLDING, true);
+            }
+            if (d.playID != (char)(((int)'0') + 9))
+            {
                 gameStart = true;
             }
 
