@@ -85,10 +85,13 @@ void Simulator::addObject (GameObject* o)
 		gameDisk->getBody()->setGravity(btVector3(0.0f, 0.0f, 0.0f));
 		gameDisk->getBody()->setRestitution(1.0f);
 		//gameDisk->getSceneNode()->roll(90);
-		Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
+		if(!o->checkReAddFlag())
+		{
+			Ogre::Vector3 toPlayerDirection = iPlayer->getSceneNode()->getPosition().normalisedCopy();
+			o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
+			gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
+		}
 
-		o->getBody()->setLinearVelocity(btVector3(toPlayerDirection.x, toPlayerDirection.y, toPlayerDirection.z) * btVector3(diskSpeedFactor, diskSpeedFactor, diskSpeedFactor));
-		gameDisk->setThrownVelocity(gameDisk->getBody()->getLinearVelocity());
 	}
 	if(o->typeName == "Target")
 	{
@@ -221,6 +224,8 @@ void Simulator::stepSimulation(const Ogre::Real elapseTime, int maxSubSteps, con
 			}
 			if (lowestTileCountPlayer == -1)
 				playerList[gameDisk->getPlayerLastThrew()->getPlayerID() - 1]->attachDisk(gameDisk);
+			else
+				playerList[lowestTileCountPlayer]->attachDisk(gameDisk);
 		}
 	}
 }
