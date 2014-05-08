@@ -1,6 +1,7 @@
 #include "Player.h"
 #include "Disk.h"
 #include "Room.h"
+#include "Simulator.h"
 #include "GUI.h"
 
 Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::Vector3 dimensions, int playID, Room* gameRoom)//Ogre::Vector3 roomDims) 
@@ -18,9 +19,11 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	isHolding = false; // Is the player holding the disk?
 	playerID = playID;
 	playerCanCatch = true;
+	playerDisk = NULL;
 	customAnimationState = NULL;
 	moving = false;
 	catchAnimation = false;
+	pGameState = PLAYING;
 
 	setPlayerStartingPosition(false);
 
@@ -34,10 +37,10 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 	rootNode->attachObject(customPlayerEnt); 	// Attach player to a scene node
 	rootNode->scale(dimensions.x/20.0, dimensions.y/20.0, dimensions.z/20.0);
 	// rootNode->scale(dimensions.x/100.0, dimensions.y/100.0, dimensions.z/100.0);
-	rootNode->setPosition(startingPosition); // Set the startingPosition of the player
+	// rootNode->setPosition(startingPosition); // Set the startingPosition of the player
 	// customPlayerEnt->setMaterialName("w_texture_1Material");
 	// Set collision shape for Bullet
-	shape = new btBoxShape(btVector3(dimensions.x/2, dimensions.y/2, dimensions.z/2)); 
+	shape = new btBoxShape(btVector3(dimensions.x/2.0f, dimensions.y/10.0f, dimensions.z/2.0f)); 
 	mass = 0.5f; // Set mass of player
 
 	// initialize Cameras
@@ -103,18 +106,25 @@ Player::Player(Ogre::String nym, Ogre::SceneManager *mgr, Simulator *sim, Ogre::
 //-------------------------------------------------------------------------------------
 void Player::setHolding(bool x)
 {
+	if (!x)
+		playerDisk = NULL;
+
 	isHolding = x;
 }
 //-------------------------------------------------------------------------------------
 void Player::attachDisk(Disk* d)
 {
-	isHolding = true;
 	playerDisk = d; // player now has a pointer to this disk
+	playerDisk->setHolder(playerID);
+	simulator->removeObject(playerDisk->getGameObjectName());
 
-	d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
-	d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
-	this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
+	isHolding = true;
+
+	// d->getSceneNode()->getParent()->removeChild(d->getSceneNode()); // detach the disk from it's parent (root or other player)
+	// d->getSceneNode()->setInheritScale(false);	// Set Inherit Scale to false so that the disk is not scaled down WRT the Player
+	// this->getSceneNode()->addChild((d->getSceneNode())); // Set disk's parent to this player
 	animateCharacter("catch");
+	playerDisk->getSceneNode()->_setDerivedOrientation(rootNode->_getDerivedOrientation());
 }
 //-------------------------------------------------------------------------------------
 void Player::setMovementRestriction(bool x)
@@ -157,7 +167,6 @@ void Player::initializeStates()
 		states.push_back(false);
 		i--;
 	}
-	states[PLAYING] = true;
 }
 //-------------------------------------------------------------------------------------
 bool Player::checkState(int index)
@@ -291,4 +300,5 @@ void Player::setPlayerStartingPosition(bool changeRoomFlag)
        	body->setCenterOfMassTransform(transform);
 	}
 }
+//-------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------

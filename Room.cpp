@@ -17,10 +17,6 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *gameSimulator, int numPlaye
 	int roomID = 2;
 	if (numPlayers > 2)
 		roomID = 4;
-	
-
-	if (gameSimulator != NULL)
-		gameSimulator->setGameRoom(this);
 
 	playerRoomSpaces = vector<RoomSpace*>(numPlayers, NULL);
 
@@ -50,6 +46,9 @@ Room::Room(Ogre::SceneManager *mSceneMgr, Simulator *gameSimulator, int numPlaye
 	if (numberOfPlayers > 2)
 		tilesPerRow = ((width/2.0f) - (gapSize/2.0f))/tileSize;
 	tilesPerPlayer = tilesPerRow * tilesPerCol;
+
+	printf("\n\n\n\nTiles Per Row = %f\n", tilesPerRow);
+	printf("Tiles Per Col = %f\n\n\n\n", tilesPerCol);
 
 	/* Plane Creation */
 	Ogre::Plane plane;
@@ -366,7 +365,10 @@ void Room::activateRoom()
 			wallList[i]->addToSimulator();
 		wallList[i]->getSceneNode()->setVisible(true);
 	}
-
+	
+	if (roomSimulator != NULL)
+		roomSimulator->setGameRoom(this);
+	
 	rSceneMgr->getLight("roomLight")->setPosition(Ogre::Vector3(0.0f, -floorPositionY, 0.0f));
 	active = true;
 }
