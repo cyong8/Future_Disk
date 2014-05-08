@@ -256,24 +256,23 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
         }
         oldTime = newTime;*/
         
-        if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !boostPenalty)
-        {
-            float remainingTime = player->updateBoost(true);
-            MasterControl->gui->setProgress(remainingTime);
-            if (MasterControl->gui->getProgress() == 0.0f)
-                boostPenalty = true;
-        }
-        else
-        {
-            float remainingTime = player->updateBoost(false);
-            MasterControl->gui->setProgress(remainingTime);
-            if (MasterControl->gui->getProgress() == 1.0f)
-                boostPenalty = false;
-        }
-        
         // If the 'V' key is down you shouldn't be able to move
         if (!vKeyDown)  
         {
+            if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !boostPenalty)
+            {
+                float remainingTime = player->updateBoost(true);
+                MasterControl->gui->setProgress(remainingTime);
+                if (MasterControl->gui->getProgress() == 0.0f)
+                    boostPenalty = true;
+            }
+            else
+            {
+                float remainingTime = player->updateBoost(false);
+                MasterControl->gui->setProgress(remainingTime);
+                if (MasterControl->gui->getProgress() == 1.0f)
+                    boostPenalty = false;
+            }
             if (!mKeyboard->isKeyDown(OIS::KC_W) && !mKeyboard->isKeyDown(OIS::KC_A) 
             && !mKeyboard->isKeyDown(OIS::KC_S) && !mKeyboard->isKeyDown(OIS::KC_D)) 
             {
