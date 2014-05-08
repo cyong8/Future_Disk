@@ -696,7 +696,7 @@ void Client::handlePlayerGameState(playerGameStates updatePlayerGameState)
     if (updatePlayerGameState == LOSE)
     {
         pCam->getMCamera()->setAutoTracking(false);
-        pCam->getMCamera()->setPosition(Ogre::Vector3(0.0f, 85.0f, 65.0f)); 
+        pCam->getPCamSceneNode()->setPosition(Ogre::Vector3(0.0f, 85.0f, 65.0f)); 
         pCam->getMCamera()->lookAt(activeRoom->getWall(Ceiling)->getSceneNode()->getPosition());
     }
     else if (updatePlayerGameState == WIN)
