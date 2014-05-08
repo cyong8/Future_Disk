@@ -132,6 +132,7 @@ int Disk::checkIDOfHolder()
 void Disk::setPlayerLastThrew(Player* p)
 {
     playerLastThrew = p;
+    playerIDOfHolder = 9;
 }
 //-------------------------------------------------------------------------------------
 Player* Disk::getPlayerLastThrew()
