@@ -108,7 +108,7 @@ bool Client::frameRenderingQueued(Ogre::Real tSinceLastFrame, OIS::Keyboard* mKe
     if (gameNetwork->checkSockets(0))
         updateScene();
         
-    if (clientPlayer->checkState(BOOST))
+    if (clientPlayer->checkState(BOOST) && !boostPenalty)
         boostPenalty = clientPlayer->updateBoost(true);
     else
         boostPenalty = clientPlayer->updateBoost(false);
@@ -303,7 +303,7 @@ void Client::processUnbufferedInput(OIS::Keyboard* mKeyboard, OIS::Mouse* mMouse
         memcpy(iBuff, &pack, sizeof(INPUT_packet));
         gameNetwork->sendPacket(iBuff, playerID);
     }
-    else if (!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST))
+    else if ((!mKeyboard->isKeyDown(OIS::KC_LSHIFT) && clientPlayer->checkState(BOOST)) || boostPenalty)
     {
         pack.key = 'b';
 
