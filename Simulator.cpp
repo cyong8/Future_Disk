@@ -72,7 +72,7 @@ void Simulator::addObject (GameObject* o)
 	if(o->typeName == "Disk")
 	{
 		Player* iPlayer = playerList[((Disk*)o)->checkIDOfHolder() - 1];
-
+		printf("\n\n\nADDING DISK TO SIMULATOR!!! Initial holder = %d\n\n\n", ((Disk*)o)->checkIDOfHolder());
 		gameDisk = (Disk*)o;
 		// printf("\n\n\n adding game disk\n\n\n");
 		gameDisk->getBody()->setAngularFactor(btVector3(0.0f, 0.0f, 0.0f));
@@ -380,7 +380,7 @@ void Simulator::handleDiskCollisions(Disk* disk, GameObject* o)
 				powerUpType puType = ((Target*)o)->getPowerUpType();		
 
 			    if (disk->activatePowerUp(puType, disk->getPlayerLastThrew()))
-			        restoreTile(disk->getPlayerLastThrew()->getPlayerID());
+			        restoreTile(disk->getPlayerLastThrew()->getPlayerID() - 1);
                 
                 gameMusic->playCollisionSound("Disk", "Target");
 
