@@ -126,6 +126,7 @@ void GUI::pauseMenu(bool pause)
 {
     if (pause) {
         CEGUI::MouseCursor::getSingleton().hide();
+        playScreen();
     }
     else {
         CEGUI::MouseCursor::getSingleton().show();
