@@ -682,14 +682,14 @@ void Client::switchRooms(int playersInRoom)
             twoPlayerGameRoom->activateRoom();
             activeRoom = twoPlayerGameRoom;
             /* Still need to adjust client players and client player positions */
-            // for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
-            // {
-            //     if (playerList[i] != NULL)
-            //     {
-            //         playerList[i]->changeGameRoom();
-            //         /* Adjust for any players that might have left */
-            //     }
-            // }
+            for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+            {
+                if (playerList[i] != NULL)
+                {
+                    playerList[i]->changeGameRoom();
+                    /* Adjust for any players that might have left */
+                }
+            }
         }
     }
 }

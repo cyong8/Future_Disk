@@ -30,6 +30,12 @@ Simulator::Simulator(Ogre::SceneManager* mSceneMgr, Music* music)
 	// initialize random number generate
     srand(time(0));
 
+    for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
+	{
+		PlayerTileIdentity* ptID = new PlayerTileIdentity;
+		playerTileIdentities.push_back(ptID);
+	}
+
 	//collision configuration contains default setup for memory, collision setup.
 	collisionConfiguration = new btDefaultCollisionConfiguration();
 	//use the default collision dispatcher. For parallel processing you can use a different dispatcher
@@ -594,6 +600,7 @@ void Simulator::removePlayer(int playerIndex)
 //-------------------------------------------------------------------------------------
 void Simulator::setGameRoom(Room* rm)
 {
+	playerTileIdentities.clear();
 	for (int i = 0; i < MAX_NUMBER_OF_PLAYERS; i++)
 	{
 		PlayerTileIdentity* ptID = new PlayerTileIdentity;

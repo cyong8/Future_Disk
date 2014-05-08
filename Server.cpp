@@ -163,7 +163,11 @@ bool Server::constructAndSendGameState()
     
     sBuff = new char[sizeof(S_PLAYER_packet)];
     puBuff = new char[sizeof(POWERUP_packet)];
+    tBuff = new char[sizeof(TILE_packet)];
+    dBuff = new char[sizeof(DISK_packet)];
     pgStateBuff = new char[sizeof(GAMESTATE_packet)];
+    gBuff = new char[sizeof(GAMESTATE_packet)];
+
 
     /* CREATE LIST OF PLAYER UPDATE PACKETS */
     for (int i = 0; i < numberOfClients; i++)   // might want to limit to players who have changed position
@@ -193,7 +197,6 @@ bool Server::constructAndSendGameState()
         gPack.stateID = (char)(((int)'0') + START);
         gPack.stateAttribute = (char)(((int)'0') + numberOfClients);
 
-        gBuff = new char[sizeof(GAMESTATE_packet)];
         memcpy(gBuff, &gPack, sizeof(DISK_packet));
     }
     /* CREATE LIST OF TILE UPDATE PACKETS */
@@ -212,7 +215,6 @@ bool Server::constructAndSendGameState()
 
             tilePackList.push_back(tPack);
         }
-        tBuff = new char[sizeof(TILE_packet)];
         removedTiles.clear();
     }
     /* CREATE LIST OF POWER UP UPDATE PACKETS */
@@ -269,7 +271,6 @@ bool Server::constructAndSendGameState()
 
         dPack.orientation = gameDisk->getSceneNode()->_getDerivedOrientation();
     
-        dBuff = new char[sizeof(DISK_packet)];
         memcpy(dBuff, &dPack, sizeof(DISK_packet));
     }
 
@@ -282,7 +283,6 @@ bool Server::constructAndSendGameState()
 
             if ((localState == WIN || localState == LOSE) && playerGameStatesList[i] == PLAYING)
             {
-                pgStateBuff = new char[sizeof(GAMESTATE_packet)];
                 GAMESTATE_packet pgsPack;
         
                 pgsPack.packetID = (char)(((int)'0') + GAMESTATE);
