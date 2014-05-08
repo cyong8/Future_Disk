@@ -14,6 +14,8 @@ GUI::GUI(MCP* m)
     CEGUI::SchemeManager::getSingleton().create("OgreTray.scheme");
     CEGUI::System::getSingleton().setDefaultMouseCursor("OgreTrayImages", "MouseArrow");
     CEGUI::MouseCursor::getSingleton().setPosition(CEGUI::Point(mcp->getRenderWindow()->getWidth()/2, mcp->getRenderWindow()->getHeight()/2));
+    
+    progress = 1.0f;
 }
 //------------------------------------------------------------------------------------
 GUI::~GUI() 
@@ -124,8 +126,6 @@ void GUI::pauseMenu(bool pause)
 {
     if (pause) {
         CEGUI::MouseCursor::getSingleton().hide();
-        CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
-        wmgr.destroyAllWindows();
     }
     else {
         CEGUI::MouseCursor::getSingleton().show();
@@ -276,6 +276,15 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     enterIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.55, 0)));
     enterIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
 
+    CEGUI::ImagesetManager::getSingleton().createFromImageFile("PromptImageset", "enterhostipaddress.png");
+    CEGUI::Window *promptIMG = wmgr.createWindow("OgreTray/StaticImage", "TronGame/Client/PromptIMG");
+    promptIMG->setProperty("Image", "set:PromptImageset image:full_image");
+    promptIMG->setProperty("BackgroundEnabled", "false");
+    promptIMG->setProperty("FrameEnabled", "false");
+    promptIMG->setSize(CEGUI::UVector2(CEGUI::UDim(0.25, 0), CEGUI::UDim(0.08, 0)));
+    promptIMG->setPosition(CEGUI::UVector2(CEGUI::UDim(0.375, 0), CEGUI::UDim(0.35, 0)));
+    promptIMG->setUserString("NOTHING", "TronGame/ClientMenu/IPEditbox");
+
     CEGUI::Window *ip = wmgr.createWindow("OgreTray/Editbox", "TronGame/ClientMenu/IPEditbox");
     ip->setSize(CEGUI::UVector2(CEGUI::UDim(0.2, 0), CEGUI::UDim(0.05, 0)));
     ip->setPosition(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.45, 0)));
@@ -302,6 +311,7 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     sheet->addChildWindow(back);
     sheet->addChildWindow(enterIMG);
     sheet->addChildWindow(enter);
+    sheet->addChildWindow(promptIMG);
     sheet->addChildWindow(ip);
     sheet->addChildWindow(objectiveIMG);
     
@@ -310,6 +320,23 @@ bool GUI::enterIPAddress(const CEGUI::EventArgs &e)
     quit->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::quit, mcp));
     back->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::activateMainMenu, mcp));
     enter->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&MCP::joinGame, mcp));
+}
+//-------------------------------------------------------------------------------------
+void GUI::playScreen()
+{
+    CEGUI::MouseCursor::getSingleton().hide();
+    CEGUI::WindowManager &wmgr = CEGUI::WindowManager::getSingleton();
+    wmgr.destroyAllWindows();
+    CEGUI::Window *sheet = wmgr.createWindow("DefaultWindow", "TronGame/Play/Sheet");
+    
+    boostBar = static_cast<CEGUI::ProgressBar*>(wmgr.createWindow("OgreTray/ProgressBar", "TronGame/Play/BoostBar"));
+    boostBar->setSize(CEGUI::UVector2(CEGUI::UDim(0.4, 0), CEGUI::UDim(0.05, 0)));
+    boostBar->setPosition(CEGUI::UVector2(CEGUI::UDim(0.3, 0), CEGUI::UDim(0.95, 0)));
+    boostBar->setProgress(progress);
+    
+    sheet->addChildWindow(boostBar);
+    
+    CEGUI::System::getSingleton().setGUISheet(sheet);
 }
 //-------------------------------------------------------------------------------------
 void GUI::gameOverScreen() 
@@ -431,4 +458,18 @@ void GUI::removeLabel(OgreBites::Label* l)
 {
     l->hide();
     mcp->getTrayManager()->removeWidgetFromTray(l);
+}
+//--------------------------------------------------------------------------------------
+void GUI::setProgress(float i)
+{
+    if (boostBar != NULL) {
+        boostBar->setProgress(i/4.0f);
+        progress = boostBar->getProgress();
+    }
+}
+//--------------------------------------------------------------------------------------
+float GUI::getProgress()
+{
+    return progress;
+    return 1.0f;
 }

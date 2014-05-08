@@ -23,6 +23,7 @@ Solo::Solo(MCP* mcp)//Music* mus, Ogre::SceneManager* mgr)
     gameOver = false;
     gamePause = false;
     diskAdded = false;
+    boostPenalty = false;
     target_list = vector<Target*>(NUM_OF_TARGETS, NULL);
 
     time(&initTime);
@@ -255,13 +256,19 @@ bool Solo::processUnbufferedInput(const Ogre::Real tSinceLastFrame, OIS::Keyboar
         }
         oldTime = newTime;*/
         
-        if (mKeyboard->isKeyDown(OIS::KC_LSHIFT))
+        if (mKeyboard->isKeyDown(OIS::KC_LSHIFT) && !boostPenalty)
         {
-            player->updateBoost(true);
+            float remainingTime = player->updateBoost(true);
+            MasterControl->gui->setProgress(remainingTime);
+            if (MasterControl->gui->getProgress() == 0.0f)
+                boostPenalty = true;
         }
         else
         {
-            player->updateBoost(false);
+            float remainingTime = player->updateBoost(false);
+            MasterControl->gui->setProgress(remainingTime);
+            if (MasterControl->gui->getProgress() == 1.0f)
+                boostPenalty = false;
         }
         
         // If the 'V' key is down you shouldn't be able to move

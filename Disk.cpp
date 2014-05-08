@@ -64,8 +64,11 @@ void Disk::setThrownVelocity(btVector3 v)
 	Ogre::Vector3 vPos = Ogre::Vector3(v.getX(), v.getY(), 0.0f);
    	btQuaternion diskOrientation;
 
-	Ogre::Radian angleOfNewRoll = dPos.angleBetween(vPos);
-	rootNode->roll(-angleOfNewRoll);
+   	if(ReAddFlag)
+   	{
+		Ogre::Radian angleOfNewRoll = dPos.angleBetween(vPos);
+		rootNode->roll(-angleOfNewRoll);
+   	}
 
 	diskOrientation = btQuaternion(0.0f, 0.0f, rootNode->getOrientation().getRoll().valueRadians());
 	dTrans.setRotation(diskOrientation);

@@ -34,13 +34,17 @@ void PlayerCamera::toggleThirdPersonView()
     {
         overlay->hide();
         overlay2->hide();
-        p->getSceneNode()->setVisible(true, true);
+        p->getSceneNode()->setVisible(true);
+        if (p->getPlayerDisk() != NULL)
+            p->getPlayerDisk()->getSceneNode()->setVisible(true);
     }
     else
     {
         overlay->show();
         overlay2->show();
         p->getSceneNode()->setVisible(false);
+        if (p->getPlayerDisk() != NULL)
+            p->getPlayerDisk()->getSceneNode()->setVisible(false);
     }
     p->particleNode->setVisible(p->jumpPowerActive);
 }

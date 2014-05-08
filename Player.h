@@ -8,6 +8,7 @@ enum playerGameStates{DISCONNECTED, PLAYING, WIN, LOSE};
 
 class Disk;
 class Room;
+class GUI;
 
 class Player : public GameObject
 {
@@ -48,7 +49,7 @@ public:
 	struct RoomSpace* getPlayerSpace() { return playerSpace; }
 	Ogre::Vector3 getStartingPosition() { return startingPosition; }
 	
-	void updateBoost(bool pressed);
+	float updateBoost(bool pressed);
 	
 	Ogre::Entity* getMeshEntity() { return customPlayerEnt; }
 	Ogre::AnimationState* getCustomAnimationState() { return customAnimationState; }

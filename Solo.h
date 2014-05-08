@@ -46,6 +46,7 @@ private:
 	bool gameOver;
 	bool gamePause;
 	bool diskAdded;
+	bool boostPenalty;
 
 	bool clientOrientationChange;
 
